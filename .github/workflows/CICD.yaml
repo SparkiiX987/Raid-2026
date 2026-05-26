@@ -18,7 +18,7 @@ env:
   BUILD_CONFIGURATION: Shipping
   BUILD_PLATFORM: Win64
   ARCHIVE_NAME: MyUnrealGame-Windows
-  UE_PATH: C:\Program Files\Epic Games\UE_5.4
+  UE_PATH: C:\Program Files\UE\UE_5.7
   PACKAGE_DIR: Package
   DDC_PATH: C:\UnrealDDC
 
@@ -153,7 +153,7 @@ jobs:
         run: |
           $payload = @{
               username = "UE5 Build Bot"
-              content = "✅ New Unreal Engine 5 build released : v${{ steps.version.outputs.version }}"
+              content = "New Unreal Engine 5 build released : v${{ steps.version.outputs.version }}"
           } | ConvertTo-Json
 
           Invoke-RestMethod `
