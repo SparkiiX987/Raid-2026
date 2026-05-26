@@ -1,0 +1,59 @@
+name: Unreal Engine 5 CI/CD
+          git commit -m "Auto increment version ${{ steps.version.outputs.version }}" || exit 0
+
+          git push
+
+      - name: Build Unreal Project
+        shell: cmd
+        run: |
+          "%UE_PATH%\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun ^
+          -project="%CD%\%PROJECT_FILE%" ^
+          -noP4 ^
+          -platform=%BUILD_PLATFORM% ^
+          -clientconfig=%BUILD_CONFIGURATION% ^
+          -serverconfig=%BUILD_CONFIGURATION% ^
+          -cook ^
+          -build ^
+          -stage ^
+          -pak ^
+          -prereqs ^
+          -archive ^
+          -compressed ^
+          -iostore ^
+          -ddc=InstalledDerivedDataBackendGraph ^
+          -archivedirectory="%CD%\%PACKAGE_DIR%"
+
+      - name: Compress Build
+        shell: powershell
+        run: |
+          Compress-Archive -Path "${{ env.PACKAGE_DIR }}/*" -DestinationPath "${{ env.ARCHIVE_NAME }}-${{ steps.version.outputs.version }}.zip"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARCHIVE_NAME }}
+          path: '*.zip'
+          compression-level: 0
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          files: '*.zip'
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+      - name: Discord Notification
+        shell: powershell
+        run: |
+          $body = @{
+            content = "New Unreal Engine Build Released : v${{ steps.version.outputs.version }}"
+          } | ConvertTo-Json
+
+          Invoke-RestMethod `
+            -Uri "${{ secrets.DISCORD_WEBHOOK }}" `
+            -Method Post `
+            -Body $body `
+            -ContentType 'application/json'
