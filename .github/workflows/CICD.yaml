@@ -13,11 +13,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PROJECT_NAME: MyUnrealGame
-  PROJECT_FILE: MyUnrealGame.uproject
+  PROJECT_NAME: Raid2026
+  PROJECT_FILE: Raid2026.uproject
   BUILD_CONFIGURATION: Shipping
   BUILD_PLATFORM: Win64
-  ARCHIVE_NAME: MyUnrealGame-Windows
+  ARCHIVE_NAME: Raid2026-Windows
   UE_PATH: C:\Program Files\UE\UE_5.7
   PACKAGE_DIR: Package
   DDC_PATH: C:\UnrealDDC
