@@ -84,27 +84,37 @@ public:
 
 private:
     UPROPERTY()
-    TMap<int32, FEssenceState> essenceStates;
+        TMap<int32, FEssenceState> essenceStates;
 
-    int32 currentTurn;
+    UPROPERTY()
+        int32 currentTurn;
 
-    int32 activePlayerId;
+    UPROPERTY()
+        int32 activePlayerId;
 
-    int32 playerCount;
+    UPROPERTY()
+        int32 playerCount;
 
-    ETurnPhase currentPhase;
+    UPROPERTY()
+        ETurnPhase currentPhase;
 
-    bool bIsFirstTurnOfGame;
+    UPROPERTY()
+        bool bIsFirstTurnOfGame;
 
-    int32 firstPlayerId;
+    UPROPERTY()
+        int32 firstPlayerId;
 
-    void SetTurnPhase(ETurnPhase newPhase);
+    UPROPERTY()
+        void SetTurnPhase(ETurnPhase newPhase);
 
-    void RefillEssence(int32 playerId);
+    UPROPERTY()
+        void RefillEssence(int32 playerId);
 
-    int32 GetNextPlayerId() const;
+    UPROPERTY()
+        int32 GetNextPlayerId() const;
 
-    FEssenceState& GetOrCreateEssenceState(int32 playerId);
+    UPROPERTY()
+        FEssenceState& GetOrCreateEssenceState(int32 playerId);
 
     /*UBoardManager* GetBoard() const;
     UDeckManager* GetDeck() const;
