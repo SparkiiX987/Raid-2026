@@ -2,38 +2,35 @@
 #include "../CoreLayer/Cells/FReachableCell.h"
 //#include "Raid2026/CoreLayer/TurnManager.h"
 
-void UUBoardManager::InitializeBoard(const TArray<AActor*>& Refineries, AActor* MothershipP0,
-                                     AActor* MothershipP1)
+void UUBoardManager::InitializeBoard(const TArray<AActor*>& Refineries,
+									 AActor* MothershipP0,
+									 AActor* MothershipP1)
 {
 	for (int32 X = 0; X < GridWidth; X++)
 	{
 		for (int32 Y = 0; Y < GridHeight; Y++)
 		{
-			Grid[X][Y] = FCell();
-			if (GEngine)
-			{
-				FString text = FString::Printf(TEXT("message"));
+			FCell& Cell = Grid[X][Y];
 
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-			}
+			Cell = FCell();
+			Cell.Pos = FIntPoint(X, Y);
 		}
 	}
-	
-	GetCellRef(FIntPoint(3,3)).Type = ECellType::Refinery;
-	GetCellRef(FIntPoint(3,5)).Type = ECellType::Refinery;
-	
-	for (int i = 0; i < GridWidth; i++)
-	{
-		GetCellRef(FIntPoint(i,1)).Type = ECellType::SpawnP0;
-		GetCellRef(FIntPoint(i,GridHeight-2)).Type = ECellType::SpawnP1;
-		// SetOccupant(FIntPoint(i, 0), MothershipP0);
-		// SetOccupant(FIntPoint(i, GridHeight - 1), MothershipP1);
-	}
-	//
-	// RefineryActors = Refineries;
-	// Motherships[0] = MothershipP0;
-	// Motherships[1] = MothershipP1;
 
+	GetCellRef(FIntPoint(2, 2)).Type = ECellType::Refinery;
+	SetOccupant(FIntPoint(2, 2), Refineries[0]);
+
+	GetCellRef(FIntPoint(2, 4)).Type = ECellType::Refinery;
+	SetOccupant(FIntPoint(2, 4), Refineries[1]);
+
+	for (int32 X = 0; X < GridWidth; X++)
+	{
+		GetCellRef(FIntPoint(X, 1)).Type = ECellType::SpawnP0;
+		GetCellRef(FIntPoint(X, GridHeight - 2)).Type = ECellType::SpawnP1;
+		SetOccupant(FIntPoint(X, 0), MothershipP0);
+		SetOccupant(FIntPoint(X, GridHeight - 1), MothershipP1);
+	}
+	
 
 }
 
@@ -222,12 +219,14 @@ FCell& UUBoardManager::GetCellRef(FIntPoint Pos)
 	return Grid[Pos.X][Pos.Y];
 }
 
-// void UUBoardManager::SetOccupant(FIntPoint Pos, ABoardActor* Actor)
-// {
-// 	check(IsValidCell(Pos));
-// 	Grid[Pos.X][Pos.Y].Occupant = Actor;
-// 	Actor->gridPosition = Pos;
-// }
+void UUBoardManager::SetOccupant(FIntPoint Pos, AActor* Actor)
+{
+	check(IsValidCell(Pos));
+	GetCellRef(Pos).Occupant = Actor;
+	//Actor->gridPosition = Pos;
+	FVector Poss = FVector(Pos.X*500, Pos.Y*500, 500.f);
+	Actor->SetActorLocation(Poss);
+}
 
 // void UUBoardManager::ClearOccupant(FIntPoint Pos)
 // {

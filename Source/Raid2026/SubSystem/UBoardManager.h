@@ -80,7 +80,7 @@ public:
 
 	FCell& GetCellRef(FIntPoint Pos);
 
-	// void SetOccupant(FIntPoint Pos, ABoardActor* Actor);
+	void SetOccupant(FIntPoint Pos, AActor* Actor);
 
 	//void ClearOccupant(FIntPoint Pos);
 
