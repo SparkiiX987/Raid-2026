@@ -104,17 +104,13 @@ private:
     UPROPERTY()
         int32 firstPlayerId;
 
-    UPROPERTY()
-        void SetTurnPhase(ETurnPhase newPhase);
+    void SetTurnPhase(ETurnPhase newPhase);
 
-    UPROPERTY()
-        void RefillEssence(int32 playerId);
+    void RefillEssence(int32 playerId);
 
-    UPROPERTY()
-        int32 GetNextPlayerId() const;
+    int32 GetNextPlayerId() const;
 
-    UPROPERTY()
-        FEssenceState& GetOrCreateEssenceState(int32 playerId);
+    FEssenceState& GetOrCreateEssenceState(int32 playerId);
 
     /*UBoardManager* GetBoard() const;
     UDeckManager* GetDeck() const;
