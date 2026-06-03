@@ -16,4 +16,7 @@ struct FCardStats
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 resistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 radar;
 };

@@ -6,7 +6,7 @@
 #include "UTurnManager.generated.h"
 
 UCLASS()
-class RAID2026_API UUTurnManager : public UGameInstanceSubsystem
+class RAID2026_API UUTurnManager : public UObject
 {
 	GENERATED_BODY()
 	
@@ -76,11 +76,7 @@ public:
         bool IsPlayerTurn(int32 playerId) const;
 
     UFUNCTION(BlueprintCallable)
-        void InitializeGame(int32 inFirstPlayerId, int32 inPlayerCount);
-
-    virtual void Initialize(FSubsystemCollectionBase& collection) override;
-
-    virtual void Deinitialize() override;
+        void InitializeGame(int32 inFirstPlayerId, int32 inPlayerCount = 2);
 
 private:
     UPROPERTY()
@@ -111,8 +107,4 @@ private:
     int32 GetNextPlayerId() const;
 
     FEssenceState& GetOrCreateEssenceState(int32 playerId);
-
-    /*UBoardManager* GetBoard() const;
-    UDeckManager* GetDeck() const;
-    UEffectManager* GetEffects() const;*/
 };

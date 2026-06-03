@@ -269,28 +269,6 @@ void UUTurnManager::InitializeGame(int32 inFirstPlayerId, int32 inPlayerCount)
     StartTurn(firstPlayerId);
 }
 
-void UUTurnManager::Initialize(FSubsystemCollectionBase& collection)
-{
-    Super::Initialize(collection);
-    essenceStates.Empty();
-    currentTurn = 0;
-    currentPhase = ETurnPhase::Inactive;
-    bIsFirstTurnOfGame = true;
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("UTurnManager: initialisé"));
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
-}
-
-void UUTurnManager::Deinitialize()
-{
-    essenceStates.Empty();
-    Super::Deinitialize();
-}
-
 void UUTurnManager::SetTurnPhase(ETurnPhase newPhase)
 {
     const ETurnPhase Old = currentPhase;

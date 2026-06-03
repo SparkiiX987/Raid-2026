@@ -1,13 +1,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
 #include "../CoreLayer/DrawResult.h"
 #include "../CoreLayer/PlayerDeckState.h"
 #include "DeckManager.generated.h"
 
 UCLASS()
-class RAID2026_API UDeckManager : public UGameInstanceSubsystem
+class RAID2026_API UDeckManager : public UObject
 {
 	GENERATED_BODY()
 	
@@ -73,9 +72,6 @@ class RAID2026_API UDeckManager : public UGameInstanceSubsystem
 		FPlayerDeckState GetDeckState(int32 playerId) const;
 
 	void SendPlayedCardToDiscard(int32 playerId, UUCardData* card);
-
-	virtual void Initialize(FSubsystemCollectionBase& collection) override;
-	virtual void Deinitialize() override;
 
 private:
 

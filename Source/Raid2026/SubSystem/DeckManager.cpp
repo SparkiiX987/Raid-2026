@@ -238,24 +238,6 @@ FPlayerDeckState UDeckManager::GetDeckState(int32 playerId) const
     return State ? *State : FPlayerDeckState{};
 }
 
-void UDeckManager::Initialize(FSubsystemCollectionBase& collection)
-{
-    Super::Initialize(collection);
-    PlayerDecks.Empty();
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("UDeckManager: Initialisé"));
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
-}
-
-void UDeckManager::Deinitialize()
-{
-    PlayerDecks.Empty();
-    Super::Deinitialize();
-}
-
 void UDeckManager::ShuffleDeck(TArray<UUCardData*>& deck)
 {
     const int32 N = deck.Num();
