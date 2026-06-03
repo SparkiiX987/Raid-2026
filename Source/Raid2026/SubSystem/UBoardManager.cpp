@@ -1,6 +1,6 @@
 #include "UBoardManager.h"
 #include "../CoreLayer/Cells/FReachableCell.h"
-//#include "Raid2026/CoreLayer/TurnManager.h"
+
 
 void UUBoardManager::InitializeBoard(const TArray<AActor*>& Refineries,
 									 AActor* MothershipP0,
@@ -8,7 +8,7 @@ void UUBoardManager::InitializeBoard(const TArray<AActor*>& Refineries,
 {
 	for (int32 X = 0; X < GridWidth; X++)
 	{
-		for (int32 Y = 0; Y < GridHeight; Y++)
+		for (int32 Y = 0; Y <= GridHeight + 1; Y++)
 		{
 			FCell& Cell = Grid[X][Y];
 
@@ -17,32 +17,33 @@ void UUBoardManager::InitializeBoard(const TArray<AActor*>& Refineries,
 		}
 	}
 
-	GetCellRef(FIntPoint(2, 2)).Type = ECellType::Refinery;
-	SetOccupant(FIntPoint(2, 2), Refineries[0]);
+	GetCellRef(FIntPoint(2, 3)).Type = ECellType::Refinery;
+	SetOccupant(FIntPoint(2, 3), Refineries[0]);
 
-	GetCellRef(FIntPoint(2, 4)).Type = ECellType::Refinery;
-	SetOccupant(FIntPoint(2, 4), Refineries[1]);
+	GetCellRef(FIntPoint(2, 5)).Type = ECellType::Refinery;
+	SetOccupant(FIntPoint(2, 5), Refineries[1]);
 
 	for (int32 X = 0; X < GridWidth; X++)
 	{
 		GetCellRef(FIntPoint(X, 1)).Type = ECellType::SpawnP0;
-		GetCellRef(FIntPoint(X, GridHeight - 2)).Type = ECellType::SpawnP1;
+		GetCellRef(FIntPoint(X, GridHeight)).Type = ECellType::SpawnP1;
 		SetOccupant(FIntPoint(X, 0), MothershipP0);
-		SetOccupant(FIntPoint(X, GridHeight - 1), MothershipP1);
+		SetOccupant(FIntPoint(X, GridHeight+1), MothershipP1);
 	}
-	
+	SetOccupant(FIntPoint(GridWidth/2, 0), MothershipP0);
+	SetOccupant(FIntPoint(GridWidth/2, GridHeight+1), MothershipP1);
 
 }
 
 bool UUBoardManager::IsValidCell(FIntPoint Pos) const
 {
-	return Pos.X >= 0 && Pos.X < GridWidth && Pos.Y >= 0 && Pos.Y < GridHeight;
+	return Pos.X >= 0 && Pos.X < GridWidth && Pos.Y >= 0 && Pos.Y < GridHeight+2;
 }
 
-// bool UUBoardManager::IsCellOccupied(FIntPoint Pos) const
-// {
-// 	return IsValidCell(Pos) && GetCell(Pos).Occupant.IsValid();
-// }
+bool UUBoardManager::IsCellOccupied(FIntPoint Pos) const
+{
+	return IsValidCell(Pos) && GetCell(Pos).Occupant.IsValid();
+}
 
 FCell UUBoardManager::GetCell(FIntPoint Pos) const
 {
@@ -88,26 +89,26 @@ FCell UUBoardManager::GetCells(int32 X, int32 Y) const
 // 	return false;
 // }
 
-// TArray<FIntPoint> UUBoardManager::GetFreeSpawnCells(int32 PlayerID) const
-// {
-// 	TArray<FIntPoint> FreeSpawnCells;
-// 	ECellType CellTypeWhereSpawn;
-// 	
-// 	if (PlayerID == 0) CellTypeWhereSpawn = ECellType::SpawnP0;
-// 	else CellTypeWhereSpawn = ECellType::SpawnP1;
-// 	
-// 	for (int32 X = 0; X < GridWidth; X++)
-// 	{
-// 		for (int32 Y = 0; Y < GridHeight; Y++)
-// 		{
-// 			if (Grid[X][Y].Type == CellTypeWhereSpawn && !IsCellOccupied(FIntPoint(X, Y)))
-// 			{
-// 				FreeSpawnCells.Add(FIntPoint(X, Y));
-// 			}
-// 		}
-// 	}
-// 	return FreeSpawnCells;
-// }
+TArray<FIntPoint> UUBoardManager::GetFreeSpawnCells(int32 PlayerID) const
+{
+	TArray<FIntPoint> FreeSpawnCells;
+	ECellType CellTypeWhereSpawn;
+	
+	if (PlayerID == 0) CellTypeWhereSpawn = ECellType::SpawnP0;
+	else CellTypeWhereSpawn = ECellType::SpawnP1;
+	
+	for (int32 X = 0; X < GridWidth; X++)
+	{
+		for (int32 Y = 1; Y <= GridHeight; Y++)
+		{
+			if (Grid[X][Y].Type == CellTypeWhereSpawn && !IsCellOccupied(FIntPoint(X, Y)))
+			{
+				FreeSpawnCells.Add(FIntPoint(X, Y));
+			}
+		}
+	}
+	return FreeSpawnCells;
+}
 
 // TArray<FReachableCell> UUBoardManager::GetReachableCells(AShipActor* Ship, int32 AvailableEssence) const
 // {
@@ -137,24 +138,24 @@ FCell UUBoardManager::GetCells(int32 X, int32 Y) const
 // 	return ReachableCells;
 // }
 
-// bool UUBoardManager::IsLineOfSight(FIntPoint From, FIntPoint To) const
-// {
-// 	if (From == To || From.X != To.X && From.Y != To.Y)
-// 	{
-// 		return false;
-// 	}
-//
-// 	const FIntPoint Direction(FMath::Sign(To.X - From.X),FMath::Sign(To.Y - From.Y));
-//
-// 	for (FIntPoint Pos = From + Direction; Pos != To; Pos += Direction)
-// 	{
-// 		if (IsCellOccupied(Pos))
-// 		{
-// 			return false;
-// 		}
-// 	}
-// 	return true;
-// }
+bool UUBoardManager::IsLineOfSight(FIntPoint From, FIntPoint To) const
+{
+	if (From == To || From.X != To.X && From.Y != To.Y)
+	{
+		return false;
+	}
+
+	const FIntPoint Direction(FMath::Sign(To.X - From.X),FMath::Sign(To.Y - From.Y));
+
+	for (FIntPoint Pos = From + Direction; Pos != To; Pos += Direction)
+	{
+		if (IsCellOccupied(Pos))
+		{
+			return false;
+		}
+	}
+	return true;
+}
 
 // int32 UUBoardManager::CheckRefineries(int32 playerID)
 // {
@@ -188,30 +189,15 @@ FCell UUBoardManager::GetCells(int32 X, int32 Y) const
 // 	return false;
 // }
 
-// bool UUBoardManager::PlaceShip(AShipActor* Ship, FIntPoint target, int32 PlayerID)
-// {
-// 	if (!GetFreeSpawnCells(PlayerID).Contains(target))
-// 	{
-// 		return false;
-// 	}
-// 	SetOccupant(target, Ship);
-// 	return true;
-// }
+void UUBoardManager::PlaceShip(AActor* Ship, FIntPoint target)
+{
+	SetOccupant(target, Ship);
+}
 //
 // void UUBoardManager::RemoveShipFromGrid(AShipActor* Ship)
 // {
 // 	ClearOccupant(Ship->gridPosition);
 // }
-
-void UUBoardManager::Initialize(FSubsystemCollectionBase& Collection)
-{
-	Super::Initialize(Collection);
-}
-
-void UUBoardManager::Deinitialize()
-{
-	Super::Deinitialize();
-}
 
 FCell& UUBoardManager::GetCellRef(FIntPoint Pos)
 {
@@ -221,15 +207,14 @@ FCell& UUBoardManager::GetCellRef(FIntPoint Pos)
 
 void UUBoardManager::SetOccupant(FIntPoint Pos, AActor* Actor)
 {
-	check(IsValidCell(Pos));
 	GetCellRef(Pos).Occupant = Actor;
 	//Actor->gridPosition = Pos;
 	FVector Poss = FVector(Pos.X*500, Pos.Y*500, 500.f);
 	Actor->SetActorLocation(Poss);
 }
 
-// void UUBoardManager::ClearOccupant(FIntPoint Pos)
-// {
-// 	check(IsValidCell(Pos));
-// 	Grid[Pos.X][Pos.Y].Occupant.Reset();
-// }
+void UUBoardManager::ClearOccupant(FIntPoint Pos)
+{
+	check(IsValidCell(Pos));
+	Grid[Pos.X][Pos.Y].Occupant.Reset();
+}

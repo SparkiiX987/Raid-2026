@@ -4,14 +4,17 @@
 #include "../CoreLayer/Cells/FCell.h"
 #include "UBoardManager.generated.h"
 
-UCLASS()
-class RAID2026_API UUBoardManager : public UGameInstanceSubsystem
+UCLASS(BlueprintType, Blueprintable)
+class RAID2026_API UUBoardManager : public UObject
 {
 	GENERATED_BODY()
 	
 public:
 	static constexpr int32 GridWidth = 5;
 	static constexpr int32 GridHeight = 7;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float CellGap = 10.f;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnVictoryConditionMet, int32, WinnerPlayerID);
 
@@ -29,8 +32,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool IsValidCell(FIntPoint Pos) const;
 
-	// UFUNCTION(BlueprintPure)
-	// bool IsCellOccupied(FIntPoint Pos) const;
+	UFUNCTION(BlueprintPure)
+	bool IsCellOccupied(FIntPoint Pos) const;
 
 	UFUNCTION(BlueprintPure)
 	FCell GetCell(FIntPoint Pos) const;
@@ -47,14 +50,14 @@ public:
 	// UFUNCTION(BlueprintPure)
 	// bool IsMothershipCell(FIntPoint Pos, int32 ShooterPlayerID) const;
 
-	// UFUNCTION(BlueprintPure)
-	// TArray<FIntPoint> GetFreeSpawnCells(int32 PlayerID) const;
+	UFUNCTION(BlueprintPure)
+	TArray<FIntPoint> GetFreeSpawnCells(int32 PlayerID) const;
 
 	// UFUNCTION(BlueprintCallable)
 	// TArray<FReachableCell> GetReachableCells(AShipActor* Ship, int32 AvailableEssence) const;
-	//
-	// UFUNCTION(BlueprintPure)
-	// bool IsLineOfSight(FIntPoint From, FIntPoint To) const;
+	
+	UFUNCTION(BlueprintPure)
+	bool IsLineOfSight(FIntPoint From, FIntPoint To) const;
 
 	// UFUNCTION(BlueprintCallable)
 	// int32 CheckRefineries(int32 playerID);
@@ -62,17 +65,13 @@ public:
 	// UFUNCTION(BlueprintCallable)
 	// bool MoveShipTo(AShipActor* Ship, FIntPoint TargetCell,int32 playerID);
 	//
-	// UFUNCTION(BlueprintCallable)
-	// bool PlaceShip(AShipActor* Ship, FIntPoint target, int32 PlayerID);
+	UFUNCTION(BlueprintCallable)
+	void PlaceShip(AActor* Ship, FIntPoint target);
 	//
 	// UFUNCTION(BlueprintCallable)
 	// void RemoveShipFromGrid(AShipActor* Ship);
 
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	
-	virtual void Deinitialize() override;
-
-	FCell Grid[GridWidth][GridHeight];
+	FCell Grid[GridWidth][GridHeight+2];
 
 	// TArray<ARefineryActor*> RefineryActors;
 	//
@@ -82,7 +81,7 @@ public:
 
 	void SetOccupant(FIntPoint Pos, AActor* Actor);
 
-	//void ClearOccupant(FIntPoint Pos);
+	void ClearOccupant(FIntPoint Pos);
 
 	static const TArray<FIntPoint> OrthoDirections;
 };

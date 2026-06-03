@@ -1,14 +1,5 @@
 #include "ABoardVisualiser.h"
 
-#include <SceneExport.h>
-
-#include "Raid2026/SubSystem/UBoardManager.h"
-
-void AABoardVisualiser::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void AABoardVisualiser::SpawnBoard(TArray<AActor*>& OutRefineries, AActor*& OutMothershipP0, AActor*& OutMothershipP1)
 {
 	SpawnCellActors();
@@ -18,21 +9,44 @@ void AABoardVisualiser::SpawnBoard(TArray<AActor*>& OutRefineries, AActor*& OutM
 
 void AABoardVisualiser::DebugSpawnShipInAllCells()
 {
+	for (int32 X = 0; X < UUBoardManager::GridWidth; X++)
+	{
+		for (int32 Y = 0; Y < UUBoardManager::GridHeight+1; Y++)
+		{
+			if (BoardManager->IsCellOccupied(FIntPoint(X, Y)))
+			{
+				continue;
+			}
+			FVector Location(0.f, 0.f, 500.f);
+			const FRotator Rotation = FRotator::ZeroRotator;
+
+			AActor* ShipTest = GetWorld()->SpawnActor<AActor>(
+				ShipClassTest,
+				Location,
+				Rotation);
+
+			if (!ShipTest)
+			{
+				return;
+			}
+			BoardManager->SetOccupant(FIntPoint(X, Y), ShipTest);
+		}
+	}
 }
 
 AABoardCell* AABoardVisualiser::GetCellActor(FIntPoint GridPos) const
 {
-	return nullptr;
+	return CellActors[CellIndex(GridPos.X, GridPos.Y)];
 }
 
 FVector AABoardVisualiser::GridToWorld(FIntPoint GridPos) const
 {
-	return FVector();
+	return FVector(GridPos.X*BoardManager->CellGap, GridPos.Y*BoardManager->CellGap, 0.0f);
 }
 
 FIntPoint AABoardVisualiser::WorldToGrid(FVector WorldPos) const
 {
-	return FIntPoint();
+	return FIntPoint(FMath::RoundToInt(WorldPos.X / BoardManager->CellGap), FMath::RoundToInt(WorldPos.Y / BoardManager->CellGap));
 }
 
 void AABoardVisualiser::SpawnCellActors()
@@ -47,10 +61,10 @@ void AABoardVisualiser::SpawnCellActors()
 
 	for (int32 X = 0; X < UUBoardManager::GridWidth; X++)
 	{
-		for (int32 Y = 0; Y < UUBoardManager::GridHeight; Y++)
+		for (int32 Y = 1; Y < UUBoardManager::GridHeight+1; Y++)
 		{
-			Location.X = X * CellGap;
-			Location.Y = Y * CellGap;
+			Location.X = X * BoardManager->CellGap;
+			Location.Y = Y * BoardManager->CellGap;
 
 			AABoardCell* Cell = GetWorld()->SpawnActor<AABoardCell>(
 				CellActorClass,
@@ -61,8 +75,9 @@ void AABoardVisualiser::SpawnCellActors()
 			{
 				continue;
 			}
+			Cell->SetActorScale3D(FVector(CellSize, CellSize, CellSize));
 
-			Cell->cellData.Pos = FIntPoint(X, Y);
+			Cell->cellData.Pos = WorldToGrid(Location);
 
 			CellActors.Add(Cell);
 		}
@@ -127,11 +142,36 @@ void AABoardVisualiser::SpawnMotherships(AActor*& OutP0, AActor*& OutP1)
 	}
 }
 
-void AABoardVisualiser::SpawnShip(TSubclassOf<AActor>)
+AActor* AABoardVisualiser::SpawnShip(TSubclassOf<AActor> ship, FIntPoint GridPos)
 {
+	if (!BoardManager->GetFreeSpawnCells(0).Contains(GridPos))
+	{
+		return nullptr;
+	}
+	FVector Location(0.f, 0.f, 500.f);
+	const FRotator Rotation = FRotator::ZeroRotator;
+
+	AActor* Ship = GetWorld()->SpawnActor<AActor>(
+		ship,
+		Location,
+		Rotation);
+
+	if (!Ship)
+	{
+		return nullptr;
+	}
+	BoardManager->PlaceShip(Ship, GridPos);
+	return Ship;
 }
 
 int32 AABoardVisualiser::CellIndex(int32 X, int32 Y) const
 {
-	return 0;
+	for (int32 x = 0; x < CellActors.Num(); x++)
+	{
+		if (CellActors[x]->cellData.Pos == FIntPoint(X, Y))
+		{
+			return x;
+		}
+	}
+	return -1;
 }
