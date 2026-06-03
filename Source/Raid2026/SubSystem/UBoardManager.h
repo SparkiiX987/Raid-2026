@@ -1,8 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Raid2026/CoreLayer/FCell.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "../CoreLayer/Cells/FCell.h"
 #include "UBoardManager.generated.h"
 
 UCLASS()

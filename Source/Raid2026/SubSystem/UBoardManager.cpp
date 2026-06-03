@@ -1,6 +1,5 @@
 #include "UBoardManager.h"
-#include "Raid2026/CoreLayer/FCell.h"
-#include "Raid2026/CoreLayer/FReachableCell.h"
+#include "../CoreLayer/Cells/FReachableCell.h"
 //#include "Raid2026/CoreLayer/TurnManager.h"
 
 void UUBoardManager::InitializeBoard(const TArray<AActor*>& Refineries, AActor* MothershipP0,
