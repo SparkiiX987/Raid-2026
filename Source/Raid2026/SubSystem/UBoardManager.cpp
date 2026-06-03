@@ -1,10 +1,14 @@
 #include "UBoardManager.h"
+
+#include "UTurnManager.h"
 #include "../CoreLayer/Cells/FReachableCell.h"
+#include "Raid2026/Actor/ARefinery.h"
+#include "Raid2026/Actor/AShip.h"
 
 
-void UUBoardManager::InitializeBoard(const TArray<AActor*>& Refineries,
-									 AActor* MothershipP0,
-									 AActor* MothershipP1)
+void UUBoardManager::InitializeBoard(const TArray<AARefinery*>& Refineries,
+                                     AAMotherShip* MothershipP0,
+                                     AAMotherShip* MothershipP1)
 {
 	for (int32 X = 0; X < GridWidth; X++)
 	{
@@ -19,9 +23,11 @@ void UUBoardManager::InitializeBoard(const TArray<AActor*>& Refineries,
 
 	GetCellRef(FIntPoint(2, 3)).Type = ECellType::Refinery;
 	SetOccupant(FIntPoint(2, 3), Refineries[0]);
+	RefineryActors.Add(Refineries[0]);
 
 	GetCellRef(FIntPoint(2, 5)).Type = ECellType::Refinery;
 	SetOccupant(FIntPoint(2, 5), Refineries[1]);
+	RefineryActors.Add(Refineries[1]);
 
 	for (int32 X = 0; X < GridWidth; X++)
 	{
@@ -32,7 +38,8 @@ void UUBoardManager::InitializeBoard(const TArray<AActor*>& Refineries,
 	}
 	SetOccupant(FIntPoint(GridWidth/2, 0), MothershipP0);
 	SetOccupant(FIntPoint(GridWidth/2, GridHeight+1), MothershipP1);
-
+	Motherships.Add(0,MothershipP0);
+	Motherships.Add(1,MothershipP1);
 }
 
 bool UUBoardManager::IsValidCell(FIntPoint Pos) const
@@ -57,37 +64,37 @@ FCell UUBoardManager::GetCells(int32 X, int32 Y) const
 	return Grid[X][Y];
 }
 
-// AShipActor* UUBoardManager::GetShipAt(FIntPoint Pos) const
-// {
-// 	if (AShipActor* Ship = Cast<AShipActor>(GetCell(Pos).Occupant.Get()))
-// 	{
-// 		return Ship;
-// 	}
-// 	return nullptr;
-// }
+AAShip* UUBoardManager::GetShipAt(FIntPoint Pos) const
+{
+	if (AAShip* Ship = Cast<AAShip>(GetCell(Pos).Occupant.Get()))
+	{
+		return Ship;
+	}
+	return nullptr;
+}
 
-// AMothershipActor* UUBoardManager::GetMothershipAt(FIntPoint Pos) const
-// {
-// 	if (GetCell(Pos).Occupant == Motherships[0])
-// 		{
-// 		return Motherships[0];
-// 	}
-//
-// 	if (GetCell(Pos).Occupant == Motherships[1])
-// 	{
-// 		return Motherships[1];
-// 	}
-// 	return nullptr;
-// }
+AAMotherShip* UUBoardManager::GetMothershipAt(FIntPoint Pos) const
+{
+	if (GetCell(Pos).Occupant == Motherships[0])
+		{
+		return Motherships[0];
+	}
 
-// bool UUBoardManager::IsMothershipCell(FIntPoint Pos, int32 ShooterPlayerID) const
-// {
-// 	if (GetMothershipAt(Pos) != nullptr && GetMothershipAt(Pos)->ownerPlayer != ShooterPlayerID)
-// 	{
-// 		return true;
-// 	}
-// 	return false;
-// }
+	if (GetCell(Pos).Occupant == Motherships[1])
+	{
+		return Motherships[1];
+	}
+	return nullptr;
+}
+
+bool UUBoardManager::IsMothershipCell(FIntPoint Pos, int32 ShooterPlayerID) const
+{
+	if (GetMothershipAt(Pos) != nullptr && GetMothershipAt(Pos)->ownerPlayer != ShooterPlayerID)
+	{
+		return true;
+	}
+	return false;
+}
 
 TArray<FIntPoint> UUBoardManager::GetFreeSpawnCells(int32 PlayerID) const
 {
@@ -110,33 +117,33 @@ TArray<FIntPoint> UUBoardManager::GetFreeSpawnCells(int32 PlayerID) const
 	return FreeSpawnCells;
 }
 
-// TArray<FReachableCell> UUBoardManager::GetReachableCells(AShipActor* Ship, int32 AvailableEssence) const
-// {
-// 	TArray<FReachableCell> ReachableCells;
-// 	for (int32 X = -AvailableEssence; X <= AvailableEssence; X++)
-// 	{
-// 		for (int32 Y = -AvailableEssence; Y <= AvailableEssence; Y++)
-// 		{
-// 			FIntPoint Target = Ship->gridPosition + FIntPoint(X,Y);
-// 			int32 Cost = FMath::Abs(X) + FMath::Abs(Y);
-// 			
-// 			if (!IsValidCell(Target) || X == 0 && Y == 0 || Cost > AvailableEssence)
-// 			{
-// 				continue;
-// 			}
-// 			
-// 			if (!IsCellOccupied(FIntPoint(Target)))
-// 			{
-// 				FReachableCell ReachableCell;
-// 				ReachableCell.Cell = Ship->gridPosition + FIntPoint(X, Y);
-// 				ReachableCell.EssenceCost = FMath::Abs(X) + FMath::Abs(Y);	
-// 				ReachableCells.Add(ReachableCell);
-// 			}
-// 			
-// 		}
-// 	}
-// 	return ReachableCells;
-// }
+TArray<FReachableCell> UUBoardManager::GetReachableCells(AAShip* Ship, int32 AvailableEssence) const
+{
+	TArray<FReachableCell> ReachableCells;
+	for (int32 X = -AvailableEssence; X <= AvailableEssence; X++)
+	{
+		for (int32 Y = -AvailableEssence; Y <= AvailableEssence; Y++)
+		{
+			FIntPoint Target = Ship->gridPosition + FIntPoint(X,Y);
+			int32 Cost = FMath::Abs(X) + FMath::Abs(Y);
+			
+			if (!IsValidCell(Target) || X == 0 && Y == 0 || Cost > AvailableEssence)
+			{
+				continue;
+			}
+			
+			if (!IsCellOccupied(FIntPoint(Target)))
+			{
+				FReachableCell ReachableCell;
+				ReachableCell.Cell = Ship->gridPosition + FIntPoint(X, Y);
+				ReachableCell.EssenceCost = FMath::Abs(X) + FMath::Abs(Y);	
+				ReachableCells.Add(ReachableCell);
+			}
+			
+		}
+	}
+	return ReachableCells;
+}
 
 bool UUBoardManager::IsLineOfSight(FIntPoint From, FIntPoint To) const
 {
@@ -157,47 +164,47 @@ bool UUBoardManager::IsLineOfSight(FIntPoint From, FIntPoint To) const
 	return true;
 }
 
-// int32 UUBoardManager::CheckRefineries(int32 playerID)
-// {
-// 	int32 RefineriesPossessed = 0;
-// 	for (int32 X = 0; X < RefineryActors.Num(); X++)
-// 	{
-// 		if (RefineryActors[X]->ControllerPlayerID == playerID)
-// 		{
-// 			RefineriesPossessed++;
-// 		}
-// 	}
-// 	return RefineriesPossessed;
-// }
+int32 UUBoardManager::CheckRefineries(int32 playerID)
+{
+	int32 RefineriesPossessed = 0;
+	for (int32 X = 0; X < RefineryActors.Num(); X++)
+	{
+		if (RefineryActors[X]->ControllerPlayerID == playerID)
+		{
+			RefineriesPossessed++;
+		}
+	}
+	return RefineriesPossessed;
+}
 
-// bool UUBoardManager::MoveShipTo(AShipActor* Ship, FIntPoint TargetCell, int32 playerID)
-// {
-// 	TArray<FReachableCell> ReachableCells = GetReachableCells(Ship, TurnManager->GetAvailable(playerID));
-//
-// 	bool bReachable = ReachableCells.ContainsByPredicate(
-// 		[&](const FReachableCell& Cell)
-// 		{
-// 			return Cell.Cell == TargetCell;
-// 		});
-// 	
-// 	if (bReachable && !IsCellOccupied(TargetCell))
-// 	{
-// 		ClearOccupant(Ship->gridPosition);
-// 		SetOccupant(TargetCell, Ship);
-// 		return true;
-// 	}
-// 	return false;
-// }
+bool UUBoardManager::MoveShipTo(AAShip* Ship, FIntPoint TargetCell, int32 playerID)
+{
+	TArray<FReachableCell> ReachableCells = GetReachableCells(Ship, TurnManager->GetCurrentEssence(playerID));
 
-void UUBoardManager::PlaceShip(AActor* Ship, FIntPoint target)
+	bool bReachable = ReachableCells.ContainsByPredicate(
+		[&](const FReachableCell& Cell)
+		{
+			return Cell.Cell == TargetCell;
+		});
+	
+	if (bReachable && !IsCellOccupied(TargetCell))
+	{
+		ClearOccupant(Ship->gridPosition);
+		SetOccupant(TargetCell, Ship);
+		return true;
+	}
+	return false;
+}
+
+void UUBoardManager::PlaceShip(AAShip* Ship, FIntPoint target)
 {
 	SetOccupant(target, Ship);
 }
-//
-// void UUBoardManager::RemoveShipFromGrid(AShipActor* Ship)
-// {
-// 	ClearOccupant(Ship->gridPosition);
-// }
+
+void UUBoardManager::RemoveShipFromGrid(AAShip* Ship)
+{
+	ClearOccupant(Ship->gridPosition);
+}
 
 FCell& UUBoardManager::GetCellRef(FIntPoint Pos)
 {
@@ -205,10 +212,10 @@ FCell& UUBoardManager::GetCellRef(FIntPoint Pos)
 	return Grid[Pos.X][Pos.Y];
 }
 
-void UUBoardManager::SetOccupant(FIntPoint Pos, AActor* Actor)
+void UUBoardManager::SetOccupant(FIntPoint Pos, AABoardActor* Actor)
 {
 	GetCellRef(Pos).Occupant = Actor;
-	//Actor->gridPosition = Pos;
+	Actor->gridPosition = Pos;
 	FVector Poss = FVector(Pos.X*CellGap, Pos.Y*CellGap, CellGap);
 	Actor->SetActorLocation(Poss);
 }
