@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../CoreLayer/DrawResult.h"
-#include "../CoreLayer/PlayerDeckState.h"
+#include "../CoreLayer/Cards/DrawResult.h"
+#include "../CoreLayer/Cards/PlayerDeckState.h"
 #include "DeckManager.generated.h"
 
 UCLASS()

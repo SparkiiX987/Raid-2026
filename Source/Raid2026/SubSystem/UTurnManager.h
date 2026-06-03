@@ -1,8 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
-#include "../CoreLayer/FEssenceState.h"
+#include "../CoreLayer/Essence/FEssenceState.h"
 #include "UTurnManager.generated.h"
 
 UCLASS()

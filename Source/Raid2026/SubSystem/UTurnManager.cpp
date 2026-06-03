@@ -1,5 +1,5 @@
 #include "UTurnManager.h"
-#include "../CoreLayer/ETurnPhase.h"
+#include "../CoreLayer/Turn/ETurnPhase.h"
 
 void UUTurnManager::StartTurn(int32 playerId)
 {

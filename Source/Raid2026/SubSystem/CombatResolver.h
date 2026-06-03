@@ -1,10 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../CoreLayer/PushResult.h"
-#include "../CoreLayer/FireResult.h"
-#include "../CoreLayer/Collision.h"
-#include "../CoreLayer/EDirection.h"
+#include "../CoreLayer/CombatResults/PushResult.h"
+#include "../CoreLayer/CombatResults/FireResult.h"
+#include "../CoreLayer/CombatResults/Collision.h"
+#include "../CoreLayer/Cells/EDirection.h"
 #include "UBoardManager.h"
 #include "CombatResolver.generated.h"
 
