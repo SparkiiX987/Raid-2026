@@ -42,7 +42,7 @@ class RAID2026_API UDeckManager : public UGameInstanceSubsystem
 		void InitializeDeck(int32 playerId, const TArray<UUCardData*>& CardList);
 
 	UFUNCTION(BlueprintCallable)
-		TArray<FDrawResult> DrawCards(int32 playerId, int32 drawCount = DrawPerTurn);
+		TArray<FDrawResult> DrawCards(int32 playerId, int32 drawCount = -1);
 
 	UFUNCTION(BlueprintCallable)
 		bool DiscardCard(int32 playerId, UUCardData* card);
@@ -71,6 +71,8 @@ class RAID2026_API UDeckManager : public UGameInstanceSubsystem
 
 	UFUNCTION(BlueprintPure)
 		FPlayerDeckState GetDeckState(int32 playerId) const;
+
+	void SendPlayedCardToDiscard(int32 playerId, UUCardData* card);
 
 	virtual void Initialize(FSubsystemCollectionBase& collection) override;
 	virtual void Deinitialize() override;
