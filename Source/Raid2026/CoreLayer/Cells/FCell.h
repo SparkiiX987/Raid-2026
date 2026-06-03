@@ -15,8 +15,8 @@ struct FCell
 	UPROPERTY(BlueprintReadOnly)
 	ECellType Type;
 	
-	//UPROPERTY(BlueprintReadOnly)
-	//TWeakObjectPtr<ABoardActor> Occupant;
+	UPROPERTY(BlueprintReadOnly)
+	TWeakObjectPtr<AActor> Occupant;
 	
 	
 	bool IsEmpty();
