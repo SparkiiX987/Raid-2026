@@ -209,7 +209,7 @@ void UUBoardManager::SetOccupant(FIntPoint Pos, AActor* Actor)
 {
 	GetCellRef(Pos).Occupant = Actor;
 	//Actor->gridPosition = Pos;
-	FVector Poss = FVector(Pos.X*500, Pos.Y*500, 500.f);
+	FVector Poss = FVector(Pos.X*CellGap, Pos.Y*CellGap, CellGap);
 	Actor->SetActorLocation(Poss);
 }
 
