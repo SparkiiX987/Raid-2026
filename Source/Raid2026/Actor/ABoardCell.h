@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Raid2026/CoreLayer/FCell.h"
+#include "../CoreLayer/Cells/FCell.h"
 #include "ABoardCell.generated.h"
 
 UCLASS()
