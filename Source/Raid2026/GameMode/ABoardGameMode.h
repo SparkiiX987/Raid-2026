@@ -13,10 +13,11 @@ class RAID2026_API AABoardGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	
-private:
-	UPROPERTY(EditAnyWhere)
+public:
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 		int32 playerCount;
 
+private:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UUBoardManager> boardManagerClass;
 

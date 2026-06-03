@@ -8,7 +8,7 @@
 #include "UBoardManager.h"
 #include "CombatResolver.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class RAID2026_API UCombatResolver : public UObject
 {
 	GENERATED_BODY()
