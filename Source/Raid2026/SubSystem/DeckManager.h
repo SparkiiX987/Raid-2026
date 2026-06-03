@@ -5,7 +5,7 @@
 #include "../CoreLayer/Cards/PlayerDeckState.h"
 #include "DeckManager.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class RAID2026_API UDeckManager : public UObject
 {
 	GENERATED_BODY()

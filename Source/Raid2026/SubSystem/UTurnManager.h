@@ -4,7 +4,7 @@
 #include "../CoreLayer/Essence/FEssenceState.h"
 #include "UTurnManager.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class RAID2026_API UUTurnManager : public UObject
 {
 	GENERATED_BODY()
