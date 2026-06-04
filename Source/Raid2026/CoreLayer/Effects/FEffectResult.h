@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "../Cards/UCardData.h"
 #include "FEffectResult.generated.h"
 
 USTRUCT(BlueprintType)
@@ -13,7 +14,7 @@ struct FEffectResult
 	FString FailReason;
 
 	int32 IntValue;
-	//TArray<UCardData*> AffectedCards;
+	TArray<UUCardData*> AffectedCards;
 	TArray<FIntPoint>  AffectedCells;
 
 	static FEffectResult Success();

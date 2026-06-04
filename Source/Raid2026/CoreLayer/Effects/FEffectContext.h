@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "../../SubSystem/UBoardManager.h"
+#include "../../SubSystem/UTurnManager.h"
+#include "../../SubSystem/DeckManager.h"
 #include "FEffectContext.generated.h"
 
 USTRUCT(BlueprintType)
@@ -32,9 +35,12 @@ struct FEffectContext
 	UPROPERTY(BlueprintReadWrite)
 	int32 DamageDealt;
 
-	// UBoardManager* Board;
-	//
-	// UTurnManager* Turn;
-	//
-	// UDeckManager* Deck;
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UUBoardManager> Board;
+	
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UUTurnManager> Turn;
+	
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UDeckManager> Deck;
 };
