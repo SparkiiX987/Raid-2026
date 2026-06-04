@@ -4,7 +4,7 @@
 #include "../SubSystem/UTurnManager.h"
 #include "../SubSystem/UBoardManager.h"
 #include "../SubSystem/CombatResolver.h"
-//#include "Actors/ShipActor.h"
+#include "../Actor/AShip.h"
 
 namespace
 {
@@ -21,7 +21,7 @@ namespace
 
 FEffectResult UEffect_DrawOnReveal::Apply_Implementation(const FEffectContext& Context)
 {
-    /*if (!Context.Deck)
+    if (!Context.Deck)
         return FEffectResult::Fail(TEXT("DrawOnReveal: DeckManager absent du contexte"));
 
     if (GEngine)
@@ -33,22 +33,22 @@ FEffectResult UEffect_DrawOnReveal::Apply_Implementation(const FEffectContext& C
     }
 
     TArray<FDrawResult> Results = Context.Deck->DrawCards(Context.OwnerPlayerID, DrawCount);
-    */
+    
     FEffectResult Out = FEffectResult::Success();
-    /*Out.IntValue = Results.Num();
+    Out.IntValue = Results.Num();
 
     for (const FDrawResult& R : Results)
     {
         if (R.DrawnCard)
             Out.AffectedCards.Add(R.DrawnCard);
     }
-    */
+    
     return Out;
 }
 
 FEffectResult UEffect_BonusEssenceOnTurn::Apply_Implementation(const FEffectContext& Context)
 {
-    /*if (!Context.Turn)
+    if (!Context.Turn)
         return FEffectResult::Fail(TEXT("BonusEssenceOnTurn: TurnManager absent"));
 
     Context.Turn->AddBonusEssence(Context.OwnerPlayerID, BonusAmount);
@@ -60,9 +60,9 @@ FEffectResult UEffect_BonusEssenceOnTurn::Apply_Implementation(const FEffectCont
 
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
-    */
+    
     FEffectResult Out = FEffectResult::Success();
-    //Out.IntValue = BonusAmount;
+    Out.IntValue = BonusAmount;
     return Out;
 }
 
@@ -107,7 +107,7 @@ FEffectResult UEffect_DamageOnDestroyed::Apply_Implementation(const FEffectConte
 
 FEffectResult UEffect_ActivatedDraw::Apply_Implementation(const FEffectContext& Context)
 {
-    /*if (!Context.Turn || !Context.Deck)
+    if (!Context.Turn || !Context.Deck)
         return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
 
     const bool bPaid = Context.Turn->PayEssence(Context.OwnerPlayerID, EssenceCost);
@@ -115,9 +115,9 @@ FEffectResult UEffect_ActivatedDraw::Apply_Implementation(const FEffectContext& 
         return FEffectResult::Fail(TEXT("ActivatedDraw: Paiement échoué"));
 
     TArray<FDrawResult> Results = Context.Deck->DrawCards(Context.OwnerPlayerID, DrawCount);
-    */
+    
     FEffectResult Out = FEffectResult::Success();
-    /*Out.IntValue = Results.Num();
+    Out.IntValue = Results.Num();
     for (const FDrawResult& R : Results)
         if (R.DrawnCard) Out.AffectedCards.Add(R.DrawnCard);
 
@@ -127,14 +127,14 @@ FEffectResult UEffect_ActivatedDraw::Apply_Implementation(const FEffectContext& 
             Context.OwnerPlayerID, EssenceCost, DrawCount);
 
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-    }*/
+    }
 
     return Out;
 }
 
 bool UEffect_ActivatedPush::CanApply_Implementation(const FEffectContext& Context) const
 {
-    /*if (!Super::CanApply_Implementation(Context)) return false;
+    if (!Super::CanApply_Implementation(Context)) return false;
 
     if (!Context.TargetShip.IsValid()) return false;
 
@@ -144,7 +144,7 @@ bool UEffect_ActivatedPush::CanApply_Implementation(const FEffectContext& Contex
         Context.TargetShip->GetGridPosition() - Context.SourceShip->GetGridPosition();
     const int32 ManhattanDist = FMath::Abs(Delta.X) + FMath::Abs(Delta.Y);
 
-    return ManhattanDist <= Range;*/
+    return ManhattanDist <= Range;
     return false;
 }
 
@@ -165,7 +165,7 @@ FEffectResult UEffect_ActivatedPush::Apply_Implementation(const FEffectContext& 
     if (!Combat)
         return FEffectResult::Fail(TEXT("ActivatedPush: CombatResolver introuvable"));
 
-    EDirection Dir = FixedDirection;
+    EDirections Dir = FixedDirection;
     if (!bFixedDirection)
     {
         const FIntPoint Delta =
@@ -173,8 +173,8 @@ FEffectResult UEffect_ActivatedPush::Apply_Implementation(const FEffectContext& 
         Dir = IntPointToDirection(Delta);
     }
 
-    FPushResult PushResult = Combat->ApplyPush(Context.TargetShip.Get(), Dir);
-    */
+    FPushResult PushResult = Combat->ApplyPush(Context.TargetShip.Get(), Dir);*/
+    
     FEffectResult Out = FEffectResult::Success();
     /*Out.bNeedsTarget = !PushResult.bMoved && PushResult.Collisions.Num() == 0;
     Out.IntValue = PushResult.Collisions.Num();

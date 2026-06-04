@@ -2,7 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "../CoreLayer/Essence/FEssenceState.h"
+#include "DeckManager.h"
 #include "UTurnManager.generated.h"
+
+class UUBoardManager;
 
 UCLASS(BlueprintType, Blueprintable)
 class RAID2026_API UUTurnManager : public UObject
@@ -106,4 +109,12 @@ private:
     int32 GetNextPlayerId() const;
 
     FEssenceState& GetOrCreateEssenceState(int32 playerId);
+
+    public:
+
+    UPROPERTY(BlueprintReadWrite)
+    UDeckManager* deckManager;
+
+    UPROPERTY(BlueprintReadWrite)
+    UUBoardManager* boardManager;
 };

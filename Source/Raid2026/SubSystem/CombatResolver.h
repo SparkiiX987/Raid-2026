@@ -5,6 +5,8 @@
 #include "../CoreLayer/CombatResults/FireResult.h"
 #include "../CoreLayer/CombatResults/Collision.h"
 #include "../CoreLayer/Cells/EDirection.h"
+#include "../Actor/AShip.h"
+#include "../Actor/AMotherShip.h"
 #include "UBoardManager.h"
 #include "CombatResolver.generated.h"
 
@@ -14,16 +16,16 @@ class RAID2026_API UCombatResolver : public UObject
 	GENERATED_BODY()
 	
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
-        FOnShipDamaged, AActor*, Ship, int32, Damage); // TODO changer en AShipActor quand il existera
+        FOnShipDamaged, AAShip*, Ship, int32, Damage);
 
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
-        FOnShipDestroyed, AActor*, Ship); // TODO changer en AShipActor quand il existera
+        FOnShipDestroyed, AAShip*, Ship);
 
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
-        FOnCollision, AActor*, ShipA, AActor*, ShipB); // TODO changer en AShipActor quand il existera
+        FOnCollision, AAShip*, ShipA, AAShip*, ShipB);
 
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
-        FOnMothershipDamaged, AActor*, Mothership, int32, Damage); // TODO changer en AMotherShipActor quand il existera
+        FOnMothershipDamaged, AAMotherShip*, Mothership, int32, Damage);
 
 public:
     UPROPERTY(BlueprintAssignable)
@@ -36,34 +38,35 @@ public:
         FOnCollision OnCollision;
 
     UPROPERTY(BlueprintAssignable)
-        FOnMothershipDamaged OnMotherShipDamaged;
+        FOnMothershipDamaged OnMothershipDamaged;
 
     UFUNCTION(BlueprintCallable)
-        FFireResult ResolveFire(AActor* Shooter, FIntPoint TargetCell);// TODO changer en AShipActor quand il existera
+        FFireResult ResolveFire(AAShip* Shooter, FIntPoint TargetCell);
 
     UFUNCTION(BlueprintCallable)
-        void ApplyDamageToShip(AActor* Target, int32 Damage); // TODO changer en AShipActor quand il existera
+        void ApplyDamageToShip(AAShip* Target, int32 Damage);
 
     UFUNCTION(BlueprintCallable)
-        void ApplyDamageToMothership(AActor* Target, int32 Damage); // TODO changer en AShipActor quand il existera
+    void ApplyDamageToMothership(AAMotherShip* Target, int32 Damage);
 
     UFUNCTION(BlueprintCallable)
-        FPushResult ApplyPush(AActor* Ship, EDirections Direction, int32 MaxChainDepth = 8); // TODO changer en AShipActor quand il existera
-
-    UFUNCTION(BlueprintCallable, BlueprintPure)
-        bool HasLineOfSight(AActor* Shooter, FIntPoint TargetCell) const; // TODO changer en AShipActor quand il existera
+        FPushResult ApplyPush(AAShip* Ship, EDirections Direction, int32 MaxChainDepth = 8);
 
     UFUNCTION(BlueprintCallable)
-        TArray<FIntPoint> GetValidFireTargets(AActor* Shooter) const; // TODO changer en AShipActor quand il existera
+        TArray<FIntPoint> GetValidFireTargets(AAShip* Shooter) const;
 
-    void DestroyShip(AActor* Ship); // TODO changer en AShipActor quand il existera
+    void DestroyShip(AAShip* Ship);
 
-    void ResolveCollision(AActor* ShipA, AActor* ShipB, FPushResult& OutResult, int32 RemainingDepth); // TODO changer en AShipActor quand il existera
+    void ResolveCollision(AAShip* ShipA, AAShip* ShipB, FPushResult& OutResult, int32 RemainingDepth);
 
-    FIntPoint GetCellBehind(AActor* Ship, EDirections PushDirection) const; // TODO changer en AShipActor quand il existera
+    FIntPoint GetCellBehind(AAShip* Ship, EDirections PushDirection) const;
 
     UPROPERTY(EditAnywhere)
     TObjectPtr<UUBoardManager> Board;
 
     static const TArray<FIntPoint> AllDirections;
+
+    FIntPoint DirectionToIntPoint(EDirections dir) const;
+
+    EDirections IntPointToDirection(FIntPoint Delta);
 };

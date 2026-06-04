@@ -22,6 +22,8 @@ class RAID2026_API UDeckManager : public UObject
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHandUpdated, int32, PlayerID, const TArray<UUCardData*>&, NewHand);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEmptyDeckDamage, int32, PlayerID, int32, Damage);
 
+public:
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 		FOnCardDrawn OnCardDrawn;
 
