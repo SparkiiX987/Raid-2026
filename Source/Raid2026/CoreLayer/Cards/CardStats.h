@@ -12,7 +12,10 @@ struct FCardStats
 	int32 firePower;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 speed;
+	int32 maxSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 currentSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 resistance;
@@ -22,4 +25,7 @@ struct FCardStats
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 moveCost;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 spawnCost;
 };
