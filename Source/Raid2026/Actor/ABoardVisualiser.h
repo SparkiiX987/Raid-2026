@@ -64,7 +64,7 @@ public:
 	void SpawnMotherships(AAMotherShip*& OutP0, AAMotherShip*& OutP1);
 
 	UFUNCTION(BlueprintCallable)
-	AAShip* SpawnShip(TSubclassOf<AAShip> Ship, FIntPoint GridPos, UUCardData* cardData);
+	AAShip* SpawnShip(TSubclassOf<AAShip> Ship, FIntPoint GridPos, UUCardData* cardData, int32 PlayerID);
 
 	int32 CellIndex(int32 X, int32 Y) const;
 };

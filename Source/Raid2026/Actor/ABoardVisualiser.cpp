@@ -142,9 +142,9 @@ void AABoardVisualiser::SpawnMotherships(AAMotherShip*& OutP0, AAMotherShip*& Ou
 	}
 }
 
-AAShip* AABoardVisualiser::SpawnShip(TSubclassOf<AAShip> ship, FIntPoint GridPos, UUCardData* cardData)
+AAShip* AABoardVisualiser::SpawnShip(TSubclassOf<AAShip> ship, FIntPoint GridPos, UUCardData* cardData, int32 PlayerID)
 {
-	if (!BoardManager->GetFreeSpawnCells(0).Contains(GridPos) || !TurnManager->PayEssence(TurnManager->GetCurrentPlayer(), cardData->stats.spawnCost))
+	if (!BoardManager->GetFreeSpawnCells(PlayerID).Contains(GridPos) || !TurnManager->PayEssence(TurnManager->GetCurrentPlayer(), cardData->stats.spawnCost))
 	{
 		return nullptr;
 	}
@@ -162,6 +162,7 @@ AAShip* AABoardVisualiser::SpawnShip(TSubclassOf<AAShip> ship, FIntPoint GridPos
 		return nullptr;
 	}
 	Ship->CardData = cardData;
+	Ship->ownerPlayer = PlayerID;
 	BoardManager->PlaceShip(Ship, GridPos);
 	return Ship;
 }
