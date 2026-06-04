@@ -11,17 +11,17 @@ struct FEffectContext
 {
 	GENERATED_BODY()
 
-	// UPROPERTY(BlueprintReadWrite)
-	// TWeakObjectPtr<AShipActor> SourceShip;
+	UPROPERTY(BlueprintReadWrite)
+		TWeakObjectPtr<AAShip> SourceShip;
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 OwnerPlayerID;
 	
-	// UPROPERTY(BlueprintReadWrite)
-	// TWeakObjectPtr<AShipActor> TargetShip;
+	UPROPERTY(BlueprintReadWrite)
+	TWeakObjectPtr<AAShip> TargetShip;
 
-	// UPROPERTY(BlueprintReadWrite)
-	// TWeakObjectPtr<AMothershipActor> TargetMothership;
+	UPROPERTY(BlueprintReadWrite)
+	TWeakObjectPtr<AAMotherShip> TargetMothership;
 
 	UPROPERTY(BlueprintReadWrite)
 	FIntPoint TargetCell;

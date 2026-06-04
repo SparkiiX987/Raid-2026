@@ -1,6 +1,6 @@
 ﻿#include "CombatResolver.h"
 
-static const TArray<FIntPoint> AllDirections =
+const TArray<FIntPoint> UCombatResolver::AllDirections =
 {
 	FIntPoint(0,  1),  // Nord
 	FIntPoint(0, -1),  // Sud
@@ -8,11 +8,11 @@ static const TArray<FIntPoint> AllDirections =
 	FIntPoint(1,  0)  // Est
 };
 
-FFireResult UCombatResolver::ResolveFire(AActor* Shooter, FIntPoint TargetCell)
+FFireResult UCombatResolver::ResolveFire(AAShip* Shooter, FIntPoint TargetCell)
 {
     FFireResult Result;
 
-    /*if (!Shooter)
+    if (!Shooter)
     {
         if (GEngine)
         {
@@ -23,7 +23,7 @@ FFireResult UCombatResolver::ResolveFire(AActor* Shooter, FIntPoint TargetCell)
         return Result;
     }
 
-    if (!HasLineOfSight(Shooter, TargetCell))
+    if (!Board->IsLineOfSight(Shooter->GetGridPosition(), TargetCell))
     {
         if (GEngine)
         {
@@ -35,7 +35,6 @@ FFireResult UCombatResolver::ResolveFire(AActor* Shooter, FIntPoint TargetCell)
         return Result;
     }
 
-    UBoardManager* Board = GetBoard();
     if (!Board) return Result;
 
     if (Shooter->IsFaceDown())
@@ -43,7 +42,7 @@ FFireResult UCombatResolver::ResolveFire(AActor* Shooter, FIntPoint TargetCell)
         Shooter->Reveal();
     }
 
-    AShipActor* TargetShip = Board->GetShipAt(TargetCell);
+    AAShip* TargetShip = Board->GetShipAt(TargetCell);
 
     if (TargetShip)
     {
@@ -58,7 +57,7 @@ FFireResult UCombatResolver::ResolveFire(AActor* Shooter, FIntPoint TargetCell)
         return Result;
     }
 
-    AMothershipActor* TargetMothership = Board->GetMothershipAt(TargetCell);
+    AAMotherShip* TargetMothership = Board->GetMothershipAt(TargetCell);
     if (TargetMothership)
     {
         const int32 Damage = Shooter->GetFirePower();
@@ -75,36 +74,36 @@ FFireResult UCombatResolver::ResolveFire(AActor* Shooter, FIntPoint TargetCell)
             TargetCell.X, TargetCell.Y);
 
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }*/
+    }
     return Result;
 }
 
-void UCombatResolver::ApplyDamageToShip(AActor* Target, int32 Damage)
+void UCombatResolver::ApplyDamageToShip(AAShip* Target, int32 Damage)
 {
     if (!Target || Damage <= 0) return;
 
-    /*Target->TakeDamage(Damage);
+    Target->TakeDamage(Damage);
     OnShipDamaged.Broadcast(Target, Damage);
 
     if (GEngine)
     {
         FString text = FString::Printf(TEXT("ApplyDamage: %s reçoit %d dégâts → résistance = %d"),
-            *Target->GetName(), Damage, Target->GetCurrentResistance());
+            *Target->GetName(), Damage, Target->GetEffectiveStats().resistance);
 
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
     }
 
-    if (Target->GetCurrentResistance() <= 0)
+    if (Target->GetEffectiveStats().resistance <= 0)
     {
         DestroyShip(Target);
-    }*/
+    }
 }
 
-void UCombatResolver::ApplyDamageToMothership(AActor* Target, int32 Damage)
+void UCombatResolver::ApplyDamageToMothership(AAMotherShip* Target, int32 Damage)
 {
     if (!Target ||Damage <= 0) return;
 
-    /*Target->TakeDamage(Damage);
+    Target->TakeDamage(Damage);
     OnMothershipDamaged.Broadcast(Target, Damage);
 
     if (GEngine)
@@ -113,14 +112,14 @@ void UCombatResolver::ApplyDamageToMothership(AActor* Target, int32 Damage)
             Damage, Target->GetCurrentHP());
 
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }*/
+    }
 }
 
-FPushResult UCombatResolver::ApplyPush(AActor* Ship, EDirections Direction, int32 MaxChainDepth)
+FPushResult UCombatResolver::ApplyPush(AAShip* Ship, EDirections Direction, int32 MaxChainDepth)
 {
     FPushResult Result;
 
-    /*if (!Ship || MaxChainDepth <= 0)
+    if (!Ship || MaxChainDepth <= 0)
     {
         if (GEngine)
         {
@@ -131,20 +130,19 @@ FPushResult UCombatResolver::ApplyPush(AActor* Ship, EDirections Direction, int3
         return Result;
     }
 
-    UBoardManager* Board = GetBoard();
     if (!Board) return Result;
 
     const FIntPoint Behind = GetCellBehind(Ship, Direction);
 
     if (Board->IsValidCell(Behind) && !Board->IsCellOccupied(Behind))
     {
-        Board->MoveShipTo(Ship, Behind);
+        Board->MoveShipTo(Ship, Behind, Ship->ownerPlayer);
         Result.bMoved = true;
         Result.FinalCell = Behind;
         return Result;
     }
 
-    AShipActor* CollidingShip = Board->GetShipAt(Behind);
+    AAShip* CollidingShip = Board->GetShipAt(Behind);
 
     if (CollidingShip)
     {
@@ -160,52 +158,19 @@ FPushResult UCombatResolver::ApplyPush(AActor* Ship, EDirections Direction, int3
 
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
     }
-    */
+    
     return Result;
 }
 
-bool UCombatResolver::HasLineOfSight(AActor* Shooter, FIntPoint TargetCell) const
-{
-    if (!Shooter) return false;
-
-    if (!Board)   return false;
-
-    /*const FIntPoint From = Shooter->GetGridPosition();
-
-    const bool bSameCol = (From.X == TargetCell.X);
-    const bool bSameRow = (From.Y == TargetCell.Y);
-
-    if (!bSameCol && !bSameRow) return false;
-    if (From == TargetCell)     return false;
-
-    FIntPoint Step = FIntPoint::ZeroValue;
-    if (bSameCol) Step.Y = (TargetCell.Y > From.Y) ? 1 : -1;
-    else          Step.X = (TargetCell.X > From.X) ? 1 : -1;
-
-    FIntPoint Current = From + Step;
-    while (Current != TargetCell)
-    {
-        if (Board->IsCellOccupied(Current))
-            return false;
-
-        Current += Step;
-    }
-    return Board->IsValidCell(TargetCell);
-    */
-    return true;
-}
-
-TArray<FIntPoint> UCombatResolver::GetValidFireTargets(AActor* Shooter) const
+TArray<FIntPoint> UCombatResolver::GetValidFireTargets(AAShip* Shooter) const
 {
     TArray<FIntPoint> ValidTargets;
     if (!Shooter) return ValidTargets;
 
     if (!Board)   return ValidTargets;
 
-    /*const FIntPoint Origin = Shooter->GetGridPosition();
+    const FIntPoint Origin = Shooter->GetGridPosition();
     const int32     Radar = Shooter->GetRadarRange();
-
-    const UBoardManager* board = GetBoard();
 
     const TArray<FIntPoint> Orthogonals = 
     {
@@ -217,9 +182,9 @@ TArray<FIntPoint> UCombatResolver::GetValidFireTargets(AActor* Shooter) const
         FIntPoint Current = Origin + Dir;
         int32     Steps = 0;
 
-        while (Steps < Radar && board->IsValidCell(Current))
+        while (Steps < Radar && Board->IsValidCell(Current))
         {
-            AShipActor* OccupantShip = board->GetShipAt(Current);
+            AAShip* OccupantShip = Board->GetShipAt(Current);
 
             if (OccupantShip)
             {
@@ -231,7 +196,7 @@ TArray<FIntPoint> UCombatResolver::GetValidFireTargets(AActor* Shooter) const
                 break;
             }
 
-            if (board->IsMothershipCell(Current, Shooter->GetOwnerID()))
+            if (Board->IsMothershipCell(Current, Shooter->GetOwnerID()))
             {
                 ValidTargets.Add(Current);
                 break;
@@ -240,17 +205,16 @@ TArray<FIntPoint> UCombatResolver::GetValidFireTargets(AActor* Shooter) const
             Current += Dir;
             ++Steps;
         }
-    }*/
+    }
 
     return ValidTargets;
 }
 
-void UCombatResolver::DestroyShip(AActor* Ship)
+void UCombatResolver::DestroyShip(AAShip* Ship)
 {
     if (!Ship) return;
 
-   /* UBoardManager* Board = GetBoard();
-    if (Board) Board->RemoveShipFromGrid(Ship);*/
+    if (Board) Board->RemoveShipFromGrid(Ship);
 
     OnShipDestroyed.Broadcast(Ship);
 
@@ -263,7 +227,7 @@ void UCombatResolver::DestroyShip(AActor* Ship)
     }
 }
 
-void UCombatResolver::ResolveCollision(AActor* ShipA, AActor* ShipB, FPushResult& OutResult, int32 RemainingDepth)
+void UCombatResolver::ResolveCollision(AAShip* ShipA, AAShip* ShipB, FPushResult& OutResult, int32 RemainingDepth)
 {
     if (!ShipA || !ShipB) return;
 
@@ -277,25 +241,39 @@ void UCombatResolver::ResolveCollision(AActor* ShipA, AActor* ShipB, FPushResult
 
     OnCollision.Broadcast(ShipA, ShipB);
 
-    UE_LOG(LogTemp, Log,
-        TEXT("ResolveCollision: %s ↔ %s → %d dégâts chacun"),
-        *ShipA->GetName(), *ShipB->GetName(), CollisionDamage);
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("ResolveCollision: %s ↔ %s → %d dégâts chacun"),
+            *ShipA->GetName(), *ShipB->GetName(), CollisionDamage);
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+    }
 
     ApplyDamageToShip(ShipA, CollisionDamage);
     ApplyDamageToShip(ShipB, CollisionDamage);
 
-    /*if (RemainingDepth > 0 && IsValid(ShipB))
+    if (RemainingDepth > 0 && IsValid(ShipB))
     {
         const FIntPoint Delta = ShipB->GetGridPosition() - ShipA->GetGridPosition();
         EDirections ChainDir = IntPointToDirection(Delta);
 
         ApplyPush(ShipB, ChainDir, RemainingDepth);
-    }*/
+    }
 }
 
-FIntPoint UCombatResolver::GetCellBehind(AActor* Ship, EDirections PushDirection) const
+FIntPoint UCombatResolver::GetCellBehind(AAShip* Ship, EDirections PushDirection) const
 {
-	//const FIntPoint PushVec = DirectionToIntPoint(PushDirection);
-	const FIntPoint Behind =/* Ship->GetGridPosition() - PushVec*/FIntPoint();
+	const FIntPoint PushVec = DirectionToIntPoint(PushDirection);
+	const FIntPoint Behind = Ship->GetGridPosition() - PushVec;
 	return Behind;
+}
+
+FIntPoint UCombatResolver::DirectionToIntPoint(EDirections dir) const
+{
+    return AllDirections[(uint8)dir];
+}
+
+EDirections UCombatResolver::IntPointToDirection(FIntPoint Delta)
+{
+    return EDirections();
 }

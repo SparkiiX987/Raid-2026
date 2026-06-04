@@ -1,5 +1,7 @@
 #include "UTurnManager.h"
 #include "../CoreLayer/Turn/ETurnPhase.h"
+#include "../Actor/AShip.h"
+
 
 void UUTurnManager::StartTurn(int32 playerId)
 {
@@ -25,8 +27,8 @@ void UUTurnManager::StartTurn(int32 playerId)
     const bool bSkipDraw = bIsFirstTurnOfGame && (playerId == firstPlayerId);
     if (!bSkipDraw)
     {
-        /*if (UDeckManager* Deck = GetDeck())
-            Deck->DrawCards(playerId, 1);*/
+        if (deckManager)
+            deckManager->DrawCards(playerId, 1);
     }
     else
     {
@@ -41,17 +43,16 @@ void UUTurnManager::StartTurn(int32 playerId)
 
     // Effets OnStartOfTurn
 
-    // ResetShipFlags pour tous les vaisseaux du joueur actif
-    /*if (UBoardManager* Board = GetBoard())
+    if (boardManager)
     {
-        for (int32 X = 0; X < UBoardManager::GridWidth; ++X)
-            for (int32 Y = 0; Y < UBoardManager::GridHeight; ++Y)
+        for (int32 X = 0; X < UUBoardManager::GridWidth; ++X)
+            for (int32 Y = 0; Y < UUBoardManager::GridHeight; ++Y)
             {
-                AShipActor* Ship = Board->GetShipAt(FIntPoint(X, Y));
-                if (Ship && Ship->GetOwnerID() == PlayerID)
+                AAShip* Ship = boardManager->GetShipAt(FIntPoint(X, Y));
+                if (Ship && Ship->GetOwnerID() == playerId)
                     Ship->ResetTurnFlags();
             }
-    }*/
+    }
 
     SetTurnPhase(ETurnPhase::Main);
     OnTurnStarted.Broadcast(playerId, currentTurn);
@@ -91,9 +92,9 @@ void UUTurnManager::EndTurn()
 
     // Effets OnEndOfTurn
 
-    /*if (UDeckManager* Deck = GetDeck())
+    if (deckManager)
     {
-        TArray<UCardData*> Discarded = Deck->EnforceHandLimit(EndingPlayer);
+        TArray<UUCardData*> Discarded = deckManager->EnforceHandLimit(EndingPlayer);
         if (Discarded.Num() > 0)
         {
             if (GEngine)
@@ -106,11 +107,10 @@ void UUTurnManager::EndTurn()
                 GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
             }
         }
-    }*/
+    }
 
     OnTurnEnded.Broadcast(EndingPlayer);
 
-    // 3. Tour suivant
     StartTurn(GetNextPlayerId());
 }
 
@@ -317,7 +317,3 @@ FEssenceState& UUTurnManager::GetOrCreateEssenceState(int32 playerId)
     }
     return essenceStates[playerId];
 }
-
-/*UBoardManager* UTurnManager::GetBoard()   const { auto* GI = GetGameInstance(); return GI ? GI->GetSubsystem<UBoardManager>() : nullptr; }
-UDeckManager* UTurnManager::GetDeck()    const { auto* GI = GetGameInstance(); return GI ? GI->GetSubsystem<UDeckManager>() : nullptr; }
-UEffectManager* UTurnManager::GetEffects() const { auto* GI = GetGameInstance(); return GI ? GI->GetSubsystem<UEffectManager>() : nullptr; }*/
