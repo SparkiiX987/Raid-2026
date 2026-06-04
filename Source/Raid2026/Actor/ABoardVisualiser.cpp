@@ -142,12 +142,13 @@ void AABoardVisualiser::SpawnMotherships(AAMotherShip*& OutP0, AAMotherShip*& Ou
 	}
 }
 
-AAShip* AABoardVisualiser::SpawnShip(TSubclassOf<AAShip> ship, FIntPoint GridPos)
+AAShip* AABoardVisualiser::SpawnShip(TSubclassOf<AAShip> ship, FIntPoint GridPos, UUCardData* cardData)
 {
-	if (!BoardManager->GetFreeSpawnCells(0).Contains(GridPos))
+	if (!BoardManager->GetFreeSpawnCells(0).Contains(GridPos) || !TurnManager->PayEssence(TurnManager->GetCurrentPlayer(), cardData->stats.spawnCost))
 	{
 		return nullptr;
 	}
+	
 	FVector Location(0.f, 0.f, 500.f);
 	const FRotator Rotation = FRotator::ZeroRotator;
 
@@ -160,6 +161,7 @@ AAShip* AABoardVisualiser::SpawnShip(TSubclassOf<AAShip> ship, FIntPoint GridPos
 	{
 		return nullptr;
 	}
+	Ship->CardData = cardData;
 	BoardManager->PlaceShip(Ship, GridPos);
 	return Ship;
 }

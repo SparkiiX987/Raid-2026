@@ -40,7 +40,10 @@ UFUNCTION(BlueprintPure)
  int32 GetRadarRange()  const;
 
 UFUNCTION(BlueprintPure)
- int32 GetSpeed() const;
+ int32 GetMaxSpeed() const;
+ 
+ UFUNCTION(BlueprintPure)
+ int32 GetCurrentSpeed() const;
 
 UFUNCTION(BlueprintPure)
  int32 GetMoveCost() const;

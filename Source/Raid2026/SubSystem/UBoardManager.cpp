@@ -125,9 +125,9 @@ TArray<FReachableCell> UUBoardManager::GetReachableCells(AAShip* Ship, int32 Ava
 		for (int32 Y = -AvailableEssence; Y <= AvailableEssence; Y++)
 		{
 			FIntPoint Target = Ship->gridPosition + FIntPoint(X,Y);
-			int32 Cost = FMath::Abs(X) + FMath::Abs(Y);
+			int32 TotalMove = FMath::Abs(X) + FMath::Abs(Y);
 			
-			if (!IsValidCell(Target) || X == 0 && Y == 0 || Cost > AvailableEssence)
+			if (!IsValidCell(Target) || X == 0 && Y == 0 || TotalMove > AvailableEssence || TotalMove > Ship->GetCurrentSpeed())
 			{
 				continue;
 			}
@@ -179,17 +179,21 @@ int32 UUBoardManager::CheckRefineries(int32 playerID)
 
 bool UUBoardManager::MoveShipTo(AAShip* Ship, FIntPoint TargetCell, int32 playerID)
 {
+	//if (Ship->CanMove()) return false;
+	
 	TArray<FReachableCell> ReachableCells = GetReachableCells(Ship, TurnManager->GetCurrentEssence(playerID));
-
+	FReachableCell ReachableCell;
 	bool bReachable = ReachableCells.ContainsByPredicate(
 		[&](const FReachableCell& Cell)
 		{
+			ReachableCell = Cell;
 			return Cell.Cell == TargetCell;
 		});
 	
-	if (bReachable && !IsCellOccupied(TargetCell))
+	if (bReachable && !IsCellOccupied(TargetCell) && TurnManager->PayEssence(playerID, ReachableCell.EssenceCost * Ship->CardData->stats.moveCost))
 	{
 		ClearOccupant(Ship->gridPosition);
+		Ship->bHasMoved = true;
 		SetOccupant(TargetCell, Ship);
 		return true;
 	}

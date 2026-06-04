@@ -16,9 +16,14 @@ int32 AAShip::GetRadarRange() const
 	return GetEffectiveStats().radar;
 }
 
-int32 AAShip::GetSpeed() const
+int32 AAShip::GetMaxSpeed() const
 {
-	return GetEffectiveStats().speed;
+	return GetEffectiveStats().maxSpeed;
+}
+
+int32 AAShip::GetCurrentSpeed() const
+{
+	return GetEffectiveStats().currentSpeed;
 }
 
 int32 AAShip::GetMoveCost() const
@@ -40,7 +45,7 @@ bool AAShip::IsFaceDown()
 
 bool AAShip::CanMove() const
 {
-	return bHasMoved;
+	return GetCurrentSpeed() > 0 && bJustPlayed;
 }
 
 bool AAShip::CanAct() const
