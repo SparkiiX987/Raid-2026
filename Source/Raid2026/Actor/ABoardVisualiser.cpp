@@ -1,6 +1,6 @@
 #include "ABoardVisualiser.h"
 
-void AABoardVisualiser::SpawnBoard(TArray<AActor*>& OutRefineries, AActor*& OutMothershipP0, AActor*& OutMothershipP1)
+void AABoardVisualiser::SpawnBoard(TArray<AARefinery*>& OutRefineries, AAMotherShip*& OutMothershipP0, AAMotherShip*& OutMothershipP1)
 {
 	SpawnCellActors();
 	SpawnRefineries(OutRefineries);
@@ -20,16 +20,16 @@ void AABoardVisualiser::DebugSpawnShipInAllCells()
 			FVector Location(0.f, 0.f, 500.f);
 			const FRotator Rotation = FRotator::ZeroRotator;
 
-			AActor* ShipTest = GetWorld()->SpawnActor<AActor>(
-				ShipClassTest,
+			AAShip* Ship = GetWorld()->SpawnActor<AAShip>(
+				ShipClass,
 				Location,
 				Rotation);
 
-			if (!ShipTest)
+			if (!Ship)
 			{
 				return;
 			}
-			BoardManager->SetOccupant(FIntPoint(X, Y), ShipTest);
+			BoardManager->SetOccupant(FIntPoint(X, Y), Ship);
 		}
 	}
 }
@@ -84,7 +84,7 @@ void AABoardVisualiser::SpawnCellActors()
 	}
 }
 
-void AABoardVisualiser::SpawnRefineries(TArray<AActor*>& OutRefineries)
+void AABoardVisualiser::SpawnRefineries(TArray<AARefinery*>& OutRefineries)
 {
 	if (!GetWorld() || !RefineryClass)
 	{
@@ -96,7 +96,7 @@ void AABoardVisualiser::SpawnRefineries(TArray<AActor*>& OutRefineries)
 
 	for (int32 X = 0; X < 2; X++)
 	{
-		AActor* Refinery = GetWorld()->SpawnActor<AActor>(
+		AARefinery* Refinery = GetWorld()->SpawnActor<AARefinery>(
 			RefineryClass,
 			Location,
 			Rotation
@@ -109,9 +109,9 @@ void AABoardVisualiser::SpawnRefineries(TArray<AActor*>& OutRefineries)
 	}
 }
 
-void AABoardVisualiser::SpawnMotherships(AActor*& OutP0, AActor*& OutP1)
+void AABoardVisualiser::SpawnMotherships(AAMotherShip*& OutP0, AAMotherShip*& OutP1)
 {
-	if (!GetWorld() || !RefineryClass)
+	if (!GetWorld() || !MothershipClass)
 	{
 		return;
 	}
@@ -119,7 +119,7 @@ void AABoardVisualiser::SpawnMotherships(AActor*& OutP0, AActor*& OutP1)
 	FVector Location(0.f, 0.f, 100.f);
 	FRotator Rotation = FRotator::ZeroRotator;
 
-	AActor* MotherShip1 = GetWorld()->SpawnActor<AActor>(
+	AAMotherShip* MotherShip1 = GetWorld()->SpawnActor<AAMotherShip>(
 		MothershipClass,
 		Location,
 		Rotation
@@ -130,7 +130,7 @@ void AABoardVisualiser::SpawnMotherships(AActor*& OutP0, AActor*& OutP1)
 		OutP0 = MotherShip1;
 	}
 
-	AActor* MotherShip2 = GetWorld()->SpawnActor<AActor>(
+	AAMotherShip* MotherShip2 = GetWorld()->SpawnActor<AAMotherShip>(
 	MothershipClass,
 	Location,
 	Rotation
@@ -142,7 +142,7 @@ void AABoardVisualiser::SpawnMotherships(AActor*& OutP0, AActor*& OutP1)
 	}
 }
 
-AActor* AABoardVisualiser::SpawnShip(TSubclassOf<AActor> ship, FIntPoint GridPos)
+AAShip* AABoardVisualiser::SpawnShip(TSubclassOf<AAShip> ship, FIntPoint GridPos)
 {
 	if (!BoardManager->GetFreeSpawnCells(0).Contains(GridPos))
 	{
@@ -151,7 +151,7 @@ AActor* AABoardVisualiser::SpawnShip(TSubclassOf<AActor> ship, FIntPoint GridPos
 	FVector Location(0.f, 0.f, 500.f);
 	const FRotator Rotation = FRotator::ZeroRotator;
 
-	AActor* Ship = GetWorld()->SpawnActor<AActor>(
+	AAShip* Ship = GetWorld()->SpawnActor<AAShip>(
 		ship,
 		Location,
 		Rotation);

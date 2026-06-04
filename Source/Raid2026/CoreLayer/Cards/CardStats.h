@@ -19,4 +19,7 @@ struct FCardStats
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 radar;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 moveCost;
 };

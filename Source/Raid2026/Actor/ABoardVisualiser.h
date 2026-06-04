@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ABoardCell.h"
+#include "ARefinery.h"
 #include "GameFramework/Actor.h"
 #include "Raid2026/SubSystem/UBoardManager.h"
 #include "Raid2026/SubSystem/UTurnManager.h"
@@ -29,16 +30,16 @@ public:
 	TSubclassOf<AABoardCell> CellActorClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AActor> RefineryClass;
+	TSubclassOf<AARefinery> RefineryClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AActor> MothershipClass;
+	TSubclassOf<AAMotherShip> MothershipClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AActor> ShipClassTest;
+	TSubclassOf<AAShip> ShipClass;
 
 	UFUNCTION(BlueprintCallable)
-	void SpawnBoard(TArray<AActor*>& OutRefineries,AActor*& OutMothershipP0, AActor*& OutMothershipP1);
+	void SpawnBoard(TArray<AARefinery*>& OutRefineries,AAMotherShip*& OutMothershipP0, AAMotherShip*& OutMothershipP1);
 
 	UFUNCTION(BlueprintCallable)
 	void DebugSpawnShipInAllCells();
@@ -58,12 +59,12 @@ public:
 
 	void SpawnCellActors();
 
-	void SpawnRefineries(TArray<AActor*>& OutRefineries);
+	void SpawnRefineries(TArray<AARefinery*>& OutRefineries);
 
-	void SpawnMotherships(AActor*& OutP0, AActor*& OutP1);
+	void SpawnMotherships(AAMotherShip*& OutP0, AAMotherShip*& OutP1);
 
 	UFUNCTION(BlueprintCallable)
-	AActor* SpawnShip(TSubclassOf<AActor> Ship, FIntPoint GridPos);
+	AAShip* SpawnShip(TSubclassOf<AAShip> Ship, FIntPoint GridPos);
 
 	int32 CellIndex(int32 X, int32 Y) const;
 };
