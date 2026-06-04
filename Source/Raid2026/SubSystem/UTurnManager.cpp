@@ -1,6 +1,7 @@
 #include "UTurnManager.h"
 #include "../CoreLayer/Turn/ETurnPhase.h"
 #include "../Actor/AShip.h"
+#include "UBoardManager.h"
 
 
 void UUTurnManager::StartTurn(int32 playerId)

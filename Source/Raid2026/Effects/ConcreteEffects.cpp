@@ -145,7 +145,6 @@ bool UEffect_ActivatedPush::CanApply_Implementation(const FEffectContext& Contex
     const int32 ManhattanDist = FMath::Abs(Delta.X) + FMath::Abs(Delta.Y);
 
     return ManhattanDist <= Range;
-    return false;
 }
 
 FEffectResult UEffect_ActivatedPush::Apply_Implementation(const FEffectContext& Context)
