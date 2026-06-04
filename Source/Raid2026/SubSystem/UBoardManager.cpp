@@ -119,6 +119,7 @@ TArray<FIntPoint> UUBoardManager::GetFreeSpawnCells(int32 PlayerID) const
 
 TArray<FReachableCell> UUBoardManager::GetReachableCells(AAShip* Ship, int32 AvailableEssence) const
 {
+	if (Ship == nullptr) return TArray<FReachableCell>();
 	TArray<FReachableCell> ReachableCells;
 	for (int32 X = -AvailableEssence; X <= AvailableEssence; X++)
 	{
@@ -190,7 +191,9 @@ bool UUBoardManager::MoveShipTo(AAShip* Ship, FIntPoint TargetCell, int32 player
 			return Cell.Cell == TargetCell;
 		});
 	
-	if (bReachable && !IsCellOccupied(TargetCell) && TurnManager->PayEssence(playerID, ReachableCell.EssenceCost * Ship->CardData->stats.moveCost))
+	if (bReachable && !IsCellOccupied(TargetCell) &&
+		TurnManager->PayEssence(playerID, ReachableCell.EssenceCost * Ship->CardData->stats.moveCost &&
+			Ship->ownerPlayer == playerID))
 	{
 		ClearOccupant(Ship->gridPosition);
 		Ship->bHasMoved = true;
