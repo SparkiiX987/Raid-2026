@@ -25,23 +25,6 @@ void UUTurnManager::StartTurn(int32 playerId)
 
     RefillEssence(playerId);
 
-    const bool bSkipDraw = bIsFirstTurnOfGame && (playerId == firstPlayerId);
-    if (!bSkipDraw)
-    {
-        if (deckManager)
-            deckManager->DrawCards(playerId, 1);
-    }
-    else
-    {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("StartTurn P%d: pioche ignorée (premier tour)"), playerId);
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
-        bIsFirstTurnOfGame = false;
-    }
-
     // Effets OnStartOfTurn
 
     if (boardManager)
@@ -111,8 +94,6 @@ void UUTurnManager::EndTurn()
     }
 
     OnTurnEnded.Broadcast(EndingPlayer);
-
-    StartTurn(GetNextPlayerId());
 }
 
 bool UUTurnManager::PayEssence(int32 playerId, int32 cost)

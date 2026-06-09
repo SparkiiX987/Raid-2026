@@ -23,6 +23,8 @@ FFireResult UCombatResolver::ResolveFire(AAShip* Shooter, FIntPoint TargetCell)
         return Result;
     }
 
+    if (!Board) return Result;
+
     if (!Board->IsLineOfSight(Shooter->GetGridPosition(), TargetCell))
     {
         if (GEngine)
@@ -34,8 +36,6 @@ FFireResult UCombatResolver::ResolveFire(AAShip* Shooter, FIntPoint TargetCell)
         }
         return Result;
     }
-
-    if (!Board) return Result;
 
     if (Shooter->IsFaceDown())
     {

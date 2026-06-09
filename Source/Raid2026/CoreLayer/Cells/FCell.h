@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "ECellType.h"
+#include "../../Actor/AShip.h"
 #include "FCell.generated.h"
 
 USTRUCT(BlueprintType)
@@ -16,8 +17,11 @@ struct FCell
 	ECellType Type;
 	
 	UPROPERTY(BlueprintReadOnly)
-	TWeakObjectPtr<AActor> Occupant;
+	TObjectPtr<AABoardActor> Occupant;
 	
 	
-	bool IsEmpty();
+	bool IsEmpty()
+	{
+		return !IsValid(Occupant);
+	}
 };

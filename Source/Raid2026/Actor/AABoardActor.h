@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -19,10 +17,14 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
 		FOnShipDestroyed, AABoardActor*, Actor);
 
-	FIntPoint gridPosition;
+	UPROPERTY(ReplicatedUsing = OnRep_GridPosition)
+		FIntPoint gridPosition;
+
 	int32 maxHealthPoint;
 	int32 currentHealthPoint;
 	int32 ownerPlayer;
+
+	AABoardActor();
 
 	virtual void TakeDamage(int32 amount);
 
@@ -51,12 +53,15 @@ public:
 	virtual void SetGridPosition(FIntPoint NewPos);
 
 	UFUNCTION(BlueprintNativeEvent)
-	void Die();
+		void Die();
 	virtual void Die_Implementation();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void PlayDamageEffect(int32 DamageAmount);
+	UFUNCTION()
+		void OnRep_GridPosition();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnGridPositionChanged(FIntPoint OldPos, FIntPoint NewPos);
+		void PlayDamageEffect(int32 DamageAmount);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnGridPositionChanged(FIntPoint OldPos, FIntPoint NewPos);
 };

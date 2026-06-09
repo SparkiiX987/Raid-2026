@@ -80,6 +80,8 @@ public:
     UFUNCTION(BlueprintCallable)
         void InitializeGame(int32 inFirstPlayerId, int32 inPlayerCount = 2);
 
+    int32 GetNextPlayerId() const;
+
 private:
     UPROPERTY()
         TMap<int32, FEssenceState> essenceStates;
@@ -105,8 +107,6 @@ private:
     void SetTurnPhase(ETurnPhase newPhase);
 
     void RefillEssence(int32 playerId);
-
-    int32 GetNextPlayerId() const;
 
     FEssenceState& GetOrCreateEssenceState(int32 playerId);
 

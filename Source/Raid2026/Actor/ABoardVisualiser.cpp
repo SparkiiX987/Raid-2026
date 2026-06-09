@@ -1,57 +1,41 @@
 #include "ABoardVisualiser.h"
+#include "../GameState/BoardGameState.h"
 
-void AABoardVisualiser::SpawnBoard(TArray<AARefinery*>& OutRefineries, AAMotherShip*& OutMothershipP0, AAMotherShip*& OutMothershipP1)
+AABoardVisualiser::AABoardVisualiser()
 {
-	SpawnCellActors();
-	SpawnRefineries(OutRefineries);
-	SpawnMotherships(OutMothershipP0, OutMothershipP1);
+	bReplicates = true;
 }
 
-void AABoardVisualiser::DebugSpawnShipInAllCells()
+void AABoardVisualiser::BeginPlay()
 {
-	for (int32 X = 0; X < UUBoardManager::GridWidth; X++)
+	Super::BeginPlay();
+	TryBindToGameState();
+}
+
+void AABoardVisualiser::TryBindToGameState()
+{
+	ABoardGameState* GS = GetWorld()->GetGameState<ABoardGameState>();
+	if (GS)
 	{
-		for (int32 Y = 0; Y < UUBoardManager::GridHeight+1; Y++)
-		{
-			if (BoardManager->IsCellOccupied(FIntPoint(X, Y)))
-			{
-				continue;
-			}
-			FVector Location(0.f, 0.f, 500.f);
-			const FRotator Rotation = FRotator::ZeroRotator;
-
-			AAShip* Ship = GetWorld()->SpawnActor<AAShip>(
-				ShipClass,
-				Location,
-				Rotation);
-
-			if (!Ship)
-			{
-				return;
-			}
-			BoardManager->SetOccupant(FIntPoint(X, Y), Ship);
-		}
+		GS->OnGridStateChanged.AddDynamic(
+			this, &AABoardVisualiser::OnGridStateChanged);
+		GS->OnActivePlayerChanged.AddDynamic(
+			this, &AABoardVisualiser::OnActivePlayerChanged);
+		GS->OnGameOver.AddDynamic(
+			this, &AABoardVisualiser::OnGameOver);
 	}
-}
-
-AABoardCell* AABoardVisualiser::GetCellActor(FIntPoint GridPos) const
-{
-	return CellActors[CellIndex(GridPos.X, GridPos.Y)];
-}
-
-FVector AABoardVisualiser::GridToWorld(FIntPoint GridPos) const
-{
-	return FVector(GridPos.X*BoardManager->CellGap, GridPos.Y*BoardManager->CellGap, 0.0f);
-}
-
-FIntPoint AABoardVisualiser::WorldToGrid(FVector WorldPos) const
-{
-	return FIntPoint(FMath::RoundToInt(WorldPos.X / BoardManager->CellGap), FMath::RoundToInt(WorldPos.Y / BoardManager->CellGap));
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimerForNextTick(
+			this, &AABoardVisualiser::TryBindToGameState);
+	}
 }
 
 void AABoardVisualiser::SpawnCellActors()
 {
-	if (!GetWorld() || !CellActorClass)
+	UWorld* world = GetWorld();
+
+	if (!world || !CellActorClass)
 	{
 		return;
 	}
@@ -61,12 +45,12 @@ void AABoardVisualiser::SpawnCellActors()
 
 	for (int32 X = 0; X < UUBoardManager::GridWidth; X++)
 	{
-		for (int32 Y = 1; Y < UUBoardManager::GridHeight+1; Y++)
+		for (int32 Y = 1; Y < UUBoardManager::GridHeight + 1; Y++)
 		{
 			Location.X = X * BoardManager->CellGap;
 			Location.Y = Y * BoardManager->CellGap;
 
-			AABoardCell* Cell = GetWorld()->SpawnActor<AABoardCell>(
+			AABoardCell* Cell = world->SpawnActor<AABoardCell>(
 				CellActorClass,
 				Location,
 				Rotation);
@@ -84,87 +68,49 @@ void AABoardVisualiser::SpawnCellActors()
 	}
 }
 
-void AABoardVisualiser::SpawnRefineries(TArray<AARefinery*>& OutRefineries)
+void AABoardVisualiser::OnGridStateChanged(const TArray<FReplicatedCellState>& NewGrid)
 {
-	if (!GetWorld() || !RefineryClass)
+	for (const FReplicatedCellState& Cell : NewGrid)
 	{
-		return;
-	}
+		AABoardCell* CellActor = GetCellActor(Cell.pos);
+		if (CellActor)
+			CellActor->SetRefineryOwner(Cell.RefineryOwnerId);
 
-	FVector Location(0.f, 0.f, 100.f);
-	FRotator Rotation = FRotator::ZeroRotator;
-
-	for (int32 X = 0; X < 2; X++)
-	{
-		AARefinery* Refinery = GetWorld()->SpawnActor<AARefinery>(
-			RefineryClass,
-			Location,
-			Rotation
-			);
-		
-		if (Refinery)
+		if (Cell.bHasShip && BoardManager)
 		{
-			OutRefineries.Add(Refinery);
+			AAShip* Ship = BoardManager->GetShipAt(Cell.pos);
+			if (Ship)
+			{
+				FVector WorldPos = GridToWorld(Cell.pos);
+				Ship->SetActorLocation(WorldPos);
+			}
 		}
 	}
 }
 
-void AABoardVisualiser::SpawnMotherships(AAMotherShip*& OutP0, AAMotherShip*& OutP1)
+void AABoardVisualiser::OnActivePlayerChanged(int32 newActivePlayer)
 {
-	if (!GetWorld() || !MothershipClass)
-	{
-		return;
-	}
 
-	FVector Location(0.f, 0.f, 100.f);
-	FRotator Rotation = FRotator::ZeroRotator;
-
-	AAMotherShip* MotherShip1 = GetWorld()->SpawnActor<AAMotherShip>(
-		MothershipClass,
-		Location,
-		Rotation
-		);
-
-	if (MotherShip1)
-	{
-		OutP0 = MotherShip1;
-	}
-
-	AAMotherShip* MotherShip2 = GetWorld()->SpawnActor<AAMotherShip>(
-	MothershipClass,
-	Location,
-	Rotation
-	);
-
-	if (MotherShip2)
-	{
-		OutP1 = MotherShip2;
-	}
 }
 
-AAShip* AABoardVisualiser::SpawnShip(TSubclassOf<AAShip> ship, FIntPoint GridPos, UUCardData* cardData, int32 PlayerID)
+void AABoardVisualiser::OnGameOver(int32 winner)
 {
-	if (!BoardManager->GetFreeSpawnCells(PlayerID).Contains(GridPos) || !TurnManager->PayEssence(TurnManager->GetCurrentPlayer(), cardData->stats.spawnCost))
-	{
-		return nullptr;
-	}
-	
-	FVector Location(0.f, 0.f, 500.f);
-	const FRotator Rotation = FRotator::ZeroRotator;
 
-	AAShip* Ship = GetWorld()->SpawnActor<AAShip>(
-		ship,
-		Location,
-		Rotation);
+}
 
-	if (!Ship)
-	{
-		return nullptr;
-	}
-	Ship->CardData = cardData;
-	Ship->ownerPlayer = PlayerID;
-	BoardManager->PlaceShip(Ship, GridPos);
-	return Ship;
+AABoardCell* AABoardVisualiser::GetCellActor(FIntPoint GridPos) const
+{
+	return CellActors[CellIndex(GridPos.X, GridPos.Y)];
+}
+
+FVector AABoardVisualiser::GridToWorld(FIntPoint GridPos) const
+{
+	return FVector(GridPos.X*BoardManager->CellGap, GridPos.Y*BoardManager->CellGap, 0.0f);
+}
+
+FIntPoint AABoardVisualiser::WorldToGrid(FVector WorldPos) const
+{
+	return FIntPoint(FMath::RoundToInt(WorldPos.X / BoardManager->CellGap), FMath::RoundToInt(WorldPos.Y / BoardManager->CellGap));
 }
 
 int32 AABoardVisualiser::CellIndex(int32 X, int32 Y) const

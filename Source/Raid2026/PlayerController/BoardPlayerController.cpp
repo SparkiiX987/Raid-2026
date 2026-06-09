@@ -1,92 +1,110 @@
-#include "BoardPlayerController.h"
+﻿#include "BoardPlayerController.h"
+#include "../GameMode/ABoardGameMode.h"
+#include <Net/UnrealNetwork.h>
+#include "../PlayerState/BoardPlayerState.h"
+
+void ABoardPlayerController::ClientInitializeInput_Implementation()
+{
+    InitializeInputBP();
+}
+
+void ABoardPlayerController::GetLifetimeReplicatedProps(
+    TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ABoardPlayerController, PlayerID);
+}
+
+void ABoardPlayerController::SetupPlayer(int32 ID)
+{
+    PlayerID = ID;
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("PlayerController: received PlayerID %d"), PlayerID);
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+    }
+    ClientInitializeInput();
+}
 
 void ABoardPlayerController::OnRep_PlayerID()
 {
-	
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("PlayerController: received PlayerID %d"), PlayerID);
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+    }
 }
 
-void ABoardPlayerController::SetPlayerID(int32 ID)
+void ABoardPlayerController::ClickOnShip(AAShip* Ship)
 {
-	PlayerID = ID;
+    if (!bIsMyTurn) return;
+    if (!Ship) return;
+
+    if (Ship->ownerPlayer == PlayerID)
+    {
+        HandleShipSelected(Ship);
+    }
+    else if (SelectedShip)
+    {
+        PendingIntent = EActionIntent::FIRE;
+        ServerFireAt(SelectedShip, Ship->GetGridPosition());
+        ClearSelection();
+    }
 }
 
-void ABoardPlayerController::ClickOnShip(AAShip* selectedShip)
+void ABoardPlayerController::ClickOnCell(AABoardCell* Cell)
 {
-	// if (UUTurnManager->GetCurrentPlayer() != selectedShip->GetOwnerID())
-	// {
-	// 	return;
-	// }
-	// if (selectedShip == SelectedShip)
-	// {
-	// 	SelectedShip = nullptr;
-	// 	return;
-	// }
-	//
-	// SelectedShip = selectedShip;
-}
+    if (!bIsMyTurn) return;
+    if (!Cell) return;
 
-void ABoardPlayerController::ClickOnCell(AABoardCell* selectCell)
-{
+    switch (PendingIntent)
+    {
+    case EActionIntent::MOVE:
+        if (SelectedShip)
+        {
+            ServerMoveShip(SelectedShip, Cell->cellData.Pos);
+            ClearSelection();
+        }
+        break;
 
-	// if (!IsValid(SelectedShip) && !BoardManager->IsCellOccupied(selectCell->cellData.Pos))
-	// {
-	// 	BoardVisualiser->SpawnShip(BoardVisualiser->ShipClass, selectCell->cellData.Pos, CardData, UUTurnManager->GetCurrentPlayer());
-	// 	return;
-	// }
-	// BoardManager->MoveShipTo(SelectedShip, selectCell->cellData.Pos, UUTurnManager->GetCurrentPlayer());
+    case EActionIntent::SPAWNSHIP:
+
+        if (PendingShipClass && PendingCardData)
+        {
+            ServerSpawnShip(PendingShipClass,
+                Cell->cellData.Pos,
+                PendingCardData);
+            ClearSelection();
+        }
+        break;
+
+    default:
+        break;
+    }
 }
 
 void ABoardPlayerController::RequestEndTurn()
 {
+    if (!bIsMyTurn) return;
+    ServerEndTurn();
 }
 
-void ABoardPlayerController::RequestPlayCard(UUCardData* Card, FIntPoint TargetCell)
+void ABoardPlayerController::RequestPlayCard(
+    UUCardData* Card, FIntPoint TargetCell)
 {
-}
-
-void ABoardPlayerController::ServerMoveShip_Implementation(AAShip* Ship, FIntPoint TargetCell)
-{
-}
-
-bool ABoardPlayerController::ServerMoveShip_Validate(AAShip* Ship, FIntPoint TargetCell)
-{
-	return true;
-}
-
-void ABoardPlayerController::ServerFireAt_Implementation(AAShip* Shooter, FIntPoint TargetCell)
-{
-}
-
-bool ABoardPlayerController::ServerFireAt_Validate(AAShip* Shooter, FIntPoint TargetCell)
-{
-	return true;
-}
-
-void ABoardPlayerController::ServerPlayCard_Implementation(UUCardData* Card, FIntPoint TargetCell)
-{
-}
-
-bool ABoardPlayerController::ServerPlayCard_Validate(UUCardData* Card, FIntPoint TargetCell)
-{
-	return true;
-}
-
-void ABoardPlayerController::ServerSpawnShip_Implementation(AAShip* Ship, FIntPoint TargetCell)
-{
-}
-
-bool ABoardPlayerController::ServerSpawnShip_Validate(AAShip* Ship, FIntPoint TargetCell)
-{
-	return true;
-}
-
-void ABoardPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    if (!bIsMyTurn || !Card) return;
+    ServerPlayCard(Card, TargetCell);
 }
 
 void ABoardPlayerController::HandleShipSelected(AAShip* Ship)
 {
+    SelectedShip = Ship;
+    PendingIntent = EActionIntent::MOVE;
+    bWaitingForCellTarget = true;
+
+    ServerRequestReachableCells(Ship);
 }
 
 void ABoardPlayerController::HandleCellTargeted(AABoardCell* Cell)
@@ -95,42 +113,188 @@ void ABoardPlayerController::HandleCellTargeted(AABoardCell* Cell)
 
 void ABoardPlayerController::ClearSelection()
 {
-	SelectedShip = nullptr;
+    SelectedShip = nullptr;
+    PendingIntent = EActionIntent::NONE;
+    PendingShipClass = nullptr;
+    PendingCardData = nullptr;
+    bWaitingForCellTarget = false;
+
+    /*if (BoardVisualiser)
+        BoardVisualiser->ClearHighlights();*/
 }
 
-void ABoardPlayerController::ClientOnVictory_Implementation(int32 WinnerID)
+void ABoardPlayerController::ServerSetupFinish_Implementation()
 {
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->PlayerSetupFinished(this, PlayerID);
 }
 
-void ABoardPlayerController::ClientOnEssenceChanged_Implementation(int32 NewEssence, int32 MaxEssence)
+bool ABoardPlayerController::ServerSetupFinish_Validate()
 {
+    return PlayerID != -1;
 }
 
-void ABoardPlayerController::ClientOnShipDestroyed_Implementation(AAShip* Ship)
+bool ABoardPlayerController::ServerMoveShip_Validate(
+    AAShip* Ship, FIntPoint TargetCell)
 {
+    return Ship != nullptr;
 }
 
-void ABoardPlayerController::ClientOnShipMoved_Implementation(AAShip* Ship, FIntPoint NewCell)
+void ABoardPlayerController::ServerMoveShip_Implementation(
+    AAShip* Ship, FIntPoint TargetCell)
 {
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandleMoveShip(this, Ship, TargetCell);
 }
 
-void ABoardPlayerController::ClientOnActionRejected_Implementation(const FString& Reason)
+bool ABoardPlayerController::ServerFireAt_Validate(
+    AAShip* Shooter, FIntPoint TargetCell)
 {
+    return Shooter != nullptr;
 }
 
-void ABoardPlayerController::ClientUpdateHand_Implementation(const TArray<UUCardData*>& NewHand)
+void ABoardPlayerController::ServerFireAt_Implementation(
+    AAShip* Shooter, FIntPoint TargetCell)
 {
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandleFireAt(this, Shooter, TargetCell);
 }
 
-void ABoardPlayerController::ClientOnTurnEnded_Implementation()
+bool ABoardPlayerController::ServerPlayCard_Validate(
+    UUCardData* Card, FIntPoint TargetCell)
 {
+    return Card != nullptr;
 }
 
-void ABoardPlayerController::ClientOnTurnStarted_Implementation(int32 ActivePlayerID)
+void ABoardPlayerController::ServerPlayCard_Implementation(
+    UUCardData* Card, FIntPoint TargetCell)
 {
-	SetPlayerID(ActivePlayerID);
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandlePlayCard(this, Card, TargetCell);
 }
 
 void ABoardPlayerController::ServerEndTurn_Implementation()
 {
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandleEndTurn(this);
+}
+
+bool ABoardPlayerController::ServerSpawnShip_Validate(
+    TSubclassOf<AAShip> ShipClass,
+    FIntPoint TargetCell,
+    UUCardData* CardData)
+{
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("ServerSpawnShip_Validate: ShipClass=%s CardData=%s"),
+            ShipClass ? *ShipClass->GetName() : TEXT("null"),
+            CardData ? *CardData->GetName() : TEXT("null"));
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+    }
+
+    return ShipClass != nullptr && CardData != nullptr;
+}
+
+void ABoardPlayerController::ServerSpawnShip_Implementation(
+    TSubclassOf<AAShip> ShipClass,
+    FIntPoint TargetCell,
+    UUCardData* CardData)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandleSpawnShip(this, ShipClass, TargetCell, CardData);
+}
+
+void ABoardPlayerController::ServerRequestReachableCells_Implementation(
+    AAShip* Ship)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    TArray<FIntPoint> Reachable = GM->GetReachableCellsForShip(this, Ship);
+    ClientOnReachableCells(Reachable);
+}
+
+void ABoardPlayerController::ClientOnTurnStarted_Implementation(
+    int32 ActivePlayerID)
+{
+    bIsMyTurn = (ActivePlayerID == PlayerID);
+
+    OnTurnStartedBP(ActivePlayerID, bIsMyTurn);
+
+    if (!bIsMyTurn)
+        ClearSelection();
+}
+
+void ABoardPlayerController::ClientOnTurnEnded_Implementation()
+{
+    bIsMyTurn = false;
+    ClearSelection();
+    OnTurnEndedBP();
+}
+
+void ABoardPlayerController::ClientUpdateHand_Implementation(
+    const TArray<UUCardData*>& NewHand)
+{
+    ABoardPlayerState* PS = GetPlayerState<ABoardPlayerState>();
+    if (PS)
+        PS->SetHand(NewHand);
+
+    OnHandUpdatedBP(NewHand);
+}
+
+void ABoardPlayerController::ClientOnActionRejected_Implementation(
+    const FString& Reason)
+{
+    ClearSelection();
+    OnActionRejectedBP(Reason);
+}
+
+void ABoardPlayerController::ClientOnShipMoved_Implementation(
+    AAShip* Ship, FIntPoint NewCell)
+{
+    if (BoardVisualiser && Ship)
+    {
+        FVector WorldPos = BoardVisualiser->GridToWorld(NewCell);
+        Ship->SetActorLocation(WorldPos);
+    }
+}
+
+void ABoardPlayerController::ClientOnShipDestroyed_Implementation(
+    AAShip* Ship)
+{
+    if (SelectedShip == Ship)
+        ClearSelection();
+
+    OnShipDestroyedBP(Ship);
+}
+
+void ABoardPlayerController::ClientOnEssenceChanged_Implementation(
+    int32 NewEssence, int32 MaxEssence)
+{
+    OnEssenceChangedBP(NewEssence, MaxEssence);
+}
+
+void ABoardPlayerController::ClientOnReachableCells_Implementation(
+    const TArray<FIntPoint>& Cells)
+{
+    /*if (BoardVisualiser)
+        BoardVisualiser->HighlightCells(Cells);*/
+}
+
+void ABoardPlayerController::ClientOnVictory_Implementation(int32 WinnerID)
+{
+    OnVictoryBP(WinnerID);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "../../Actor/AShip.h"
 #include "FireResult.generated.h"
 
 USTRUCT(BlueprintType)
@@ -18,5 +19,5 @@ struct FFireResult
 		int32 DamageDealt = 0;
 
 	UPROPERTY(BlueprintReadOnly)
-		TWeakObjectPtr<AActor> HitShip; // TODO changer en AShipActor quand il existera
+		TObjectPtr<AAShip> HitShip;
 };

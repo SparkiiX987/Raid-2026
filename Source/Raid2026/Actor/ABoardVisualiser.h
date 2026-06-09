@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Raid2026/SubSystem/UBoardManager.h"
 #include "Raid2026/SubSystem/UTurnManager.h"
+#include "../CoreLayer/Cells/ReplicatedCellState.h"
 #include "ABoardVisualiser.generated.h"
 
 UCLASS()
@@ -16,6 +15,9 @@ class RAID2026_API AABoardVisualiser : public AActor
 	GENERATED_BODY()
 	
 public:
+	AABoardVisualiser();
+
+	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CellSize = 1.f;
@@ -27,9 +29,6 @@ public:
 	TObjectPtr<UUBoardManager> BoardManager;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AABoardCell> CellActorClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AARefinery> RefineryClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -38,33 +37,31 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AAShip> ShipClass;
 
-	UFUNCTION(BlueprintCallable)
-	void SpawnBoard(TArray<AARefinery*>& OutRefineries,AAMotherShip*& OutMothershipP0, AAMotherShip*& OutMothershipP1);
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AABoardCell> CellActorClass;
 
-	UFUNCTION(BlueprintCallable)
-	void DebugSpawnShipInAllCells();
-
-	UFUNCTION(BlueprintPure)
-	AABoardCell* GetCellActor(FIntPoint GridPos) const;
+	void TryBindToGameState();
 
 	UFUNCTION(BlueprintPure)
-	FVector GridToWorld(FIntPoint GridPos) const;
+		AABoardCell* GetCellActor(FIntPoint GridPos) const;
 
 	UFUNCTION(BlueprintPure)
-	FIntPoint WorldToGrid(FVector WorldPos) const;
+		FVector GridToWorld(FIntPoint GridPos) const;
+
+	UFUNCTION(BlueprintPure)
+		FIntPoint WorldToGrid(FVector WorldPos) const;
+
+	void OnGridStateChanged(const TArray<FReplicatedCellState>& NewGrid);
+
+	void OnActivePlayerChanged(int32 newActivePlayer);
+
+	void OnGameOver(int32 winner);
 
 	TArray<AABoardCell*> CellActors;
 
 	static const TArray<FIntPoint> RefineryGridPositions;
 
 	void SpawnCellActors();
-
-	void SpawnRefineries(TArray<AARefinery*>& OutRefineries);
-
-	void SpawnMotherships(AAMotherShip*& OutP0, AAMotherShip*& OutP1);
-
-	UFUNCTION(BlueprintCallable)
-	AAShip* SpawnShip(TSubclassOf<AAShip> Ship, FIntPoint GridPos, UUCardData* cardData, int32 PlayerID);
 
 	int32 CellIndex(int32 X, int32 Y) const;
 };

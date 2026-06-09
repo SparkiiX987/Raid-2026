@@ -1,4 +1,19 @@
 #include "AABoardActor.h"
+#include "Net/UnrealNetwork.h"
+
+void AABoardActor::GetLifetimeReplicatedProps(
+	TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AABoardActor, gridPosition);
+}
+
+AABoardActor::AABoardActor()
+{
+	bReplicates = true;
+	bAlwaysRelevant = true;
+}
 
 void AABoardActor::TakeDamage(int32 amount)
 {
@@ -41,12 +56,16 @@ int32 AABoardActor::GetOwnerID() const
 	return ownerPlayer;
 }
 
+void AABoardActor::Die_Implementation()
+{
+
+}
+
 void AABoardActor::SetGridPosition(FIntPoint NewPos)
 {
 	gridPosition = NewPos;
 }
 
-void AABoardActor::Die_Implementation()
+void AABoardActor::OnRep_GridPosition()
 {
-	
 }
