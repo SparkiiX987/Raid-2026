@@ -54,13 +54,15 @@ bool UUBoardManager::IsCellOccupied(FIntPoint Pos) const
 
 FCell UUBoardManager::GetCell(FIntPoint Pos) const
 {
-	check(IsValidCell(Pos));
+	if (!IsValidCell(Pos)) return FCell();
+
 	return Grid[Pos.X][Pos.Y];
 }
 
 FCell UUBoardManager::GetCells(int32 X, int32 Y) const
 {
-	check(IsValidCell(FIntPoint(X, Y)));
+	if (IsValidCell(FIntPoint(X, Y))) return FCell();
+
 	return Grid[X][Y];
 }
 

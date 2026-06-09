@@ -78,8 +78,6 @@ public:
 
 	void SpawnBoardActors();
 
-	void InitializeManagers(TArray<AARefinery*> refineries, AAMotherShip* motherShip1, AAMotherShip* motherShip2);
-
 	void SpawnCellActors();
 
 	void SpawnVisualiser();

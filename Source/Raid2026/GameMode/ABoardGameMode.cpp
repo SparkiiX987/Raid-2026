@@ -57,8 +57,8 @@ void AABoardGameMode::StartGameWhenReady()
 void AABoardGameMode::StartGame()
 {
     SpawnManagers();
-    SpawnVisualiser();
     SpawnBoardActors();
+    SpawnVisualiser();
 
     turnManager->InitializeGame(0, playerCount);
 
@@ -158,51 +158,6 @@ void AABoardGameMode::SpawnBoardActors()
         mothershipClass, FVector::ZeroVector, FRotator::ZeroRotator);
 
     boardManager->InitializeBoard(Refineries, MS0, MS1);
-}
-
-void AABoardGameMode::InitializeManagers(TArray<AARefinery*> refineries, AAMotherShip* motherShip1, AAMotherShip* motherShip2)
-{
-    if (!IsValid(boardManager)) 
-    {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("boardManager null !"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-        }
-        return;
-    }
-
-    boardManager->InitializeBoard(refineries, motherShip1, motherShip2);
-
-    if (!IsValid(turnManager))
-    {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("turnManager null !"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-        }
-        return;
-    }
-
-    turnManager->InitializeGame(0, playerCount);
-
-    if (!IsValid(deckManager))
-    {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("deckManager null !"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-        }
-        return;
-    }
-
-    for (int i = 0; i < playerCount; i++)
-    {
-        deckManager->InitializeDeck(i, testDeck);
-    }
 }
 
 void AABoardGameMode::HandleMoveShip(

@@ -40,7 +40,7 @@ void AABoardVisualiser::SpawnCellActors()
 		return;
 	}
 
-	FVector Location(0.f, 0.f, 100.f);
+	FVector Location(0.f, 0.f, -100.f);
 	const FRotator Rotation = FRotator::ZeroRotator;
 
 	for (int32 X = 0; X < UUBoardManager::GridWidth; X++)
@@ -61,7 +61,22 @@ void AABoardVisualiser::SpawnCellActors()
 			}
 			Cell->SetActorScale3D(FVector(CellSize, CellSize, CellSize));
 
-			Cell->cellData.Pos = WorldToGrid(Location);
+			FIntPoint cellGridPos = WorldToGrid(Location);
+
+			if (GEngine)
+			{
+				FString text = FString::Printf(TEXT("Cell : "));
+				text.Append(cellGridPos.ToString());
+
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, text);
+			}
+
+			Cell->cellData.Pos = cellGridPos;
+			Cell->cellData.Type = BoardManager->GetCell(cellGridPos).Type;
+			if (BoardManager->GetCell(cellGridPos).Occupant)
+			{
+				Cell->cellData.Occupant = BoardManager->GetCell(cellGridPos).Occupant;
+			}
 
 			CellActors.Add(Cell);
 		}

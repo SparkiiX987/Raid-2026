@@ -237,17 +237,6 @@ void UUTurnManager::InitializeGame(int32 inFirstPlayerId, int32 inPlayerCount)
         S.bonusEssence = 0;
     }
 
-    if (GEngine)
-    {
-        FString text = FString::Printf(
-            TEXT("UTurnManager: InitializeGame — %d joueurs, premier=P%d"),
-            playerCount, 
-            firstPlayerId
-        );
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
-
     StartTurn(firstPlayerId);
 }
 

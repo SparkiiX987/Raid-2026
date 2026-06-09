@@ -1,5 +1,14 @@
 #include "ABoardCell.h"
 #include "ARefinery.h"
+#include "Net/UnrealNetwork.h"
+
+void AABoardCell::GetLifetimeReplicatedProps(
+    TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(AABoardCell, cellData);
+}
 
 void AABoardCell::SetRefineryOwner(int32 owner)
 {

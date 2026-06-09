@@ -56,6 +56,17 @@ void ABoardPlayerController::ClickOnShip(AAShip* Ship)
 
 void ABoardPlayerController::ClickOnCell(AABoardCell* Cell)
 {
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("Cell : "));
+        text.Append(Cell->GetName())
+            .Append(" ").Append(Cell->cellData.Pos.ToString())
+            .Append(" ").Append(*UEnum::GetDisplayValueAsText(Cell->cellData.Type).ToString());
+
+
+        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, text);
+    }
+
     if (!bIsMyTurn) return;
     if (!Cell) return;
 
