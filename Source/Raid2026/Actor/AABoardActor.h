@@ -22,7 +22,9 @@ public:
 
 	int32 maxHealthPoint;
 	int32 currentHealthPoint;
-	int32 ownerPlayer;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
+		int32 ownerPlayer;
 
 	AABoardActor();
 

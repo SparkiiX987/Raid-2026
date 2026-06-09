@@ -7,6 +7,7 @@ void AABoardActor::GetLifetimeReplicatedProps(
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AABoardActor, gridPosition);
+	DOREPLIFETIME(AABoardActor, ownerPlayer);
 }
 
 AABoardActor::AABoardActor()
