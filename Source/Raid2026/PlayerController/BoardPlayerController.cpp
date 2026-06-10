@@ -286,6 +286,18 @@ void ABoardPlayerController::ClientOnShipMoved_Implementation(
 void ABoardPlayerController::ClientOnShipDestroyed_Implementation(
     AAShip* Ship)
 {
+    if (!Ship || Ship->IsPendingKillPending())
+    {
+        if (GEngine)
+        {
+            FString text = FString::Printf(TEXT("Ship déjà destroyed ou en cours"));
+
+            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+        }
+
+        return;
+    }
+
     if (SelectedShip == Ship)
         ClearSelection();
 

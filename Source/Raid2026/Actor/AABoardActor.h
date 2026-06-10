@@ -45,6 +45,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool IsAlive() const;
 
+	void SetHealthPoint(int32 health);
+
 	UFUNCTION(BlueprintPure)
 	FIntPoint GetGridPosition() const;
 

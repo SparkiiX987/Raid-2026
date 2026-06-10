@@ -84,6 +84,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void StartGameWhenReady();
+
 	void StartGame();
 
 	bool ValidateIsPlayerTurn(ABoardPlayerController* playerInstigator) const;

@@ -19,17 +19,6 @@ AABoardActor::AABoardActor()
 void AABoardActor::TakeDamage(int32 amount)
 {
 	currentHealthPoint -= amount;
-	if (currentHealthPoint <= 0)
-	{
-		currentHealthPoint = 0;
-		onDestroyeds.Broadcast(this);
-		Die();
-	}
-	else
-	{
-		onDamaged.Broadcast(this, amount);
-		PlayDamageEffect(amount);
-	}
 }
 
 int32 AABoardActor::GetCurrentHP() const
@@ -45,6 +34,12 @@ int32 AABoardActor::GetMaxHP() const
 bool AABoardActor::IsAlive() const
 {
 	return currentHealthPoint > 0;
+}
+
+void AABoardActor::SetHealthPoint(int32 health)
+{
+	maxHealthPoint = health;
+	currentHealthPoint = health;
 }
 
 FIntPoint AABoardActor::GetGridPosition() const

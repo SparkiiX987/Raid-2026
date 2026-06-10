@@ -305,6 +305,7 @@ void AABoardGameMode::HandleSpawnShip(
     Ship->ownerPlayer = PlayerID;
     boardManager->PlaceShip(Ship, TargetCell);
     deckManager->PlayCard(PlayerID, CardData);
+    Ship->SetHealthPoint(CardData->stats.resistance);
     Ship->OnShipSpawn();
 
     UpdateGridState();
@@ -447,11 +448,14 @@ void AABoardGameMode::UpdateGridState()
 
 void AABoardGameMode::BroadcastFireResult(const FFireResult& Result)
 {
+    if (!Result.bShipDestroyed) return;
+
     for (auto& [ID, PC] : connectedPlayers)
     {
-        if (Result.bShipDestroyed)
-            PC->ClientOnShipDestroyed(Result.HitShip);
+        PC->ClientOnShipDestroyed(Result.HitShip);
     }
+
+    Result.HitShip.Get()->Destroy();
 }
 
 bool AABoardGameMode::ValidateIsPlayerTurn(
