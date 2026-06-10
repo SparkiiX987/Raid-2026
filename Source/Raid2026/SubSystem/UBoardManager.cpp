@@ -213,10 +213,21 @@ FCell& UUBoardManager::GetCellRef(FIntPoint Pos)
 
 void UUBoardManager::SetOccupant(FIntPoint Pos, AABoardActor* Actor)
 {
-	GetCellRef(Pos).Occupant = Actor;
+	AARefinery* refinery = Cast<AARefinery>(Actor);
+	FVector WorldPos;
+	if (refinery)
+	{
+		GetCellRef(Pos).refinery = refinery;
+		WorldPos = FVector(Pos.X * CellGap, Pos.Y * CellGap, 100.f);
+	}
+	else
+	{
+		GetCellRef(Pos).Occupant = Actor;
+		WorldPos = FVector(Pos.X * CellGap, Pos.Y * CellGap, 0.f);
+	}
+
 	Actor->gridPosition = Pos;
 
-	FVector WorldPos = FVector(Pos.X * CellGap, Pos.Y * CellGap, 0.f);
 	Actor->SetActorLocation(WorldPos);
 }
 

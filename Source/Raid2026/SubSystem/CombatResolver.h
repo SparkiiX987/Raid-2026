@@ -44,6 +44,9 @@ public:
         FFireResult ResolveFire(AAShip* Shooter, FIntPoint TargetCell);
 
     UFUNCTION(BlueprintCallable)
+        FFireResult ResolveFireMothership(AAShip* Shooter, AAMotherShip* TargetMothership);
+
+    UFUNCTION(BlueprintCallable)
         void ApplyDamageToShip(AAShip* Target, int32 Damage);
 
     UFUNCTION(BlueprintCallable)

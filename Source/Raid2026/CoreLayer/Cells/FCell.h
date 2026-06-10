@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "ECellType.h"
 #include "../../Actor/AShip.h"
+#include "../../Actor/ARefinery.h"
 #include "FCell.generated.h"
 
 USTRUCT(BlueprintType)
@@ -18,6 +19,9 @@ struct FCell
 	
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AABoardActor> Occupant;
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<AARefinery> refinery;
 	
 	
 	bool IsEmpty()

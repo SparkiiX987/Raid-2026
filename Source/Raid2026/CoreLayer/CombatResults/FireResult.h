@@ -13,6 +13,9 @@ struct FFireResult
 		bool bHit = false;
 
 	UPROPERTY(BlueprintReadOnly)
+		bool bMothershipHit = false;
+
+	UPROPERTY(BlueprintReadOnly)
 		bool  bShipDestroyed = false;
 
 	UPROPERTY(BlueprintReadOnly)

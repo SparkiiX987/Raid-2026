@@ -4,6 +4,7 @@
 #include "GameFramework/PlayerController.h"
 #include "../Actor/ABoardCell.h"
 #include "../Actor/ABoardVisualiser.h"
+#include "../Actor/AMotherShip.h"
 #include "../Actor/AShip.h"
 #include "../CoreLayer/Inputs/ActionIntent.h"
 #include "BoardPlayerController.generated.h"
@@ -42,6 +43,9 @@ public:
         void ClickOnCell(AABoardCell* Cell);
 
     UFUNCTION(BlueprintCallable)
+        void ClickOnMotherShip(AAMotherShip* Mothership);
+
+    UFUNCTION(BlueprintCallable)
         void RequestEndTurn();
 
     UFUNCTION(BlueprintCallable)
@@ -58,6 +62,10 @@ public:
     UFUNCTION(Server, Reliable, WithValidation)
         void ServerFireAt(AAShip* Shooter, FIntPoint TargetCell);
         bool ServerFireAt_Validate(AAShip* Shooter, FIntPoint TargetCell);
+
+    UFUNCTION(Server, Reliable, WithValidation)
+        void ServerFireAtMothership(AAShip* Ship, AAMotherShip* Mothership);
+        bool ServerFireAtMothership_Validate(AAShip* Ship, AAMotherShip* Mothership);
 
     UFUNCTION(Server, Reliable, WithValidation)
         void ServerPlayCard(UUCardData* Card, FIntPoint TargetCell);

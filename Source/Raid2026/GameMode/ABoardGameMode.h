@@ -34,6 +34,8 @@ public:
 
 	void HandleMoveShip(ABoardPlayerController* playerInstigator, AAShip* ship, FIntPoint targetCell);
 
+	void HandleFireAtMothership(ABoardPlayerController* playerInstigator, AAShip* ship, AAMotherShip* TargetMothership);
+
 	void HandleFireAt(ABoardPlayerController* playerInstigator, AAShip* shooter, FIntPoint targetCell);
 
 	void HandlePlayCard(ABoardPlayerController* playerInstigator, UUCardData* Card, FIntPoint TargetCell);

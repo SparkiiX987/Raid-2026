@@ -199,6 +199,10 @@ void AABoardGameMode::HandleMoveShip(
     }
 
     boardManager->MoveShipTo(Ship, TargetCell, PlayerID);
+    if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery)
+    {
+        boardManager->GetCell(TargetCell).refinery->Capture(Ship->ownerPlayer);
+    }
 
     UpdateGridState();
     BroadcastEssenceChanged(PlayerID);
@@ -207,6 +211,24 @@ void AABoardGameMode::HandleMoveShip(
         PC->ClientOnShipMoved(Ship, TargetCell);
 
     CheckVictoryConditions();
+}
+
+void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInstigator, AAShip* ship, AAMotherShip* TargetMothership)
+{
+    FFireResult Result = combatResolver->ResolveFireMothership(ship, TargetMothership);
+
+    if (Result.bMothershipHit && Result.bShipDestroyed)
+    {
+        if (GEngine)
+        {
+            FString text = FString::Printf(TEXT("Victoire du joueur %d !"), ship->ownerPlayer);
+
+            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
+        }
+
+        OnVictoryConditionMet(playerInstigator->PlayerID);
+        return;
+    }
 }
 
 void AABoardGameMode::HandleFireAt(
@@ -225,6 +247,19 @@ void AABoardGameMode::HandleFireAt(
     }
 
     FFireResult Result = combatResolver->ResolveFire(Shooter, TargetCell);
+
+    if (Result.bMothershipHit && Result.bShipDestroyed)
+    {
+        if (GEngine)
+        {
+            FString text = FString::Printf(TEXT("Victoire du joueur %d !"), Shooter->ownerPlayer);
+
+            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
+        }
+
+        OnVictoryConditionMet(playerInstigator->PlayerID);
+        return;
+    }
 
     BroadcastFireResult(Result);
     BroadcastEssenceChanged(PlayerID);

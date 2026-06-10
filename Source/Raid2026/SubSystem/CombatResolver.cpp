@@ -61,10 +61,13 @@ FFireResult UCombatResolver::ResolveFire(AAShip* Shooter, FIntPoint TargetCell)
 	if (TargetMothership)
 	{
 		const int32 Damage = Shooter->GetFirePower();
-		Result.bHit = true;
+		Result.bMothershipHit = true;
 		Result.DamageDealt = Damage;
 
 		ApplyDamageToMothership(TargetMothership, Damage);
+
+		Result.bShipDestroyed = !TargetMothership->IsAlive();
+
 		return Result;
 	}
 
@@ -75,6 +78,24 @@ FFireResult UCombatResolver::ResolveFire(AAShip* Shooter, FIntPoint TargetCell)
 
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
 	}
+	return Result;
+}
+
+FFireResult UCombatResolver::ResolveFireMothership(AAShip* Shooter, AAMotherShip* TargetMothership)
+{
+	FFireResult Result;
+
+	if (!IsValid(Shooter) || !IsValid(TargetMothership))
+		return Result;
+
+	const int32 Damage = Shooter->GetFirePower();
+	Result.bMothershipHit = true;
+	Result.DamageDealt = Damage;
+
+	ApplyDamageToMothership(TargetMothership, Damage);
+
+	Result.bShipDestroyed = !TargetMothership->IsAlive();
+
 	return Result;
 }
 

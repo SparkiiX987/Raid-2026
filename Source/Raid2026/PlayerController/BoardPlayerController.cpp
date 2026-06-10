@@ -56,6 +56,9 @@ void ABoardPlayerController::ClickOnShip(AAShip* Ship)
 
 void ABoardPlayerController::ClickOnCell(AABoardCell* Cell)
 {
+    if (!bIsMyTurn) return;
+    if (!Cell) return;
+
     if (GEngine)
     {
         FString text = FString::Printf(TEXT("Cell : "));
@@ -66,9 +69,6 @@ void ABoardPlayerController::ClickOnCell(AABoardCell* Cell)
 
         GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, text);
     }
-
-    if (!bIsMyTurn) return;
-    if (!Cell) return;
 
     switch (PendingIntent)
     {
@@ -94,6 +94,15 @@ void ABoardPlayerController::ClickOnCell(AABoardCell* Cell)
     default:
         break;
     }
+}
+
+void ABoardPlayerController::ClickOnMotherShip(AAMotherShip* Mothership)
+{
+    if (!IsValid(Mothership)) return;
+
+    PendingIntent = EActionIntent::FIRE;
+    ServerFireAtMothership(SelectedShip, Mothership);
+    ClearSelection();
 }
 
 void ABoardPlayerController::RequestEndTurn()
@@ -168,6 +177,19 @@ bool ABoardPlayerController::ServerFireAt_Validate(
     return Shooter != nullptr;
 }
 
+void ABoardPlayerController::ServerFireAtMothership_Implementation(AAShip* Ship, AAMotherShip* Mothership)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandleFireAtMothership(this, Ship, Mothership);
+}
+
+bool ABoardPlayerController::ServerFireAtMothership_Validate(AAShip* Ship, AAMotherShip* Mothership)
+{
+    return Ship != nullptr && Mothership != nullptr;
+}
+
 void ABoardPlayerController::ServerFireAt_Implementation(
     AAShip* Shooter, FIntPoint TargetCell)
 {
@@ -214,7 +236,7 @@ bool ABoardPlayerController::ServerSpawnShip_Validate(
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
     }
 
-    return ShipClass != nullptr && CardData != nullptr;
+    return IsValid(ShipClass) && IsValid(CardData);
 }
 
 void ABoardPlayerController::ServerSpawnShip_Implementation(
