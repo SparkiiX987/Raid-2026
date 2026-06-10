@@ -30,7 +30,12 @@ REM =========================
 set UE_PATH=C:\Program Files\UE\UE_5.7\
 
 if not exist "%UE_PATH%" (
-    echo [ERROR] UE 5.7 not found at:
+set UE_PATH=C:\Program Files\Epic Games\UE_5.7\
+    
+)
+
+if not exist "%UE_PATH%" (
+echo [ERROR] UE 5.7 not found at:
     echo %UE_PATH%
     pause
     exit /b 1
