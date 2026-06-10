@@ -21,54 +21,57 @@ class RAID2026_API AAShip : public AABoardActor
 // UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 //  EShipState State = EShipState::FaceCachee;
 
-UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
- bool bJustPlayed;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool bJustPlayed;
 
-UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
- bool bHasMoved;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool bHasMoved;
 
-UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
- bool bHasActed;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool bHasActed;
 
-UFUNCTION(BlueprintCallable)
- FCardStats GetEffectiveStats() const;
+	UFUNCTION(BlueprintCallable)
+		FCardStats GetEffectiveStats() const;
 
-UFUNCTION(BlueprintPure)
- int32 GetFirePower() const;
+	UFUNCTION(BlueprintPure)
+		int32 GetFirePower() const;
 
-UFUNCTION(BlueprintPure)
- int32 GetRadarRange()  const;
+	UFUNCTION(BlueprintPure)
+		int32 GetRadarRange()  const;
 
-UFUNCTION(BlueprintPure)
- int32 GetMaxSpeed() const;
+	UFUNCTION(BlueprintPure)
+		int32 GetMaxSpeed() const;
  
- UFUNCTION(BlueprintPure)
- int32 GetCurrentSpeed() const;
+	UFUNCTION(BlueprintPure)
+		int32 GetCurrentSpeed() const;
 
-UFUNCTION(BlueprintPure)
- int32 GetMoveCost() const;
+	UFUNCTION(BlueprintPure)
+		int32 GetMoveCost() const;
 
-UFUNCTION(BlueprintCallable)
- void Reveal();
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnShipSpawn();
 
-UFUNCTION(BlueprintPure)
- bool IsFaceDown();
+	UFUNCTION(BlueprintCallable)
+		void Reveal();
 
-UFUNCTION(BlueprintPure)
- bool CanMove() const;
+	UFUNCTION(BlueprintPure)
+		bool IsFaceDown();
 
-UFUNCTION(BlueprintPure)
- bool CanAct() const;
+	UFUNCTION(BlueprintPure)
+		bool CanMove() const;
 
-UFUNCTION(BlueprintCallable)
- void ResetTurnFlags();
+	UFUNCTION(BlueprintPure)
+		bool CanAct() const;
 
-virtual void TakeDamage(int32 Damage) override;
+	UFUNCTION(BlueprintCallable)
+		void ResetTurnFlags();
 
-virtual void Die_Implementation() override;
+	virtual void TakeDamage(int32 Damage) override;
 
-UFUNCTION(BlueprintImplementableEvent)
- void PlayRevealAnimation();
+	virtual void Die_Implementation() override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void PlayRevealAnimation();
 
 // UFUNCTION(BlueprintImplementableEvent)
 //  void SetHighlightState(EHighlightType Type);

@@ -49,18 +49,20 @@ bool UUBoardManager::IsValidCell(FIntPoint Pos) const
 
 bool UUBoardManager::IsCellOccupied(FIntPoint Pos) const
 {
-	return IsValidCell(Pos) && GetCell(Pos).Occupant.IsValid();
+	return IsValidCell(Pos) && IsValid(GetCell(Pos).Occupant);
 }
 
 FCell UUBoardManager::GetCell(FIntPoint Pos) const
 {
-	check(IsValidCell(Pos));
+	if (!IsValidCell(Pos)) return FCell();
+
 	return Grid[Pos.X][Pos.Y];
 }
 
 FCell UUBoardManager::GetCells(int32 X, int32 Y) const
 {
-	check(IsValidCell(FIntPoint(X, Y)));
+	if (IsValidCell(FIntPoint(X, Y))) return FCell();
+
 	return Grid[X][Y];
 }
 
@@ -75,15 +77,20 @@ AAShip* UUBoardManager::GetShipAt(FIntPoint Pos) const
 
 AAMotherShip* UUBoardManager::GetMothershipAt(FIntPoint Pos) const
 {
-	if (GetCell(Pos).Occupant == Motherships[0])
-		{
+	AAMotherShip* mothership = Cast<AAMotherShip>(GetCell(Pos).Occupant);
+
+	if (!IsValid(mothership)) return nullptr;
+
+	if (mothership == Motherships[0])
+	{
 		return Motherships[0];
 	}
 
-	if (GetCell(Pos).Occupant == Motherships[1])
+	if (mothership == Motherships[1])
 	{
 		return Motherships[1];
 	}
+
 	return nullptr;
 }
 
@@ -180,27 +187,13 @@ int32 UUBoardManager::CheckRefineries(int32 playerID)
 
 bool UUBoardManager::MoveShipTo(AAShip* Ship, FIntPoint TargetCell, int32 playerID)
 {
-	//if (Ship->CanMove()) return false;
-	
-	TArray<FReachableCell> ReachableCells = GetReachableCells(Ship, TurnManager->GetCurrentEssence(playerID));
-	FReachableCell ReachableCell;
-	bool bReachable = ReachableCells.ContainsByPredicate(
-		[&](const FReachableCell& Cell)
-		{
-			ReachableCell = Cell;
-			return Cell.Cell == TargetCell;
-		});
-	
-	if (bReachable && !IsCellOccupied(TargetCell) &&
-		TurnManager->PayEssence(playerID, ReachableCell.EssenceCost * Ship->CardData->stats.moveCost &&
-			Ship->ownerPlayer == playerID))
-	{
-		ClearOccupant(Ship->gridPosition);
-		Ship->bHasMoved = true;
-		SetOccupant(TargetCell, Ship);
-		return true;
-	}
-	return false;
+	if (IsCellOccupied(TargetCell) || Ship->ownerPlayer != playerID)
+		return false;
+
+	ClearOccupant(Ship->gridPosition);
+	Ship->bHasMoved = true;
+	SetOccupant(TargetCell, Ship);
+	return true;
 }
 
 void UUBoardManager::PlaceShip(AAShip* Ship, FIntPoint target)
@@ -215,20 +208,30 @@ void UUBoardManager::RemoveShipFromGrid(AAShip* Ship)
 
 FCell& UUBoardManager::GetCellRef(FIntPoint Pos)
 {
-	check(IsValidCell(Pos));
 	return Grid[Pos.X][Pos.Y];
 }
 
 void UUBoardManager::SetOccupant(FIntPoint Pos, AABoardActor* Actor)
 {
-	GetCellRef(Pos).Occupant = Actor;
+	AARefinery* refinery = Cast<AARefinery>(Actor);
+	FVector WorldPos;
+	if (refinery)
+	{
+		GetCellRef(Pos).refinery = refinery;
+		WorldPos = FVector(Pos.X * CellGap, Pos.Y * CellGap, 100.f);
+	}
+	else
+	{
+		GetCellRef(Pos).Occupant = Actor;
+		WorldPos = FVector(Pos.X * CellGap, Pos.Y * CellGap, 0.f);
+	}
+
 	Actor->gridPosition = Pos;
-	FVector Poss = FVector(Pos.X*CellGap, Pos.Y*CellGap, CellGap);
-	Actor->SetActorLocation(Poss);
+
+	Actor->SetActorLocation(WorldPos);
 }
 
 void UUBoardManager::ClearOccupant(FIntPoint Pos)
 {
-	check(IsValidCell(Pos));
-	Grid[Pos.X][Pos.Y].Occupant.Reset();
+	Grid[Pos.X][Pos.Y].Occupant = nullptr;
 }
