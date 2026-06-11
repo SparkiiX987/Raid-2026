@@ -146,6 +146,12 @@ public:
     UFUNCTION(BlueprintImplementableEvent)
         void OnShipDestroyedBP(AAShip* Ship);
 
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnCardDrawBP(UUCardData* cardData);
+
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnCardPlayedBP();
+
     UFUNCTION()
         void OnRep_PlayerID();
 	

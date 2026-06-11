@@ -59,17 +59,6 @@ void ABoardPlayerController::ClickOnCell(AABoardCell* Cell)
     if (!bIsMyTurn) return;
     if (!Cell) return;
 
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("Cell : "));
-        text.Append(Cell->GetName())
-            .Append(" ").Append(Cell->cellData.Pos.ToString())
-            .Append(" ").Append(*UEnum::GetDisplayValueAsText(Cell->cellData.Type).ToString());
-
-
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, text);
-    }
-
     switch (PendingIntent)
     {
     case EActionIntent::MOVE:
@@ -212,6 +201,7 @@ void ABoardPlayerController::ServerPlayCard_Implementation(
     if (!GM) return;
 
     GM->HandlePlayCard(this, Card, TargetCell);
+    OnCardPlayedBP();
 }
 
 void ABoardPlayerController::ServerEndTurn_Implementation()

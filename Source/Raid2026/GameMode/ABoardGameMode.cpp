@@ -9,12 +9,12 @@ void AABoardGameMode::BeginPlay()
     Super::BeginPlay();
 }
 
-void AABoardGameMode::PostLogin(APlayerController* NewPlayer)
+void AABoardGameMode::HandleSeamlessTravelPlayer(AController*& Controller)
 {
-    Super::PostLogin(NewPlayer);
+    Super::HandleSeamlessTravelPlayer(Controller);
 
     ABoardPlayerController* PC =
-        Cast<ABoardPlayerController>(NewPlayer);
+        Cast<ABoardPlayerController>(Controller);
     if (!PC) return;
 
     int32 AssignedID = NextPlayerID++;
@@ -39,6 +39,12 @@ void AABoardGameMode::Logout(AController* Exiting)
     Super::Logout(Exiting);
 }
 
+void AABoardGameMode::PostSeamlessTravel()
+{
+    Super::PostSeamlessTravel();
+    StartGame();
+}
+
 void AABoardGameMode::StartGameWhenReady()
 {
     if (connectedPlayers.Num() < playerCount) return;
@@ -51,7 +57,7 @@ void AABoardGameMode::StartGameWhenReady()
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
     }
 
-    StartGame();
+    //StartGame();
 }
 
 void AABoardGameMode::StartGame()
@@ -60,6 +66,8 @@ void AABoardGameMode::StartGame()
     SpawnBoardActors();
     SpawnVisualiser();
 
+    OnSpawnFinishedBP();
+
     turnManager->InitializeGame(0, playerCount);
 
     for (auto& [ID, PC] : connectedPlayers)
@@ -67,7 +75,7 @@ void AABoardGameMode::StartGame()
         deckManager->InitializeDeck(ID, testDeck/*TODO changer et récupérer le deck du joueur*/);
     }
 
-    BroadcastTurnStarted(0);
+    OnInitialisationFinishedBP();
 }
 
 void AABoardGameMode::PlayerSetupFinished(ABoardPlayerController* PC, int32 playerId)
@@ -82,7 +90,7 @@ void AABoardGameMode::PlayerSetupFinished(ABoardPlayerController* PC, int32 play
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
     }
 
-    StartGameWhenReady();
+    //StartGameWhenReady();
 }
 
 void AABoardGameMode::SpawnManagers()

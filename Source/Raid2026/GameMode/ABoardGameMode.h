@@ -29,7 +29,8 @@ public:
 		TArray<TObjectPtr<UUCardData>> testDeck;
 
 	virtual void BeginPlay() override;
-	virtual void PostLogin(APlayerController* newPlayer) override;
+	virtual void HandleSeamlessTravelPlayer(AController*& Controller) override;
+	virtual void PostSeamlessTravel() override;
 	virtual void Logout(AController* Exiting) override;
 
 	void HandleMoveShip(ABoardPlayerController* playerInstigator, AAShip* ship, FIntPoint targetCell);
@@ -95,7 +96,9 @@ public:
 
 	void RejectAction(ABoardPlayerController* playerInstigator, const FString& Reason) const;
 
-	void BroadcastTurnStarted(int32 PlayerId);
+	UFUNCTION(BlueprintCallable)
+		void BroadcastTurnStarted(int32 PlayerId);
+
 	void BroadcastEssenceChanged(int32 playerId);
 	void SyncHandToPlayer(int32 PlayerId);
 
@@ -110,6 +113,12 @@ public:
 		TSubclassOf<AAMotherShip> mothershipClass;
 
 	void CheckVictoryConditions();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnInitialisationFinishedBP();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnSpawnFinishedBP();
 
 	void OnVictoryConditionMet(int32 WinnerPlayerID);
 

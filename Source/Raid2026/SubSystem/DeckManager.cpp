@@ -22,11 +22,13 @@ void UDeckManager::InitializeDeck(int32 playerId, const TArray<UUCardData*>& Car
 
     for (int32 i = 0; i < StartingHand && State.Deck.Num() > 0; ++i)
     {
-        UUCardData* Card = State.Deck[0];
+
+        DrawSingleCard(State);
+        /*UUCardData* Card = State.Deck[0];
         State.Deck.RemoveAt(0);
         State.Hand.Add(Card);
 
-        OnCardDrawn.Broadcast(playerId, Card);
+        OnCardDrawn.Broadcast(playerId, Card);*/
     }
 
     BroadcastHandUpdate(State);
@@ -271,7 +273,7 @@ FDrawResult UDeckManager::DrawSingleCard(FPlayerDeckState& state)
             FString text = FString::Printf(TEXT("DrawSingleCard P%d : deck vide → %d dégât(s)"),
                 state.playerId, EmptyDeckDmg);
 
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
         }
         return Result;
     }
@@ -290,7 +292,7 @@ FDrawResult UDeckManager::DrawSingleCard(FPlayerDeckState& state)
         FString text = FString::Printf(TEXT("DrawSingleCard P%d : '%s' piochée (%d restantes)"),
             state.playerId, *card->GetName(), state.Deck.Num());
 
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
     }
 
     return Result;

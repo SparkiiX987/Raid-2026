@@ -63,14 +63,6 @@ void AABoardVisualiser::SpawnCellActors()
 
 			FIntPoint cellGridPos = WorldToGrid(Location);
 
-			if (GEngine)
-			{
-				FString text = FString::Printf(TEXT("Cell : "));
-				text.Append(cellGridPos.ToString());
-
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, text);
-			}
-
 			Cell->cellData.Pos = cellGridPos;
 			Cell->cellData.Type = BoardManager->GetCell(cellGridPos).Type;
 			if (BoardManager->GetCell(cellGridPos).Occupant)
