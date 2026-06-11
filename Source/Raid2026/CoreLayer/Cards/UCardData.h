@@ -22,5 +22,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 exemplaire;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TObjectPtr<UStaticMesh> shipMesh;
+
 	//TArray<UEffect>;
 };
