@@ -283,7 +283,7 @@ FDrawResult UDeckManager::DrawSingleCard(FPlayerDeckState& state)
     state.Hand.Add(card);
 
     Result.DrawnCard = card;
-    Result.bDeckEmpty = false;
+    Result.bDeckEmpty = state.Deck.Num() > 0;
 
     OnCardDrawn.Broadcast(state.playerId, card);
 

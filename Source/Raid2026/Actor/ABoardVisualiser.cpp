@@ -120,6 +120,29 @@ FIntPoint AABoardVisualiser::WorldToGrid(FVector WorldPos) const
 	return FIntPoint(FMath::RoundToInt(WorldPos.X / BoardManager->CellGap), FMath::RoundToInt(WorldPos.Y / BoardManager->CellGap));
 }
 
+void AABoardVisualiser::HighlightCells(TArray<FIntPoint> Cells)
+{
+	for (int i = 0; i < Cells.Num(); i++)
+	{
+		AABoardCell* cell = GetCellActor(Cells[i]);
+
+		if (!IsValid(cell)) continue;
+
+		cell->HighlightCell();
+		highlitedCells.Add(cell);
+	}
+}
+
+void AABoardVisualiser::ClearHighlights()
+{
+	for (AABoardCell* cell : highlitedCells)
+	{
+		cell->ClearCellHighlight();
+	}
+
+	highlitedCells.Empty();
+}
+
 int32 AABoardVisualiser::CellIndex(int32 X, int32 Y) const
 {
 	for (int32 x = 0; x < CellActors.Num(); x++)

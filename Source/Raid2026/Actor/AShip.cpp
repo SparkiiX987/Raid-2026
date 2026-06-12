@@ -53,6 +53,11 @@ bool AAShip::CanAct() const
 	return bHasActed;
 }
 
+bool AAShip::CanBePlayed() const
+{
+	return !bJustPlayed && (!bHasMoved || !bHasActed);
+}
+
 void AAShip::ResetTurnFlags()
 {
 	bHasMoved = false;

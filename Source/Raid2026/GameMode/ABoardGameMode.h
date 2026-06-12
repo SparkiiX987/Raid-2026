@@ -45,6 +45,15 @@ public:
 
 	void HandleSpawnShip(ABoardPlayerController* playerInstigator, TSubclassOf<AAShip> ShipClass, FIntPoint TargetCell, UUCardData* CardData);
 
+	UFUNCTION()
+		void HandleTurnStarted(int32 PlayerID, int32 TurnNumber);
+
+	UFUNCTION()
+		void HandleEssenceSpent(int32 PlayerId, int32 Amount, bool bWasBonus);
+
+	UFUNCTION()
+		void HandleBonusEssenceGained(int32 PlayerId, int32 Amount);
+
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UUBoardManager> boardManagerClass;
 
@@ -125,4 +134,7 @@ public:
 	void OnRefineryControlChanged(AARefinery* Refinery, int32 NewOwnerID);
 
 	TArray<FIntPoint> GetReachableCellsForShip(ABoardPlayerController* Instigator, AAShip* Ship);
+
+	UFUNCTION()
+		void HandleCardDrawn(int32 PlayerId, UUCardData* Card);
 };

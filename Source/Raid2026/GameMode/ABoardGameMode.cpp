@@ -42,7 +42,6 @@ void AABoardGameMode::Logout(AController* Exiting)
 void AABoardGameMode::PostSeamlessTravel()
 {
     Super::PostSeamlessTravel();
-    StartGame();
 }
 
 void AABoardGameMode::StartGameWhenReady()
@@ -54,21 +53,48 @@ void AABoardGameMode::StartGameWhenReady()
         FString text = FString::Printf(TEXT("GameMode: Player connected : %d"),
             connectedPlayers.Num());
 
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Purple, text);
     }
 
-    //StartGame();
+    StartGame();
 }
 
 void AABoardGameMode::StartGame()
 {
+    if (connectedPlayers.Num() < playerCount)
+    {
+        if (GEngine)
+            GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow,
+                TEXT("StartGame appelé trop tôt, abandon"));
+        return;
+    }
+
     SpawnManagers();
     SpawnBoardActors();
     SpawnVisualiser();
 
     OnSpawnFinishedBP();
 
+    deckManager->OnCardDrawn.AddDynamic(this, &AABoardGameMode::HandleCardDrawn);
+    turnManager->OnTurnStarted.AddDynamic(this, &AABoardGameMode::HandleTurnStarted);
+
+    turnManager->OnEssenceSpent.AddDynamic(this, &AABoardGameMode::HandleEssenceSpent);
+    turnManager->OnBonusEssenceGained.AddDynamic(this, &AABoardGameMode::HandleBonusEssenceGained);
+
     turnManager->InitializeGame(0, playerCount);
+
+    for (auto& [PlayerId, PC] : connectedPlayers)
+    {
+        BroadcastEssenceChanged(PlayerId);
+    }
+
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("GameMode: Player connected : %d"),
+            connectedPlayers.Num());
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
+    }
 
     for (auto& [ID, PC] : connectedPlayers)
     {
@@ -90,7 +116,7 @@ void AABoardGameMode::PlayerSetupFinished(ABoardPlayerController* PC, int32 play
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
     }
 
-    //StartGameWhenReady();
+    StartGameWhenReady();
 }
 
 void AABoardGameMode::SpawnManagers()
@@ -212,6 +238,7 @@ void AABoardGameMode::HandleMoveShip(
         boardManager->GetCell(TargetCell).refinery->Capture(Ship->ownerPlayer);
     }
 
+    Ship->bHasMoved = true;
     UpdateGridState();
     BroadcastEssenceChanged(PlayerID);
 
@@ -219,6 +246,16 @@ void AABoardGameMode::HandleMoveShip(
         PC->ClientOnShipMoved(Ship, TargetCell);
 
     CheckVictoryConditions();
+}
+
+void AABoardGameMode::HandleEssenceSpent(int32 PlayerId, int32 Amount, bool bWasBonus)
+{
+    BroadcastEssenceChanged(PlayerId);
+}
+
+void AABoardGameMode::HandleBonusEssenceGained(int32 PlayerId, int32 Amount)
+{
+    BroadcastEssenceChanged(PlayerId);
 }
 
 void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInstigator, AAShip* ship, AAMotherShip* TargetMothership)
@@ -234,6 +271,7 @@ void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInsti
             GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
         }
 
+        ship->bHasActed = true;
         OnVictoryConditionMet(playerInstigator->PlayerID);
         return;
     }
@@ -269,6 +307,7 @@ void AABoardGameMode::HandleFireAt(
         return;
     }
 
+    Shooter->bHasActed = true;
     BroadcastFireResult(Result);
     BroadcastEssenceChanged(PlayerID);
     UpdateGridState();
@@ -344,6 +383,10 @@ void AABoardGameMode::HandleSpawnShip(
         return;
     }
 
+    if (true) // verfie si le ship peux se déplacer au premier tour
+    {
+        Ship->bJustPlayed = true;
+    }
     Ship->CardData = CardData;
     Ship->ownerPlayer = PlayerID;
     boardManager->PlaceShip(Ship, TargetCell);
@@ -354,6 +397,11 @@ void AABoardGameMode::HandleSpawnShip(
     UpdateGridState();
     BroadcastEssenceChanged(PlayerID);
     SyncHandToPlayer(PlayerID);
+}
+
+void AABoardGameMode::HandleTurnStarted(int32 PlayerID, int32 TurnNumber)
+{
+    BroadcastTurnStarted(PlayerID);
 }
 
 void AABoardGameMode::HandleEndTurn(ABoardPlayerController* playerInstigator)
@@ -426,24 +474,18 @@ void AABoardGameMode::BroadcastTurnStarted(int32 PlayerID)
     }
 }
 
-void AABoardGameMode::BroadcastEssenceChanged(int32 PlayerID)
+void AABoardGameMode::BroadcastEssenceChanged(int32 playerId)
 {
-    ABoardPlayerController* PC = connectedPlayers.FindRef(PlayerID);
-    if (!PC) return;
+    TObjectPtr<ABoardPlayerController>* PCPtr = connectedPlayers.Find(playerId);
+    if (!PCPtr || !*PCPtr) return;
 
-    ABoardPlayerState* PS = PC->GetPlayerState<ABoardPlayerState>();
-    if (PS)
-    {
-        PS->SetEssence(
-            turnManager->GetCurrentEssence(PlayerID),
-            turnManager->GetMaxEssence(PlayerID),
-            turnManager->GetBonusEssence(PlayerID)
-        );
-    }
+    ABoardPlayerState* PS = (*PCPtr)->GetPlayerState<ABoardPlayerState>();
+    if (!PS) return;
 
-    PC->ClientOnEssenceChanged(
-        turnManager->GetCurrentEssence(PlayerID),
-        turnManager->GetMaxEssence(PlayerID)
+    PS->SetEssence(
+        turnManager->GetCurrentEssence(playerId),
+        turnManager->GetMaxEssence(playerId),
+        turnManager->GetBonusEssence(playerId)
     );
 }
 
@@ -566,4 +608,13 @@ TArray<FIntPoint> AABoardGameMode::GetReachableCellsForShip(
         Positions.Add(RC.Cell);
 
     return Positions;
+}
+
+void AABoardGameMode::HandleCardDrawn(int32 PlayerId, UUCardData* Card)
+{
+    TObjectPtr<ABoardPlayerController>* PCPtr = connectedPlayers.Find(PlayerId);
+    if (PCPtr && *PCPtr)
+    {
+        (*PCPtr)->ClientOnCardDrawn(Card);
+    }
 }

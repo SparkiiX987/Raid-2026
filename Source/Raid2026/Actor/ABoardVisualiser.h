@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AABoardCell> CellActorClass;
 
+	UPROPERTY()
+		TArray<AABoardCell*> highlitedCells;
+
 	void TryBindToGameState();
 
 	UFUNCTION(BlueprintPure)
@@ -50,6 +53,12 @@ public:
 
 	UFUNCTION(BlueprintPure)
 		FIntPoint WorldToGrid(FVector WorldPos) const;
+
+	UFUNCTION()
+		void HighlightCells(TArray<FIntPoint> Cells);
+
+	UFUNCTION()
+		void ClearHighlights();
 
 	void OnGridStateChanged(const TArray<FReplicatedCellState>& NewGrid);
 
