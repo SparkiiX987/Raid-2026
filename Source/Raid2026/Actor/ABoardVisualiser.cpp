@@ -63,14 +63,6 @@ void AABoardVisualiser::SpawnCellActors()
 
 			FIntPoint cellGridPos = WorldToGrid(Location);
 
-			if (GEngine)
-			{
-				FString text = FString::Printf(TEXT("Cell : "));
-				text.Append(cellGridPos.ToString());
-
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, text);
-			}
-
 			Cell->cellData.Pos = cellGridPos;
 			Cell->cellData.Type = BoardManager->GetCell(cellGridPos).Type;
 			if (BoardManager->GetCell(cellGridPos).Occupant)
@@ -126,6 +118,29 @@ FVector AABoardVisualiser::GridToWorld(FIntPoint GridPos) const
 FIntPoint AABoardVisualiser::WorldToGrid(FVector WorldPos) const
 {
 	return FIntPoint(FMath::RoundToInt(WorldPos.X / BoardManager->CellGap), FMath::RoundToInt(WorldPos.Y / BoardManager->CellGap));
+}
+
+void AABoardVisualiser::HighlightCells(TArray<FIntPoint> Cells)
+{
+	for (int i = 0; i < Cells.Num(); i++)
+	{
+		AABoardCell* cell = GetCellActor(Cells[i]);
+
+		if (!IsValid(cell)) continue;
+
+		cell->HighlightCell();
+		highlitedCells.Add(cell);
+	}
+}
+
+void AABoardVisualiser::ClearHighlights()
+{
+	for (AABoardCell* cell : highlitedCells)
+	{
+		cell->ClearCellHighlight();
+	}
+
+	highlitedCells.Empty();
 }
 
 int32 AABoardVisualiser::CellIndex(int32 X, int32 Y) const

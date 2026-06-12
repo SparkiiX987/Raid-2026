@@ -16,8 +16,8 @@ public:
 
 	AAMotherShip()
 	{
-		maxHealthPoint = 0;
-		currentHealthPoint = 0;
+		maxHealthPoint = 20;
+		currentHealthPoint = 20;
 	}
 	
 	static constexpr int32 MaxRDSlots = 3;

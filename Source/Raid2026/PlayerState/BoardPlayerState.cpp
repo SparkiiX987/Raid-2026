@@ -1,5 +1,7 @@
 #include "BoardPlayerState.h"
 #include "Net/UnrealNetwork.h"
+#include <Kismet/GameplayStatics.h>
+#include <Raid2026/PlayerController/BoardPlayerController.h>
 
 void ABoardPlayerState::GetLifetimeReplicatedProps(
     TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -21,12 +23,49 @@ void ABoardPlayerState::SetPlayerId(int32 ID)
     id = ID;
 }
 
-void ABoardPlayerState::SetEssence(
-    int32 Current, int32 Max, int32 Bonus)
+void ABoardPlayerState::UpdateEssenceUi()
+{
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("Try"));
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+    }
+
+    APlayerController* PC = Cast<APlayerController>(GetOwner());
+
+    if (!IsValid(PC))
+    {
+        return;
+    }
+
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("PC trouver"));
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+    }
+
+    if (ABoardPlayerController* BPC = Cast<ABoardPlayerController>(PC))
+    {
+        if (GEngine)
+        {
+            FString text = FString::Printf(TEXT("PC valid et bien caster"));
+
+            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+        }
+
+        BPC->ClientOnEssenceChanged(CurrentEssence, MaxEssence);
+    }
+}
+
+void ABoardPlayerState::SetEssence(int32 Current, int32 Max, int32 Bonus)
 {
     CurrentEssence = Current;
     MaxEssence = Max;
     BonusEssence = Bonus;
+
+    UpdateEssenceUi();
 }
 
 void ABoardPlayerState::SetHand(const TArray<UUCardData*>& NewHand)
@@ -37,7 +76,15 @@ void ABoardPlayerState::SetHand(const TArray<UUCardData*>& NewHand)
 
 void ABoardPlayerState::OnRep_Essence()
 {
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("rep essence"));
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+    }
     OnEssenceChanged.Broadcast(CurrentEssence, MaxEssence);
+
+    UpdateEssenceUi();
 }
 
 void ABoardPlayerState::OnRep_Hand()

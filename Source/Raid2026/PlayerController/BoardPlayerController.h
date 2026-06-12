@@ -7,6 +7,7 @@
 #include "../Actor/AMotherShip.h"
 #include "../Actor/AShip.h"
 #include "../CoreLayer/Inputs/ActionIntent.h"
+#include <EnhancedInputSubsystems.h>
 #include "BoardPlayerController.generated.h"
 
 UCLASS()
@@ -18,6 +19,9 @@ public:
 
     UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_PlayerID)
         int32 PlayerID = -1;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+        TObjectPtr<UInputMappingContext> BoardMappingContext;
 
     void SetupPlayer(int32 ID);
 
@@ -111,6 +115,13 @@ public:
     UFUNCTION(Client, Reliable)
         void ClientInitializeInput();
 
+
+    UFUNCTION(Client, Reliable)
+        void ClientOnCardDrawn(UUCardData* Card);
+
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnCardDrawnBP(UUCardData* Card);
+
     UFUNCTION(BlueprintImplementableEvent)
         void InitializeInputBP();
 
@@ -123,7 +134,9 @@ public:
 
     void HandleShipSelected(AAShip* Ship);
     void HandleCellTargeted(AABoardCell* Cell);
-    void ClearSelection();
+
+    UFUNCTION(BlueprintCallable)
+        void ClearSelection();
 
     UFUNCTION(BlueprintImplementableEvent)
         void OnTurnStartedBP(int32 ActivePlayerID, bool bIsLocalPlayerTurn);
@@ -138,13 +151,22 @@ public:
         void OnActionRejectedBP(const FString& Reason);
 
     UFUNCTION(BlueprintImplementableEvent)
-        void OnEssenceChangedBP(int32 NewEssence, int32 MaxEssence);
+        void OnEssenceChangedBP(int32 NewEssence, int32 NewMaxEssence);
 
     UFUNCTION(BlueprintImplementableEvent)
         void OnVictoryBP(int32 WinnerID);
 
     UFUNCTION(BlueprintImplementableEvent)
         void OnShipDestroyedBP(AAShip* Ship);
+
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnCardDrawBP(UUCardData* cardData);
+
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnCardPlayedBP();
+
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnShipSelectedBP();
 
     UFUNCTION()
         void OnRep_PlayerID();

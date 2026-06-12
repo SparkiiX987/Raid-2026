@@ -29,7 +29,8 @@ public:
 		TArray<TObjectPtr<UUCardData>> testDeck;
 
 	virtual void BeginPlay() override;
-	virtual void PostLogin(APlayerController* newPlayer) override;
+	virtual void HandleSeamlessTravelPlayer(AController*& Controller) override;
+	virtual void PostSeamlessTravel() override;
 	virtual void Logout(AController* Exiting) override;
 
 	void HandleMoveShip(ABoardPlayerController* playerInstigator, AAShip* ship, FIntPoint targetCell);
@@ -43,6 +44,15 @@ public:
 	void HandleEndTurn(ABoardPlayerController* playerInstigator);
 
 	void HandleSpawnShip(ABoardPlayerController* playerInstigator, TSubclassOf<AAShip> ShipClass, FIntPoint TargetCell, UUCardData* CardData);
+
+	UFUNCTION()
+		void HandleTurnStarted(int32 PlayerID, int32 TurnNumber);
+
+	UFUNCTION()
+		void HandleEssenceSpent(int32 PlayerId, int32 Amount, bool bWasBonus);
+
+	UFUNCTION()
+		void HandleBonusEssenceGained(int32 PlayerId, int32 Amount);
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UUBoardManager> boardManagerClass;
@@ -95,7 +105,9 @@ public:
 
 	void RejectAction(ABoardPlayerController* playerInstigator, const FString& Reason) const;
 
-	void BroadcastTurnStarted(int32 PlayerId);
+	UFUNCTION(BlueprintCallable)
+		void BroadcastTurnStarted(int32 PlayerId);
+
 	void BroadcastEssenceChanged(int32 playerId);
 	void SyncHandToPlayer(int32 PlayerId);
 
@@ -111,9 +123,18 @@ public:
 
 	void CheckVictoryConditions();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnInitialisationFinishedBP();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnSpawnFinishedBP();
+
 	void OnVictoryConditionMet(int32 WinnerPlayerID);
 
 	void OnRefineryControlChanged(AARefinery* Refinery, int32 NewOwnerID);
 
 	TArray<FIntPoint> GetReachableCellsForShip(ABoardPlayerController* Instigator, AAShip* Ship);
+
+	UFUNCTION()
+		void HandleCardDrawn(int32 PlayerId, UUCardData* Card);
 };

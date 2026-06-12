@@ -17,4 +17,10 @@ public:
 	void SetRefineryOwner(int32 owner);
 
 	AABoardCell();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void ClearCellHighlight();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void HighlightCell();
 };

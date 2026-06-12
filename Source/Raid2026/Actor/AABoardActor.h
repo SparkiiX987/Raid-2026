@@ -20,8 +20,11 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_GridPosition)
 		FIntPoint gridPosition;
 
-	int32 maxHealthPoint;
-	int32 currentHealthPoint;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+		int32 maxHealthPoint;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+		int32 currentHealthPoint;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
 		int32 ownerPlayer;

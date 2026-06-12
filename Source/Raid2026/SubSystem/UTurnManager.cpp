@@ -2,6 +2,8 @@
 #include "../CoreLayer/Turn/ETurnPhase.h"
 #include "../Actor/AShip.h"
 #include "UBoardManager.h"
+#include <Raid2026/PlayerState/BoardPlayerState.h>
+#include <Kismet/GameplayStatics.h>
 
 
 void UUTurnManager::StartTurn(int32 playerId)
@@ -34,7 +36,15 @@ void UUTurnManager::StartTurn(int32 playerId)
             {
                 AAShip* Ship = boardManager->GetShipAt(FIntPoint(X, Y));
                 if (Ship && Ship->GetOwnerID() == playerId)
+                {
+                    if (GEngine)
+                    {
+                        FString text = FString::Printf(TEXT("Ship turn flag reset"));
+
+                        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+                    }
                     Ship->ResetTurnFlags();
+                }
             }
     }
 
@@ -194,7 +204,8 @@ int32 UUTurnManager::GetBonusEssence(int32 playerId) const
 
 int32 UUTurnManager::GetMaxEssence(int32 playerId) const
 {
-	return essenceStates[playerId].maxEssence;
+    const FEssenceState* S = essenceStates.Find(playerId);
+    return S ? S->maxEssence : 0;
 }
 
 bool UUTurnManager::CanAfford(int32 playerId, int32 cost) const
@@ -228,14 +239,6 @@ void UUTurnManager::InitializeGame(int32 inFirstPlayerId, int32 inPlayerCount)
     firstPlayerId = inFirstPlayerId;
     bIsFirstTurnOfGame = true;
     currentTurn = 0;
-
-    for (int32 i = 0; i < playerCount; ++i)
-    {
-        FEssenceState& S = GetOrCreateEssenceState(i);
-        S.maxEssence = startEssence;
-        S.currentEssence = startEssence;
-        S.bonusEssence = 0;
-    }
 
     StartTurn(firstPlayerId);
 }

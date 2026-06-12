@@ -63,6 +63,9 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION(BlueprintPure)
 		bool CanAct() const;
 
+	UFUNCTION(BlueprintPure)
+		bool CanBePlayed() const;
+
 	UFUNCTION(BlueprintCallable)
 		void ResetTurnFlags();
 

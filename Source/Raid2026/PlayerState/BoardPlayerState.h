@@ -54,6 +54,8 @@ public:
     void SetHand(const TArray<UUCardData*>& newHand);
     void SetPlayerId(int32 id);
 
+    void UpdateEssenceUi();
+
     UFUNCTION()
         void OnRep_Hand();
 
