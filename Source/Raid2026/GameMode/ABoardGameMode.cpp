@@ -171,6 +171,15 @@ void AABoardGameMode::SpawnVisualiser()
         return;
     }
 
+    for (TTuple<int, TObjectPtr<ABoardPlayerController>>& Pair : connectedPlayers)
+    {
+        if (Pair.Value)
+        {
+            Pair.Value->BoardVisualiser = boardVisualiser;
+        }
+    }
+
+
     boardVisualiser->BoardManager = boardManager;
     boardVisualiser->TurnManager = turnManager;
     boardVisualiser->SpawnCellActors();
@@ -207,8 +216,11 @@ void AABoardGameMode::HandleMoveShip(
     TArray<FIntPoint> PathToTake = PathFinder->InitializeCheck(Ship, boardManager->GetCell(TargetCell));
 
     if (PathToTake.Num() == 0) return;
+
+    
     
     int32 PlayerID = playerInstigator->PlayerID;
+    turnManager->PayEssence(PlayerID, PathToTake.Num()-1);
     // int32 AvailableEssence = turnManager->GetAvaliableEssence(PlayerID);
 
     // TArray<FReachableCell> Reachable =
@@ -241,7 +253,8 @@ void AABoardGameMode::HandleMoveShip(
 
     Ship->OnMove(PathToTake.Num() - 1);
 
-    boardManager->MoveShipTo(Ship, TargetCell, PlayerID);
+    boardManager->MoveShipTo(Ship, PathToTake);
+
     if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery)
     {
         boardManager->GetCell(TargetCell).refinery->Capture(Ship->ownerPlayer);

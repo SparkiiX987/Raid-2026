@@ -1,9 +1,11 @@
 #include "ABoardVisualiser.h"
 #include "../GameState/BoardGameState.h"
+#include "Net/UnrealNetwork.h"
 
 AABoardVisualiser::AABoardVisualiser()
 {
 	bReplicates = true;
+	bAlwaysRelevant = true;
 }
 
 void AABoardVisualiser::BeginPlay()
@@ -122,6 +124,12 @@ FIntPoint AABoardVisualiser::WorldToGrid(FVector WorldPos) const
 
 void AABoardVisualiser::HighlightCells(TArray<FIntPoint> Cells)
 {
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("message %d"), Cells.Num());
+
+		GEngine->AddOnScreenDebugMessage(-1, 1500.0f, FColor::Blue, text);
+	}
 	for (int i = 0; i < Cells.Num(); i++)
 	{
 		AABoardCell* cell = GetCellActor(Cells[i]);
@@ -153,4 +161,13 @@ int32 AABoardVisualiser::CellIndex(int32 X, int32 Y) const
 		}
 	}
 	return -1;
+}
+
+void AABoardVisualiser::GetLifetimeReplicatedProps(
+	TArray<FLifetimeProperty>& OutLifetimeProps
+) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AABoardVisualiser, CellActors);
 }

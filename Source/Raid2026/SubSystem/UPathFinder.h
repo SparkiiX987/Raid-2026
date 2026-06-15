@@ -30,6 +30,9 @@ public:
 	TArray<FIntPoint> PathTaken;
 
 	UPROPERTY(BlueprintReadOnly)
+	TArray<FIntPoint> ReachableCell;
+
+	UPROPERTY(BlueprintReadOnly)
 	int32 PathCost;
 
 	UFUNCTION(BlueprintCallable)
@@ -40,4 +43,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void BuildPath(FIntPoint StartCell, const TMap<FIntPoint, FIntPoint>& Parent);
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FIntPoint> GetAllCellAroundShip(AAShip* Ship);
 };

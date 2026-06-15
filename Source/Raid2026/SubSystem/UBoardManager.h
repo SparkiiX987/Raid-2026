@@ -19,6 +19,26 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CellGap = 10.f;
 
+	UPROPERTY()
+	FTimerHandle MoveTimerHandle;
+
+	UPROPERTY()
+	AAShip* MovingShip;
+
+	UPROPERTY()
+	TArray<FIntPoint> CurrentPath;
+
+	int32 CurrentIndex = 0;
+
+	float MoveDuration = 0.25f;
+
+	float MoveAlpha = 0.f;
+
+	float TimerRate = 0.016f;
+
+	FVector StartWorldPos;
+	FVector TargetWorldPos;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UUTurnManager> TurnManager;
 
@@ -69,7 +89,11 @@ public:
 	int32 CheckRefineries(int32 playerID);
 
 	UFUNCTION(BlueprintCallable)
-	bool MoveShipTo(AAShip* Ship, FIntPoint TargetCell,int32 playerID);
+	void MoveShipTo(AAShip* Ship, const TArray<FIntPoint>& TargetCell);
+
+	void MoveStep();
+
+	FVector GridToWorld(FIntPoint GridPos);
 	
 	UFUNCTION(BlueprintCallable)
 	void PlaceShip(AAShip* Ship, FIntPoint target);

@@ -28,6 +28,15 @@ TArray<FIntPoint> UPathFinder::InitializeCheck(AAShip* Ship, FCell CellToCheck)
 	cellSelect = CellToCheck.Pos;
 
 	SearchPath(Ship->gridPosition, Ship);
+	if (!PathTaken.IsEmpty())
+	{
+		PathCost = (PathTaken.Num() - 1) * Ship->CardData->stats.moveCost;
+
+		if (PathCost > TurnManager->GetCurrentEssence(TurnManager->GetCurrentPlayer()))
+		{
+			PathTaken.Reset();
+		}
+	}
 	return PathTaken;
 }
 
@@ -100,20 +109,6 @@ void UPathFinder::SearchPath(FIntPoint StartCell, AAShip* Ship)
 	}
 
 	BuildPath(StartCell, Parent);
-
-	PathCost = (PathTaken.Num() - 1) * Ship->CardData->stats.moveCost;
-
-	if (PathCost > TurnManager->GetCurrentEssence(TurnManager->GetCurrentPlayer()))
-	{
-		PathTaken.Reset();
-
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1,1000.f,FColor::Red,TEXT("Not enough essence"));
-			return;
-		}
-	}
-	TurnManager->PayEssence(TurnManager->GetCurrentPlayer(), PathCost);
 }
 
 void UPathFinder::BuildPath(FIntPoint StartCell,const TMap<FIntPoint, FIntPoint>& Parent)
@@ -154,4 +149,55 @@ void UPathFinder::BuildPath(FIntPoint StartCell,const TMap<FIntPoint, FIntPoint>
 
 		GEngine->AddOnScreenDebugMessage(-1,2000.f,FColor::Green,DebugText);
 	}
+}
+
+TArray<FIntPoint> UPathFinder::GetAllCellAroundShip(AAShip* Ship)
+{
+	ReachableCell.Reset();
+
+	const FIntPoint StartCell = Ship->gridPosition;
+
+	TQueue<FIntPoint> OpenList;
+
+	TSet<FIntPoint> Visited;
+
+	TMap<FIntPoint, int32> Cost;
+
+	OpenList.Enqueue(StartCell);
+
+	Visited.Add(StartCell);
+
+	Cost.Add(StartCell, 0);
+
+	while (!OpenList.IsEmpty())
+	{
+		FIntPoint CurrentCell;
+		OpenList.Dequeue(CurrentCell);
+
+		const int32 CurrentCost = Cost[CurrentCell];
+
+		for (const FIntPoint& Direction : Directions)
+		{
+			const FIntPoint NewCell = CurrentCell + Direction;
+
+			const int32 NewCost = CurrentCost + 1;
+
+			if (NewCost > Ship->CardData->stats.currentSpeed
+				||!BoardManager->IsValidCell(NewCell)
+				|| Visited.Contains(NewCell)
+				|| BoardManager->IsCellOccupied(NewCell))
+			{
+				continue;
+			}
+			Visited.Add(NewCell);
+
+			Cost.Add(NewCell, NewCost);
+
+			ReachableCell.Add(NewCell);
+
+			OpenList.Enqueue(NewCell);
+		}
+	}
+
+	return ReachableCell;
 }

@@ -185,14 +185,61 @@ int32 UUBoardManager::CheckRefineries(int32 playerID)
 	return RefineriesPossessed;
 }
 
-bool UUBoardManager::MoveShipTo(AAShip* Ship, FIntPoint TargetCell, int32 playerID)
+void UUBoardManager::MoveShipTo(AAShip* Ship, const TArray<FIntPoint>& TargetCell)
 {
-	if (IsCellOccupied(TargetCell) || Ship->ownerPlayer != playerID)
-		return false;
+	if (!Ship || TargetCell.Num() == 0)
+		return;
 
-	ClearOccupant(Ship->gridPosition);
-	SetOccupant(TargetCell, Ship);
-	return true;
+	MovingShip = Ship;
+	CurrentPath = TargetCell;
+	CurrentIndex = 0;
+
+	MoveAlpha = 0.f;
+
+	StartWorldPos = GridToWorld(Ship->gridPosition);
+	TargetWorldPos = GridToWorld(CurrentPath[0]);
+	
+	GetWorld()->GetTimerManager().SetTimer(MoveTimerHandle,this,&UUBoardManager::MoveStep,TimerRate,true);
+}
+
+void UUBoardManager::MoveStep()
+{
+	if (!MovingShip) return;
+
+	MoveAlpha += TimerRate / MoveDuration;
+	MoveAlpha = FMath::Clamp(MoveAlpha, 0.f, 1.f);
+
+	float SmoothedAlpha = FMath::SmoothStep(0.f, 1.f, MoveAlpha);
+
+	FVector NewPos = FMath::Lerp(StartWorldPos, TargetWorldPos, SmoothedAlpha);
+	MovingShip->SetActorLocation(NewPos);
+
+	if (MoveAlpha < 1.f) return;
+
+	FIntPoint OldPos = MovingShip->gridPosition;
+	ClearOccupant(OldPos);
+
+	MovingShip->gridPosition = CurrentPath[CurrentIndex];
+	SetOccupant(MovingShip->gridPosition, MovingShip);
+
+	CurrentIndex++;
+
+	if (CurrentIndex >= CurrentPath.Num())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
+		MovingShip = nullptr;
+		return;
+	}
+
+	MoveAlpha = 0.f;
+
+	StartWorldPos = MovingShip->GetActorLocation();
+	TargetWorldPos = GridToWorld(CurrentPath[CurrentIndex]);
+}
+
+FVector UUBoardManager::GridToWorld(FIntPoint GridPos)
+{
+	return FVector(GridPos.X* CellGap, GridPos.Y*CellGap, 0.0f);
 }
 
 void UUBoardManager::PlaceShip(AAShip* Ship, FIntPoint target)
@@ -226,7 +273,6 @@ void UUBoardManager::SetOccupant(FIntPoint Pos, AABoardActor* Actor)
 	}
 
 	Actor->gridPosition = Pos;
-
 	Actor->SetActorLocation(WorldPos);
 }
 
