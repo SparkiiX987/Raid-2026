@@ -69,6 +69,9 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnMoveBP();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnShipSelectedBP();
+
 	UFUNCTION()
 		void OnAct();
 
