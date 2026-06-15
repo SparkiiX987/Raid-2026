@@ -154,10 +154,12 @@ FPushResult UCombatResolver::ApplyPush(AAShip* Ship, EDirections Direction, int3
 	if (!Board) return Result;
 
 	const FIntPoint Behind = GetCellBehind(Ship, Direction);
+	TArray<FIntPoint> Points;
+	Points.Add(Behind);
 
 	if (Board->IsValidCell(Behind) && !Board->IsCellOccupied(Behind))
 	{
-		Board->MoveShipTo(Ship, Behind, Ship->ownerPlayer);
+		Board->MoveShipTo(Ship, Points);
 		Result.bMoved = true;
 		Result.FinalCell = Behind;
 		return Result;

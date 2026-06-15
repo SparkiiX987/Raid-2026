@@ -66,6 +66,7 @@ public:
 
 	void OnGameOver(int32 winner);
 
+	UPROPERTY(replicated)
 	TArray<AABoardCell*> CellActors;
 
 	static const TArray<FIntPoint> RefineryGridPositions;

@@ -34,6 +34,7 @@ void ABoardPlayerController::GetLifetimeReplicatedProps(
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ABoardPlayerController, PlayerID);
+    DOREPLIFETIME(ABoardPlayerController, BoardVisualiser);
 }
 
 void ABoardPlayerController::SetupPlayer(int32 ID)
@@ -43,7 +44,7 @@ void ABoardPlayerController::SetupPlayer(int32 ID)
     {
         FString text = FString::Printf(TEXT("PlayerController: received PlayerID %d"), PlayerID);
 
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+        GEngine->AddOnScreenDebugMessage(-1, 1500.0f, FColor::Blue, text);
     }
     ClientInitializeInput();
 }
@@ -303,7 +304,13 @@ void ABoardPlayerController::ServerRequestReachableCells_Implementation(
     AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
     if (!GM) return;
 
-    TArray<FIntPoint> Reachable = GM->GetReachableCellsForShip(this, Ship);
+    TArray<FIntPoint> Reachable = GM->PathFinder->GetAllCellAroundShip(Ship);
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("message %d"), Reachable.Num());
+
+        GEngine->AddOnScreenDebugMessage(-1, 1005.0f, FColor::Blue, text);
+    }
     ClientOnReachableCells(Reachable);
 }
 
@@ -347,8 +354,7 @@ void ABoardPlayerController::ClientOnShipMoved_Implementation(
 {
     if (BoardVisualiser && Ship)
     {
-        FVector WorldPos = BoardVisualiser->GridToWorld(NewCell);
-        Ship->SetActorLocation(WorldPos);
+        BoardVisualiser->ClearHighlights();
     }
 }
 
@@ -383,7 +389,10 @@ void ABoardPlayerController::ClientOnReachableCells_Implementation(
     const TArray<FIntPoint>& Cells)
 {
     if (BoardVisualiser)
+    {
+        BoardVisualiser->ClearHighlights();
         BoardVisualiser->HighlightCells(Cells);
+    }
 }
 
 void ABoardPlayerController::ClientOnVictory_Implementation(int32 WinnerID)

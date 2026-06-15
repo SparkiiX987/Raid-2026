@@ -34,11 +34,14 @@ public:
     UPROPERTY(BlueprintReadWrite)
         TObjectPtr<UUCardData> PendingCardData;
 
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(BlueprintReadOnly)    
         bool bIsMyTurn = false;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        TObjectPtr<AABoardVisualiser> BoardVisualiser;
+    UPROPERTY(ReplicatedUsing=OnRep_BoardVisualiser)
+    TObjectPtr<AABoardVisualiser> BoardVisualiser;
+
+    UFUNCTION()
+    void OnRep_BoardVisualiser();
 
     UFUNCTION(BlueprintCallable)
         void ClickOnShip(AAShip* Ship);
@@ -175,3 +178,7 @@ public:
         void OnRep_PlayerID();
 	
 };
+
+inline void ABoardPlayerController::OnRep_BoardVisualiser()
+{
+}
