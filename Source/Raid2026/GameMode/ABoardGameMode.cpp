@@ -65,7 +65,7 @@ void AABoardGameMode::StartGame()
     {
         if (GEngine)
             GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow,
-                TEXT("StartGame appelé trop tôt, abandon"));
+                TEXT("StartGame appelï¿½ trop tï¿½t, abandon"));
         return;
     }
 
@@ -98,7 +98,7 @@ void AABoardGameMode::StartGame()
 
     for (auto& [ID, PC] : connectedPlayers)
     {
-        deckManager->InitializeDeck(ID, testDeck/*TODO changer et récupérer le deck du joueur*/);
+        deckManager->InitializeDeck(ID, testDeck/*TODO changer et rï¿½cupï¿½rer le deck du joueur*/);
     }
 
     OnInitialisationFinishedBP();
@@ -127,10 +127,13 @@ void AABoardGameMode::SpawnManagers()
     turnManager = NewObject<UUTurnManager>(this, turnManagerClass);
     deckManager = NewObject<UDeckManager>(this, deckManagerClass);
     combatResolver = NewObject<UCombatResolver>(this, combatResolverClass);
+    PathFinder = NewObject<UPathFinder>(this, pathFinderClass);
 
     turnManager->boardManager = boardManager;
     turnManager->deckManager = deckManager;
     combatResolver->Board = boardManager;
+    PathFinder->BoardManager = boardManager;
+    PathFinder->TurnManager = turnManager;
 
     boardManager->OnVictoryConditionMet.AddDynamic(
         this, &AABoardGameMode::OnVictoryConditionMet);
@@ -145,7 +148,7 @@ void AABoardGameMode::SpawnVisualiser()
     {
         if (GEngine)
         {
-            FString text = FString::Printf(TEXT("SpawnVisualiser: boardVisualiserClass non assignée !"));
+            FString text = FString::Printf(TEXT("SpawnVisualiser: boardVisualiserClass non assignï¿½e !"));
 
             GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
         }
@@ -161,7 +164,7 @@ void AABoardGameMode::SpawnVisualiser()
     {
         if (GEngine)
         {
-            FString text = FString::Printf(TEXT("SpawnVisualiser: échec du spawn !"));
+            FString text = FString::Printf(TEXT("SpawnVisualiser: ï¿½chec du spawn !"));
 
             GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
         }
@@ -200,37 +203,41 @@ void AABoardGameMode::HandleMoveShip(
 {
     if (!ValidateIsPlayerTurn(playerInstigator)) return;
     if (!ValidateShipOwnership(playerInstigator, Ship)) return;
+    
+    TArray<FIntPoint> PathToTake = PathFinder->InitializeCheck(Ship, boardManager->GetCell(TargetCell));
 
+    if (PathToTake.Num() == 0) return;
+    
     int32 PlayerID = playerInstigator->PlayerID;
-    int32 AvailableEssence = turnManager->GetAvaliableEssence(PlayerID);
+    // int32 AvailableEssence = turnManager->GetAvaliableEssence(PlayerID);
 
-    TArray<FReachableCell> Reachable =
-        boardManager->GetReachableCells(Ship, AvailableEssence);
-
-    const FReachableCell* targetCellData = nullptr;
-    bool bIsReachable = Reachable.ContainsByPredicate(
-        [&](const FReachableCell& RC) {
-            if (RC.Cell == TargetCell)
-            {
-                targetCellData = &RC;
-                return true;
-            }
-
-            return false;
-        });
-
-    if (!bIsReachable || targetCellData == nullptr)
-    {
-        RejectAction(playerInstigator, "Cell not reachable");
-        return;
-    }
-
-    int32 MoveCost = targetCellData->EssenceCost;
-    if (!turnManager->PayEssence(PlayerID, MoveCost))
-    {
-        RejectAction(playerInstigator, "Not enough essence");
-        return;
-    }
+    // TArray<FReachableCell> Reachable =
+    //     boardManager->GetReachableCells(Ship, AvailableEssence);
+    //
+    // const FReachableCell* targetCellData = nullptr;
+    // bool bIsReachable = Reachable.ContainsByPredicate(
+    //     [&](const FReachableCell& RC) {
+    //         if (RC.Cell == TargetCell)
+    //         {
+    //             targetCellData = &RC;
+    //             return true;
+    //         }
+    //
+    //         return false;
+    //     });
+    //
+    // if (!bIsReachable || targetCellData == nullptr)
+    // {
+    //     RejectAction(playerInstigator, "Cell not reachable");
+    //     return;
+    // }
+    //
+    // int32 MoveCost = targetCellData->EssenceCost;
+    // if (!turnManager->PayEssence(PlayerID, MoveCost))
+    // {
+    //     RejectAction(playerInstigator, "Not enough essence");
+    //     return;
+    // }
 
     boardManager->MoveShipTo(Ship, TargetCell, PlayerID);
     if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery)
@@ -383,7 +390,7 @@ void AABoardGameMode::HandleSpawnShip(
         return;
     }
 
-    if (true) // verfie si le ship peux se déplacer au premier tour
+    if (true) // verfie si le ship peux se dï¿½placer au premier tour
     {
         Ship->bJustPlayed = true;
     }
