@@ -77,9 +77,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveShipFromGrid(AAShip* Ship);
 
-	UFUNCTION(BlueprintCallable)
-		int32 Distance(FCell cell1, FCell cell2);
-
 	FCell Grid[GridWidth][GridHeight+2];
 
 	TArray<AARefinery*> RefineryActors;

@@ -32,17 +32,11 @@ void UUTurnManager::StartTurn(int32 playerId)
     if (boardManager)
     {
         for (int32 X = 0; X < UUBoardManager::GridWidth; ++X)
-            for (int32 Y = 0; Y < UUBoardManager::GridHeight; ++Y)
+            for (int32 Y = 0; Y < UUBoardManager::GridHeight + 2; ++Y)
             {
                 AAShip* Ship = boardManager->GetShipAt(FIntPoint(X, Y));
-                if (Ship && Ship->GetOwnerID() == playerId)
+                if (IsValid(Ship) && Ship->GetOwnerID() == playerId)
                 {
-                    if (GEngine)
-                    {
-                        FString text = FString::Printf(TEXT("Ship turn flag reset"));
-
-                        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-                    }
                     Ship->ResetTurnFlags();
                 }
             }

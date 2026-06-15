@@ -138,6 +138,9 @@ public:
     UFUNCTION(BlueprintCallable)
         void ClearSelection();
 
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+        void ClientClearSelection();
+
     UFUNCTION(BlueprintImplementableEvent)
         void OnTurnStartedBP(int32 ActivePlayerID, bool bIsLocalPlayerTurn);
 

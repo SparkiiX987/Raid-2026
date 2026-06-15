@@ -239,15 +239,21 @@ void AABoardGameMode::HandleMoveShip(
     //     return;
     // }
 
+    Ship->OnMove(PathToTake.Num() - 1);
+
     boardManager->MoveShipTo(Ship, TargetCell, PlayerID);
     if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery)
     {
         boardManager->GetCell(TargetCell).refinery->Capture(Ship->ownerPlayer);
     }
 
-    Ship->bHasMoved = true;
     UpdateGridState();
     BroadcastEssenceChanged(PlayerID);
+
+    if (!Ship->CanBePlayed())
+    {
+        playerInstigator->ClearSelection();
+    }
 
     for (auto& [ID, PC] : connectedPlayers)
         PC->ClientOnShipMoved(Ship, TargetCell);
@@ -278,7 +284,13 @@ void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInsti
             GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
         }
 
-        ship->bHasActed = true;
+        ship->OnAct();
+
+        if (!ship->CanBePlayed())
+        {
+            playerInstigator->ClearSelection();
+        }
+
         OnVictoryConditionMet(playerInstigator->PlayerID);
         return;
     }
@@ -314,10 +326,16 @@ void AABoardGameMode::HandleFireAt(
         return;
     }
 
-    Shooter->bHasActed = true;
+    Shooter->OnAct();
     BroadcastFireResult(Result);
     BroadcastEssenceChanged(PlayerID);
     UpdateGridState();
+
+    if (!Shooter->CanBePlayed())
+    {
+        playerInstigator->ClearSelection();
+    }
+
     CheckVictoryConditions();
 }
 
@@ -390,10 +408,6 @@ void AABoardGameMode::HandleSpawnShip(
         return;
     }
 
-    if (true) // verfie si le ship peux se d�placer au premier tour
-    {
-        Ship->bJustPlayed = true;
-    }
     Ship->CardData = CardData;
     Ship->ownerPlayer = PlayerID;
     boardManager->PlaceShip(Ship, TargetCell);

@@ -191,7 +191,6 @@ bool UUBoardManager::MoveShipTo(AAShip* Ship, FIntPoint TargetCell, int32 player
 		return false;
 
 	ClearOccupant(Ship->gridPosition);
-	Ship->bHasMoved = true;
 	SetOccupant(TargetCell, Ship);
 	return true;
 }
