@@ -74,7 +74,7 @@ public:
 
 	void SendPlayedCardToDiscard(int32 playerId, UUCardData* card);
 
-private:
+protected:
 
 	UPROPERTY()
 		TMap<int32, FPlayerDeckState> PlayerDecks;

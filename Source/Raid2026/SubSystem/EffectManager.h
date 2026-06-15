@@ -53,7 +53,7 @@ public:
     UPROPERTY(BlueprintReadWrite)
         TObjectPtr<UDeckManager> deckManager;
 
-private:
+protected:
     TMap<TObjectPtr<AAShip>, TArray<TObjectPtr<UEffect>>> RegisteredEffects;
 
 };

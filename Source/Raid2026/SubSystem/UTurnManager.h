@@ -82,7 +82,7 @@ public:
 
     int32 GetNextPlayerId() const;
 
-private:
+protected:
     UPROPERTY()
         TMap<int32, FEssenceState> essenceStates;
 
