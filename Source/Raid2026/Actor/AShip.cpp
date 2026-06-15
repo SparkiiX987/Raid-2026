@@ -1,5 +1,16 @@
 #include "AShip.h"
+#include "Net/UnrealNetwork.h"
 
+void AAShip::GetLifetimeReplicatedProps(
+	TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AAShip, bJustPlayed);
+	DOREPLIFETIME(AAShip, bHasActed);
+	DOREPLIFETIME(AAShip, bHasMoved);
+	DOREPLIFETIME(AAShip, currentSpeed);
+}
 
 FCardStats AAShip::GetEffectiveStats() const
 {
@@ -23,7 +34,7 @@ int32 AAShip::GetMaxSpeed() const
 
 int32 AAShip::GetCurrentSpeed() const
 {
-	return GetEffectiveStats().currentSpeed;
+	return currentSpeed;
 }
 
 int32 AAShip::GetMoveCost() const
@@ -45,17 +56,17 @@ bool AAShip::IsFaceDown()
 
 bool AAShip::CanMove() const
 {
-	return GetCurrentSpeed() > 0 && bJustPlayed;
+	return GetCurrentSpeed() > 0 && !bJustPlayed;
 }
 
 bool AAShip::CanAct() const
 {
-	return bHasActed;
+	return !bHasActed && !bJustPlayed;
 }
 
 bool AAShip::CanBePlayed() const
 {
-	return !bJustPlayed && (!bHasMoved || !bHasActed);
+	return CanMove() || CanAct();
 }
 
 void AAShip::ResetTurnFlags()
@@ -63,6 +74,46 @@ void AAShip::ResetTurnFlags()
 	bHasMoved = false;
 	bHasActed = false;
 	bJustPlayed = false;
+	currentSpeed = GetEffectiveStats().maxSpeed;
+}
+
+void AAShip::OnShipSpawn()
+{
+	if (true) // check si le vaisseau peut joueur au premier tour
+	{
+		bJustPlayed = true;
+	}
+
+	OnShipSpawnBP();
+}
+
+void AAShip::OnMove(int32 Distance)
+{
+	currentSpeed -= Distance;
+
+	if (!CanMove())
+	{
+		bHasMoved = true;
+
+		if (!CanAct())
+		{
+			bJustPlayed = true;
+		}
+	}
+
+	OnMoveBP();
+}
+
+void AAShip::OnAct()
+{
+	bHasActed = true;
+
+	if (!CanMove())
+	{
+		bJustPlayed = true;
+	}
+
+	OnActBP();
 }
 
 void AAShip::TakeDamage(int32 Damage)
