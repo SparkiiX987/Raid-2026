@@ -40,9 +40,10 @@ public:
         FEffectResult ActivateEffect(UEffect* Effect, const FEffectContext& Context);
 
     UFUNCTION(BlueprintCallable)
-        TArray<UEffect*> GetAvailableActivatedEffects(AAShip* Ship,
+        TArray<UEffect*> GetAvailableActivatedEffects(AAShip* Ship, const FEffectContext& Context) const;
 
-    const FEffectContext& Context) const;
+    UFUNCTION(BlueprintCallable)
+        bool CanCaptureRefinery(AAShip* Ship);
 
     UPROPERTY(BlueprintReadWrite)
         TObjectPtr<UUBoardManager> boardManager;

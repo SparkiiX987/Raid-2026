@@ -19,7 +19,7 @@ public:
     {
         Trigger = EEffectTrigger::OnReveal;
         DisplayName = FText::FromString(TEXT("Prise d'information"));
-        Description = FText::FromString(TEXT("Quand ce vaisseau est révélé, piochez {DrawCount} carte(s)."));
+        Description = FText::FromString(FString::Printf(TEXT("Quand ce vaisseau est révélé, piochez %d carte(s)."), DrawCount));
     }
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Draw",
@@ -39,7 +39,7 @@ public:
     {
         Trigger = EEffectTrigger::OnEndOfTurn;
         DisplayName = FText::FromString(TEXT("Extraction"));
-        Description = FText::FromString(TEXT("À la fin de votre tour, gagnez +{BonusAmount} carburant bonus."));
+        Description = FText::FromString(FString::Printf(TEXT("À la fin de votre tour, gagnez + %d carburant bonus."), BonusAmount));
     }
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Essence",
@@ -59,7 +59,7 @@ public:
     {
         Trigger = EEffectTrigger::OnDestroyed;
         DisplayName = FText::FromString(TEXT("Explosion finale"));
-        Description = FText::FromString(TEXT("Quand ce vaisseau est détruit, inflige {Damage} dégât(s) à tous les vaisseaux adjacents."));
+        Description = FText::FromString(FString::Printf(TEXT("Quand ce vaisseau est détruit, inflige %d dégât(s) à tous les vaisseaux adjacents."), Damage));
     }
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Damage",
@@ -83,7 +83,7 @@ public:
         Trigger = EEffectTrigger::Activated;
         EssenceCost = 2;
         DisplayName = FText::FromString(TEXT("Analyse de données"));
-        Description = FText::FromString(TEXT("Payez {EssenceCost} → Piochez {DrawCount} carte(s)."));
+        Description = FText::FromString(FString::Printf(TEXT("Payez %d → Piochez %d carte(s)."), EssenceCost, DrawCount));
     }
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Draw",
@@ -104,7 +104,7 @@ public:
         Trigger = EEffectTrigger::Activated;
         EssenceCost = 1;
         DisplayName = FText::FromString(TEXT("Impulsion gravitationnelle"));
-        Description = FText::FromString(TEXT("Payez {EssenceCost} → Poussez un vaisseau ciblé d'une case."));
+        Description = FText::FromString(FString::Printf(TEXT("Payez %d → Poussez un vaisseau ciblé d'une case."), EssenceCost));
     }
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Push",
@@ -155,7 +155,7 @@ public:
     {
         Trigger = EEffectTrigger::Passive;
         DisplayName = FText::FromString(TEXT("Furtivité avancée"));
-        Description = FText::FromString(TEXT("Ce vaisseau n'est détecté qu'à portée {StealthRange} de radar ennemi."));
+        Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau n'est détecté qu'à portée %d de radar ennemi."), StealthRange));
     }
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Stealth",
@@ -167,5 +167,20 @@ public:
         FCardStats Bonus;
         Bonus.radar = -StealthRange;
         return Bonus;
+    }
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_ImpossibleCapture : public UPassiveEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_ImpossibleCapture()
+    {
+        canCaptureRefinery = false;
+        Trigger = EEffectTrigger::Passive;
+        DisplayName = FText::FromString(TEXT("Capture impossible"));
+        Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau ne peut pas contrôler de rafinerie.")));
     }
 };

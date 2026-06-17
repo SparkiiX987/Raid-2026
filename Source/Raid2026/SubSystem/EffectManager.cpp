@@ -57,7 +57,7 @@ void UEffectManager::UnregisterShipEffects(AAShip* Ship)
     }
 }
 
-void UEffectManager::NotifyEvent(EEffectTrigger       Trigger,
+void UEffectManager::NotifyEvent(EEffectTrigger Trigger,
     const FEffectContext& BaseContext)
 {
     if (RegisteredEffects.IsEmpty()) return;
@@ -206,4 +206,17 @@ TArray<UEffect*> UEffectManager::GetAvailableActivatedEffects(
     }
 
     return Available;
+}
+
+bool UEffectManager::CanCaptureRefinery(AAShip* Ship)
+{
+    for (UEffect* effect : RegisteredEffects[Ship])
+    {
+        if (!effect->canCaptureRefinery)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }

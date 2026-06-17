@@ -3,6 +3,7 @@
 #include "../CoreLayer/Cells/FReachableCell.h"
 #include "../GameState/BoardGameState.h"
 #include "../PlayerState/BoardPlayerState.h"
+#include <Raid2026/Effects/Effect.h>
 
 void AABoardGameMode::BeginPlay()
 {
@@ -82,6 +83,7 @@ void AABoardGameMode::StartGame()
     turnManager->OnBonusEssenceGained.AddDynamic(this, &AABoardGameMode::HandleBonusEssenceGained);
 
     turnManager->InitializeGame(0, playerCount);
+    effectManager->Initialize(boardManager, turnManager, deckManager);
 
     for (auto& [PlayerId, PC] : connectedPlayers)
     {
@@ -127,11 +129,14 @@ void AABoardGameMode::SpawnManagers()
     turnManager = NewObject<UUTurnManager>(this, turnManagerClass);
     deckManager = NewObject<UDeckManager>(this, deckManagerClass);
     combatResolver = NewObject<UCombatResolver>(this, combatResolverClass);
+    effectManager = NewObject<UEffectManager>(this, effectManagerClass);
     PathFinder = NewObject<UPathFinder>(this, pathFinderClass);
 
     turnManager->boardManager = boardManager;
     turnManager->deckManager = deckManager;
+
     combatResolver->Board = boardManager;
+
     PathFinder->BoardManager = boardManager;
     PathFinder->TurnManager = turnManager;
 
@@ -217,45 +222,14 @@ void AABoardGameMode::HandleMoveShip(
 
     if (PathToTake.Num() == 0) return;
 
-    
-    
     int32 PlayerID = playerInstigator->PlayerID;
     turnManager->PayEssence(PlayerID, PathToTake.Num()-1);
-    // int32 AvailableEssence = turnManager->GetAvaliableEssence(PlayerID);
-
-    // TArray<FReachableCell> Reachable =
-    //     boardManager->GetReachableCells(Ship, AvailableEssence);
-    //
-    // const FReachableCell* targetCellData = nullptr;
-    // bool bIsReachable = Reachable.ContainsByPredicate(
-    //     [&](const FReachableCell& RC) {
-    //         if (RC.Cell == TargetCell)
-    //         {
-    //             targetCellData = &RC;
-    //             return true;
-    //         }
-    //
-    //         return false;
-    //     });
-    //
-    // if (!bIsReachable || targetCellData == nullptr)
-    // {
-    //     RejectAction(playerInstigator, "Cell not reachable");
-    //     return;
-    // }
-    //
-    // int32 MoveCost = targetCellData->EssenceCost;
-    // if (!turnManager->PayEssence(PlayerID, MoveCost))
-    // {
-    //     RejectAction(playerInstigator, "Not enough essence");
-    //     return;
-    // }
 
     Ship->OnMove(PathToTake.Num() - 1);
 
     boardManager->MoveShipTo(Ship, PathToTake);
 
-    if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery)
+    if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery && effectManager->CanCaptureRefinery(Ship))
     {
         boardManager->GetCell(TargetCell).refinery->Capture(Ship->ownerPlayer);
     }
@@ -427,6 +401,15 @@ void AABoardGameMode::HandleSpawnShip(
     deckManager->PlayCard(PlayerID, CardData);
     Ship->SetHealthPoint(CardData->stats.resistance);
     Ship->OnShipSpawn();
+
+    TArray<UEffect*> RuntimeEffects;
+    for (const TObjectPtr<UEffect>& Template : CardData->Effects)
+    {
+        if (!Template) continue;
+        UEffect* Inst = DuplicateObject<UEffect>(Template, Ship);
+        RuntimeEffects.Add(Inst);
+    }
+    effectManager->RegisterShipEffects(Ship, RuntimeEffects);
 
     UpdateGridState();
     BroadcastEssenceChanged(PlayerID);

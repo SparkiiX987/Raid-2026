@@ -9,6 +9,7 @@
 #include "../PlayerController/BoardPlayerController.h"
 #include "../Actor/ABoardCell.h"
 #include "Raid2026/SubSystem/UPathFinder.h"
+#include <Raid2026/SubSystem/EffectManager.h>
 #include "ABoardGameMode.generated.h"
 
 UCLASS()
@@ -68,6 +69,9 @@ public:
 		TSubclassOf<UCombatResolver> combatResolverClass;
 
 	UPROPERTY(EditAnywhere)
+		TSubclassOf<UEffectManager> effectManagerClass;
+
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<UPathFinder> pathFinderClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -84,6 +88,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		TObjectPtr<UCombatResolver> combatResolver;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		TObjectPtr<UEffectManager> effectManager;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UPathFinder> PathFinder;

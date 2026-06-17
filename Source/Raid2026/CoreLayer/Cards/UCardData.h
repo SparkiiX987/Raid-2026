@@ -4,7 +4,10 @@
 #include "Engine/DataAsset.h"
 #include "CardType.h"
 #include "CardStats.h"
+//#include <Raid2026/Effects/Effect.h>
 #include "UCardData.generated.h"
+
+class UEffect;
 
 UCLASS(BlueprintType)
 class RAID2026_API UUCardData : public UDataAsset
@@ -25,5 +28,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TObjectPtr<UStaticMesh> shipMesh;
 
-	//TArray<UEffect>;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced)
+		TArray<TObjectPtr<UEffect>> Effects;
 };
