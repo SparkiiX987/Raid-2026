@@ -2,6 +2,7 @@
 #include "../CoreLayer/Turn/ETurnPhase.h"
 #include "../Actor/AShip.h"
 #include "UBoardManager.h"
+#include "EffectManager.h"
 #include <Raid2026/PlayerState/BoardPlayerState.h>
 #include <Kismet/GameplayStatics.h>
 
@@ -27,7 +28,7 @@ void UUTurnManager::StartTurn(int32 playerId)
 
     RefillEssence(playerId);
 
-    // Effets OnStartOfTurn
+    NotifyOnTurnStartEffects();
 
     if (boardManager)
     {
@@ -78,7 +79,7 @@ void UUTurnManager::EndTurn()
     const int32 EndingPlayer = activePlayerId;
     SetTurnPhase(ETurnPhase::EndTurn);
 
-    // Effets OnEndOfTurn
+    NotifyOnTurnEndEffects();
 
     if (deckManager)
     {
@@ -233,8 +234,6 @@ void UUTurnManager::InitializeGame(int32 inFirstPlayerId, int32 inPlayerCount)
     firstPlayerId = inFirstPlayerId;
     bIsFirstTurnOfGame = true;
     currentTurn = 0;
-
-    StartTurn(firstPlayerId);
 }
 
 void UUTurnManager::SetTurnPhase(ETurnPhase newPhase)
@@ -271,6 +270,32 @@ void UUTurnManager::RefillEssence(int32 playerId)
 int32 UUTurnManager::GetNextPlayerId() const
 {
     return (activePlayerId + 1) % playerCount;
+}
+
+void UUTurnManager::NotifyOnTurnStartEffects()
+{
+    TArray<UEffect*> effects = effectManager->GetEffectsOfPlayer(EEffectTrigger::OnStartOfTurn, activePlayerId);
+
+    if (effects.Num() < 1) return;
+
+    FEffectContext context = FEffectContext();
+    context.OwnerPlayerID = activePlayerId;
+    context.CurrentTurn = currentTurn;
+
+    effectManager->NotifyEvent(EEffectTrigger::OnStartOfTurn, context);
+}
+
+void UUTurnManager::NotifyOnTurnEndEffects()
+{
+    TArray<UEffect*> effects = effectManager->GetEffectsOfPlayer(EEffectTrigger::OnEndOfTurn, activePlayerId);
+
+    if (effects.Num() < 1) return;
+
+    FEffectContext context = FEffectContext();
+    context.OwnerPlayerID = activePlayerId;
+    context.CurrentTurn = currentTurn;
+
+    effectManager->NotifyEvent(EEffectTrigger::OnEndOfTurn, context);
 }
 
 FEssenceState& UUTurnManager::GetOrCreateEssenceState(int32 playerId)

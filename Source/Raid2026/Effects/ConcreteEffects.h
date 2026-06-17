@@ -50,6 +50,23 @@ public:
 };
 
 UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_TestOnStartTurn : public UTriggeredEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_TestOnStartTurn()
+    {
+        canCaptureRefinery = false;
+        Trigger = EEffectTrigger::OnStartOfTurn;
+        DisplayName = FText::FromString(TEXT("test effect"));
+        Description = FText::FromString(FString::Printf(TEXT("test effect.")));
+    }
+
+    virtual FEffectResult Apply_Implementation(const FEffectContext& Context) override;
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
 class RAID2026_API UEffect_DamageOnDestroyed : public UTriggeredEffect
 {
     GENERATED_BODY()

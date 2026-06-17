@@ -6,6 +6,8 @@
 #include "../../SubSystem/DeckManager.h"
 #include "FEffectContext.generated.h"
 
+class UCombatResolver;
+
 USTRUCT(BlueprintType)
 struct FEffectContext
 {
@@ -43,4 +45,7 @@ struct FEffectContext
 	
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UDeckManager> Deck;
+
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UCombatResolver> Resolver;
 };

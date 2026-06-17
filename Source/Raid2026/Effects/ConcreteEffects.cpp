@@ -68,28 +68,22 @@ FEffectResult UEffect_BonusEssenceOnTurn::Apply_Implementation(const FEffectCont
 
 FEffectResult UEffect_DamageOnDestroyed::Apply_Implementation(const FEffectContext& Context)
 {
-    /*if (!Context.Board || !Context.SourceShip.IsValid())
+    if (!Context.Board || !Context.SourceShip.IsValid())
         return FEffectResult::Fail(TEXT("DamageOnDestroyed: Board ou Source manquant"));
-
-    UGameInstance* GI = Context.Board->GetGameInstance();
-    UCombatResolver* Combat = GI ? GI->GetSubsystem<UCombatResolver>() : nullptr;
-    if (!Combat)
-        return FEffectResult::Fail(TEXT("DamageOnDestroyed: CombatResolver introuvable"));
 
     const FIntPoint Origin = Context.SourceShip->GetGridPosition();
     TArray<FIntPoint> Adjacent = GetAdjacentCells(Origin);
-    */
+    
     FEffectResult Out = FEffectResult::Success();
-    /*
     for (const FIntPoint& Cell : Adjacent)
     {
-        AShipActor* Neighbor = Context.Board->GetShipAt(Cell);
+        AAShip* Neighbor = Context.Board->GetShipAt(Cell);
         if (!Neighbor) continue;
 
         const bool bIsAlly = (Neighbor->GetOwnerID() == Context.OwnerPlayerID);
         if (bIsAlly && !bAffectsAllies) continue;
 
-        Combat->ApplyDamageToShip(Neighbor, Damage);
+        Context.Resolver.Get()->ApplyDamageToShip(Neighbor, Damage);
         Out.AffectedCells.Add(Cell);
 
         if (GEngine)
@@ -101,7 +95,7 @@ FEffectResult UEffect_DamageOnDestroyed::Apply_Implementation(const FEffectConte
         }
     }
 
-    Out.IntValue = Damage;*/
+    Out.IntValue = Damage;
     return Out;
 }
 
@@ -159,11 +153,6 @@ FEffectResult UEffect_ActivatedPush::Apply_Implementation(const FEffectContext& 
     if (!bPaid)
         return FEffectResult::Fail(TEXT("ActivatedPush: Paiement échoué"));
 
-    UGameInstance* GI = GetGameInstance<UGameInstance>();
-    UCombatResolver* Combat = GI ? GI->GetSubsystem<UCombatResolver>() : nullptr;
-    if (!Combat)
-        return FEffectResult::Fail(TEXT("ActivatedPush: CombatResolver introuvable"));
-
     EDirections Dir = FixedDirection;
     if (!bFixedDirection)
     {
@@ -172,7 +161,7 @@ FEffectResult UEffect_ActivatedPush::Apply_Implementation(const FEffectContext& 
         Dir = IntPointToDirection(Delta);
     }
 
-    FPushResult PushResult = Combat->ApplyPush(Context.TargetShip.Get(), Dir);*/
+    FPushResult PushResult = Context.Resolver.Get()->ApplyPush(Context.TargetShip.Get(), Dir);*/
     
     FEffectResult Out = FEffectResult::Success();
     /*Out.bNeedsTarget = !PushResult.bMoved && PushResult.Collisions.Num() == 0;
@@ -190,4 +179,16 @@ FEffectResult UEffect_ActivatedPush::Apply_Implementation(const FEffectContext& 
     }*/
 
     return Out;
+}
+
+FEffectResult UEffect_TestOnStartTurn::Apply_Implementation(const FEffectContext& Context)
+{
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("test effect on start turn"));
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+    }
+
+    return FEffectResult::Success();
 }

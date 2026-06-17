@@ -83,7 +83,7 @@ void AABoardGameMode::StartGame()
     turnManager->OnBonusEssenceGained.AddDynamic(this, &AABoardGameMode::HandleBonusEssenceGained);
 
     turnManager->InitializeGame(0, playerCount);
-    effectManager->Initialize(boardManager, turnManager, deckManager);
+    effectManager->Initialize(boardManager, turnManager, deckManager, combatResolver);
 
     for (auto& [PlayerId, PC] : connectedPlayers)
     {
@@ -103,6 +103,7 @@ void AABoardGameMode::StartGame()
         deckManager->InitializeDeck(ID, testDeck/*TODO changer et r�cup�rer le deck du joueur*/);
     }
 
+    turnManager->StartTurn(0);
     OnInitialisationFinishedBP();
 }
 
@@ -134,6 +135,7 @@ void AABoardGameMode::SpawnManagers()
 
     turnManager->boardManager = boardManager;
     turnManager->deckManager = deckManager;
+    turnManager->effectManager = effectManager;
 
     combatResolver->Board = boardManager;
 

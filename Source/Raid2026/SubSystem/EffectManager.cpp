@@ -2,11 +2,12 @@
 #include "UBoardManager.h"
 
 
-void UEffectManager::Initialize(UUBoardManager* BoardManager, UUTurnManager* TurnManager, UDeckManager* Deckmanager)
+void UEffectManager::Initialize(UUBoardManager* BoardManager, UUTurnManager* TurnManager, UDeckManager* Deckmanager, UCombatResolver* CombatResolver)
 {
     boardManager = BoardManager;
     turnManager = TurnManager;
     deckManager = Deckmanager;
+    combatResolver = CombatResolver;
 }
 
 FEffectContext UEffectManager::BuildContextWithSubsystems(FEffectContext BaseContext) const
@@ -14,6 +15,7 @@ FEffectContext UEffectManager::BuildContextWithSubsystems(FEffectContext BaseCon
     if (!BaseContext.Board) BaseContext.Board = boardManager;
     if (!BaseContext.Turn)  BaseContext.Turn = turnManager;
     if (!BaseContext.Deck)  BaseContext.Deck = deckManager;
+    if (!BaseContext.Resolver)  BaseContext.Resolver = combatResolver;
 
     return BaseContext;
 }
@@ -23,20 +25,20 @@ void UEffectManager::RegisterShipEffects(AAShip* Ship,
 {
     if (!Ship || Effects.IsEmpty()) return;
 
-    TArray<TObjectPtr<UEffect>>& Existing = RegisteredEffects.FindOrAdd(Ship);
+    FShipEffectList& Existing = RegisteredEffects.FindOrAdd(Ship);
 
     for (UEffect* Effect : Effects)
     {
-        if (Effect && !Existing.Contains(Effect))
+        if (Effect && !Existing.Effects.Contains(Effect))
         {
-            Existing.Add(Effect);
+            Existing.Effects.Add(Effect);
         }
     }
 
     if (GEngine)
     {
         FString text = FString::Printf(TEXT("EffectManager: %s → %d effet(s) enregistré(s)"),
-            *Ship->GetName(), Existing.Num());
+            *Ship->GetName(), Existing.Effects.Num());
 
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
@@ -89,12 +91,10 @@ void UEffectManager::NotifyEvent(EEffectTrigger Trigger,
                 continue;
         }
 
-        TArray<TObjectPtr<UEffect>>* EffectList = RegisteredEffects.Find(Ship);
+        FShipEffectList* EffectList = RegisteredEffects.Find(Ship);
         if (!EffectList) continue;
 
-        TArray<UEffect*> EffectSnapshot = *EffectList;
-
-        for (UEffect* Effect : EffectSnapshot)
+        for (UEffect* Effect : EffectList->Effects)
         {
             if (!IsValid(Effect)) continue;
 
@@ -187,12 +187,12 @@ TArray<UEffect*> UEffectManager::GetAvailableActivatedEffects(
     TArray<UEffect*> Available;
     if (!IsValid(Ship)) return Available;
 
-    const TArray<TObjectPtr<UEffect>>* EffectList = RegisteredEffects.Find(Ship);
+    const FShipEffectList* EffectList = RegisteredEffects.Find(Ship);
     if (!EffectList) return Available;
 
     const FEffectContext Context = BuildContextWithSubsystems(BaseContext);
 
-    for (UEffect* Effect : *EffectList)
+    for (UEffect* Effect : EffectList->Effects)
     {
         if (!IsValid(Effect))               continue;
         if (Effect->Trigger != EEffectTrigger::Activated) continue;
@@ -208,15 +208,43 @@ TArray<UEffect*> UEffectManager::GetAvailableActivatedEffects(
     return Available;
 }
 
-bool UEffectManager::CanCaptureRefinery(AAShip* Ship)
+TArray<UEffect*> UEffectManager::GetEffectsOfPlayer(EEffectTrigger effectTrigger, int32 playerId) const
 {
-    for (UEffect* effect : RegisteredEffects[Ship])
+    TArray<UEffect*> effects = TArray<UEffect*>();
+
+    TArray<TObjectPtr<AAShip>> ShipSnapshot;
+    RegisteredEffects.GetKeys(ShipSnapshot);
+
+    if (ShipSnapshot.Num() < 1)
+        return effects;
+
+    for (AAShip* ship : ShipSnapshot)
     {
-        if (!effect->canCaptureRefinery)
+        if (!IsValid(ship) || ship->ownerPlayer != playerId) continue;
+
+        for (UEffect* effect : RegisteredEffects[ship].Effects)
         {
-            return false;
+            if (IsValid(effect) && effect->Trigger == effectTrigger)
+            {
+                effects.Add(effect);
+            }
         }
     }
 
+    return effects;
+}
+
+bool UEffectManager::CanCaptureRefinery(AAShip* Ship)
+{
+    const FShipEffectList* List = RegisteredEffects.Find(Ship);
+
+    if (!List) return true;
+
+    for (const TObjectPtr<UEffect>& effect : List->Effects)
+    {
+        if (IsValid(effect) && !effect->canCaptureRefinery)
+            return false;
+    }
+        
     return true;
 }
