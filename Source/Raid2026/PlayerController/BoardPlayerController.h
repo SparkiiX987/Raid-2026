@@ -172,7 +172,7 @@ public:
         void OnCardPlayedBP();
 
     UFUNCTION(BlueprintImplementableEvent)
-        void OnShipSelectedBP();
+        void OnShipSelectedBP(AAShip* Ship);
 
     UFUNCTION()
         void OnRep_PlayerID();
