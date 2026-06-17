@@ -147,7 +147,7 @@ void ABoardPlayerController::HandleShipSelected(AAShip* Ship)
     SelectedShip = Ship;
     PendingIntent = EActionIntent::MOVE;
     bWaitingForCellTarget = true;
-    OnShipSelectedBP();
+    OnShipSelectedBP(Ship);
 
     ServerRequestReachableCells(Ship);
 }
@@ -165,6 +165,7 @@ void ABoardPlayerController::ClientClearSelection_Implementation()
 {
     if (IsValid(SelectedShip))
     {
+        SelectedShip->OnShipUnselectedBP();
         SelectedShip = nullptr;
     }
 
