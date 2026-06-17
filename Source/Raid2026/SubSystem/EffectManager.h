@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "../Actor/AShip.h"
 #include "../Effects/Effect.h"
+#include "../CoreLayer/Effects/ShipEffectList.h"
 #include "EffectManager.generated.h"
 
 class UUBoardManager;
@@ -22,7 +23,7 @@ public:
         FOnEffectApplied OnEffectApplied;
 
     UFUNCTION(BlueprintCallable)
-        void Initialize(UUBoardManager* BoardManager, UUTurnManager* TurnManager, UDeckManager* Deckmanager);
+        void Initialize(UUBoardManager* BoardManager, UUTurnManager* TurnManager, UDeckManager* Deckmanager, UCombatResolver* CombatResolver);
 
     UFUNCTION(BlueprintCallable)
         FEffectContext BuildContextWithSubsystems(FEffectContext BaseContext) const;
@@ -40,9 +41,13 @@ public:
         FEffectResult ActivateEffect(UEffect* Effect, const FEffectContext& Context);
 
     UFUNCTION(BlueprintCallable)
-        TArray<UEffect*> GetAvailableActivatedEffects(AAShip* Ship,
+        TArray<UEffect*> GetAvailableActivatedEffects(AAShip* Ship, const FEffectContext& Context) const;
 
-    const FEffectContext& Context) const;
+    UFUNCTION(BlueprintCallable)
+        TArray<UEffect*> GetEffectsOfPlayer(EEffectTrigger effectTrigger, int32 playerId) const;
+
+    UFUNCTION(BlueprintCallable)
+        bool CanCaptureRefinery(AAShip* Ship);
 
     UPROPERTY(BlueprintReadWrite)
         TObjectPtr<UUBoardManager> boardManager;
@@ -53,7 +58,11 @@ public:
     UPROPERTY(BlueprintReadWrite)
         TObjectPtr<UDeckManager> deckManager;
 
+    UPROPERTY(BlueprintReadWrite)
+        TObjectPtr<UCombatResolver> combatResolver;
+
 protected:
-    TMap<TObjectPtr<AAShip>, TArray<TObjectPtr<UEffect>>> RegisteredEffects;
+    UPROPERTY()
+        TMap<TObjectPtr<AAShip>, FShipEffectList> RegisteredEffects;
 
 };

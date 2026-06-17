@@ -26,6 +26,9 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0, EditCondition = "Trigger==EEffectTrigger::Activated"))
     int32 EssenceCost = 0;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (EditCondition = "Trigger==EEffectTrigger::Passive"))
+        bool canCaptureRefinery;
+
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     FEffectResult Apply(const FEffectContext& Context);
     virtual FEffectResult Apply_Implementation(const FEffectContext& Context);

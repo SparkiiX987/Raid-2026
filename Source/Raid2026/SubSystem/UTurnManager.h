@@ -5,6 +5,7 @@
 #include "DeckManager.h"
 #include "UTurnManager.generated.h"
 
+class UEffectManager;
 class UUBoardManager;
 
 UCLASS(BlueprintType, Blueprintable)
@@ -82,6 +83,12 @@ public:
 
     int32 GetNextPlayerId() const;
 
+    UFUNCTION()
+        void NotifyOnTurnStartEffects();
+
+    UFUNCTION()
+        void NotifyOnTurnEndEffects();
+
 protected:
     UPROPERTY()
         TMap<int32, FEssenceState> essenceStates;
@@ -113,8 +120,11 @@ protected:
     public:
 
     UPROPERTY(BlueprintReadWrite)
-    UDeckManager* deckManager;
+        UDeckManager* deckManager;
 
     UPROPERTY(BlueprintReadWrite)
-    UUBoardManager* boardManager;
+        UUBoardManager* boardManager;
+
+    UPROPERTY(BlueprintReadWrite)
+        UEffectManager* effectManager;
 };

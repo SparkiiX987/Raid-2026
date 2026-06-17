@@ -1,21 +1,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../Cards/UCardData.h"
+//#include "../Cards/UCardData.h"
 #include "FEffectResult.generated.h"
+
+class UUCardData;
 
 USTRUCT(BlueprintType)
 struct FEffectResult
 {
 	GENERATED_BODY()
 
-	bool bSuccess;
-	bool bNeedsTarget;
-	FString FailReason;
+	UPROPERTY()
+		bool bSuccess;
+	UPROPERTY()
+		bool bNeedsTarget;
+	UPROPERTY()
+		FString FailReason;
 
-	int32 IntValue;
-	TArray<UUCardData*> AffectedCards;
-	TArray<FIntPoint>  AffectedCells;
+	UPROPERTY()
+		int32 IntValue;
+	UPROPERTY()
+		TArray<TObjectPtr<UUCardData>> AffectedCards;
+	UPROPERTY()
+		TArray<FIntPoint>  AffectedCells;
 
 	static FEffectResult Success();
 	static FEffectResult Fail(const FString& Reason);
