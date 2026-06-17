@@ -219,19 +219,31 @@ void AABoardGameMode::HandleMoveShip(
 {
     if (!ValidateIsPlayerTurn(playerInstigator)) return;
     if (!ValidateShipOwnership(playerInstigator, Ship)) return;
-    
-    TArray<FIntPoint> PathToTake = PathFinder->InitializeCheck(Ship, boardManager->GetCell(TargetCell));
+    if (!Ship->CanMove()) { RejectAction(playerInstigator, TEXT("Vaisseau immobilisé")); return; }
 
+    TArray<FIntPoint> PathToTake = PathFinder->InitializeCheck(Ship, boardManager->GetCell(TargetCell));
     if (PathToTake.Num() == 0) return;
 
-    int32 PlayerID = playerInstigator->PlayerID;
-    turnManager->PayEssence(PlayerID, PathToTake.Num()-1);
+    const int32 Distance = PathToTake.Num() - 1;
+    const int32 PlayerID = playerInstigator->PlayerID;
 
-    Ship->OnMove(PathToTake.Num() - 1);
+    if (Distance > Ship->GetCurrentSpeed())
+    {
+        RejectAction(playerInstigator, TEXT("Trajet plus long que la vitesse restante"));
+        return;
+    }
 
+    if (!turnManager->PayEssence(PlayerID, Distance))
+    {
+        RejectAction(playerInstigator, TEXT("Essence insuffisante"));
+        return;
+    }
+
+    Ship->OnMove(Distance);
     boardManager->MoveShipTo(Ship, PathToTake);
 
-    if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery && effectManager->CanCaptureRefinery(Ship))
+    if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery
+        && effectManager->CanCaptureRefinery(Ship))
     {
         boardManager->GetCell(TargetCell).refinery->Capture(Ship->ownerPlayer);
     }
@@ -240,9 +252,7 @@ void AABoardGameMode::HandleMoveShip(
     BroadcastEssenceChanged(PlayerID);
 
     if (!Ship->CanBePlayed())
-    {
         playerInstigator->ClearSelection();
-    }
 
     for (auto& [ID, PC] : connectedPlayers)
         PC->ClientOnShipMoved(Ship, TargetCell);
@@ -403,6 +413,7 @@ void AABoardGameMode::HandleSpawnShip(
     deckManager->PlayCard(PlayerID, CardData);
     Ship->SetHealthPoint(CardData->stats.resistance);
     Ship->OnShipSpawn();
+    playerInstigator->OnCardPlayedBP();
 
     TArray<UEffect*> RuntimeEffects;
     for (const TObjectPtr<UEffect>& Template : CardData->Effects)

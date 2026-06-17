@@ -18,7 +18,7 @@ TArray<FIntPoint> UPathFinder::InitializeCheck(AAShip* Ship, FCell CellToCheck)
 {
 	PathTaken.Reset();
 
-	shipSpeed = Ship->CardData->stats.currentSpeed;
+	shipSpeed = Ship->GetCurrentSpeed();
 
 	if (CellToCheck.Occupant != nullptr)
 	{
@@ -182,7 +182,7 @@ TArray<FIntPoint> UPathFinder::GetAllCellAroundShip(AAShip* Ship)
 
 			const int32 NewCost = CurrentCost + 1;
 
-			if (NewCost > Ship->CardData->stats.currentSpeed
+			if (NewCost > Ship->GetCurrentSpeed()
 				||!BoardManager->IsValidCell(NewCell)
 				|| Visited.Contains(NewCell)
 				|| BoardManager->IsCellOccupied(NewCell))

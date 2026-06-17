@@ -4,7 +4,6 @@
 #include "Engine/DataAsset.h"
 #include "CardType.h"
 #include "CardStats.h"
-//#include <Raid2026/Effects/Effect.h>
 #include "UCardData.generated.h"
 
 class UEffect;
@@ -23,11 +22,8 @@ public:
 		ECardType type;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 exemplaire;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TObjectPtr<UStaticMesh> shipMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced)
 		TArray<TObjectPtr<UEffect>> Effects;
 };

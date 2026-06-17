@@ -78,7 +78,6 @@ void ABoardPlayerController::ClickOnShip(AAShip* Ship)
     {
         PendingIntent = EActionIntent::FIRE;
         ServerFireAt(SelectedShip, Ship->GetGridPosition());
-        //ClearSelection();
     }
 }
 
@@ -102,7 +101,6 @@ void ABoardPlayerController::ClickOnCell(AABoardCell* Cell)
             ServerSpawnShip(PendingShipClass,
                 Cell->cellData.Pos,
                 PendingCardData);
-            OnCardPlayedBP();
         }
         break;
 
@@ -194,7 +192,7 @@ bool ABoardPlayerController::ServerSetupFinish_Validate()
 bool ABoardPlayerController::ServerMoveShip_Validate(
     AAShip* Ship, FIntPoint TargetCell)
 {
-    return IsValid(Ship) && Ship->CanMove();
+    return IsValid(Ship);
 }
 
 void ABoardPlayerController::ServerMoveShip_Implementation(
@@ -219,7 +217,7 @@ void ABoardPlayerController::ServerMoveShip_Implementation(
 bool ABoardPlayerController::ServerFireAt_Validate(
     AAShip* Shooter, FIntPoint TargetCell)
 {
-    return IsValid(Shooter) && Shooter->CanAct();
+    return IsValid(Shooter);
 }
 
 void ABoardPlayerController::ServerFireAtMothership_Implementation(AAShip* Ship, AAMotherShip* Mothership)
@@ -234,7 +232,7 @@ void ABoardPlayerController::ServerFireAtMothership_Implementation(AAShip* Ship,
 
 bool ABoardPlayerController::ServerFireAtMothership_Validate(AAShip* Ship, AAMotherShip* Mothership)
 {
-    return IsValid(Ship) && IsValid(Mothership) && Ship->CanAct();
+    return IsValid(Ship) && IsValid(Mothership);
 }
 
 void ABoardPlayerController::ServerFireAt_Implementation(

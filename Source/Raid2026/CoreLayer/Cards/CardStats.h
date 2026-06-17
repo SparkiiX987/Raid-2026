@@ -15,9 +15,6 @@ struct FCardStats
 	int32 maxSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 currentSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 resistance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
