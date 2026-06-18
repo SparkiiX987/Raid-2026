@@ -23,7 +23,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		int32 maxHealthPoint;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 		int32 currentHealthPoint;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
