@@ -12,7 +12,7 @@ class RAID2026_API AAShip : public AABoardActor
 
 	public:
  
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
  UUCardData* CardData;
 //
 // UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
