@@ -102,6 +102,9 @@ public:
         void ClientOnTurnEnded();
 
     UFUNCTION(Client, Reliable)
+        void ClientOnPlayCard();
+
+    UFUNCTION(Client, Reliable)
         void ClientUpdateHand(const TArray<UUCardData*>& NewHand);
 
     UFUNCTION(Client, Reliable)

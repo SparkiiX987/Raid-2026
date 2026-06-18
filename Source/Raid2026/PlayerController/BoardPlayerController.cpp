@@ -289,16 +289,12 @@ bool ABoardPlayerController::ServerSpawnShip_Validate(
     FIntPoint TargetCell,
     UUCardData* CardData)
 {
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("ServerSpawnShip_Validate: ShipClass=%s CardData=%s"),
-            ShipClass ? *ShipClass->GetName() : TEXT("null"),
-            CardData ? *CardData->GetName() : TEXT("null"));
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
-
     return IsValid(ShipClass) && IsValid(CardData);
+}
+
+void ABoardPlayerController::ClientOnPlayCard_Implementation()
+{
+    OnCardPlayedBP();
 }
 
 void ABoardPlayerController::ServerSpawnShip_Implementation(
