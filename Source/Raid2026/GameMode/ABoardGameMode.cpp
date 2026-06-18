@@ -387,7 +387,7 @@ void AABoardGameMode::HandleSpawnShip(
     deckManager->PlayCard(PlayerID, CardData);
     Ship->SetHealthPoint(CardData->stats.resistance);
     Ship->OnShipSpawn();
-    playerInstigator->OnCardPlayedBP();
+    playerInstigator->ClientOnPlayCard();
 
     TArray<UEffect*> RuntimeEffects;
     for (const TObjectPtr<UEffect>& Template : CardData->Effects)
