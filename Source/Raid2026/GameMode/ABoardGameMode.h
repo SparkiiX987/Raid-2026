@@ -47,6 +47,8 @@ public:
 
 	void HandleSpawnShip(ABoardPlayerController* playerInstigator, TSubclassOf<AAShip> ShipClass, FIntPoint TargetCell, UUCardData* CardData);
 
+	void HandlePlaceExpert(ABoardPlayerController* playerInstigator, UUCardData* CardData);
+
 	UFUNCTION()
 		void HandleTurnStarted(int32 PlayerID, int32 TurnNumber);
 

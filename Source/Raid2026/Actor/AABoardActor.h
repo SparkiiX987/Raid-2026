@@ -59,6 +59,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void SetGridPosition(FIntPoint NewPos);
 
+	UFUNCTION(BlueprintCallable)
+	void Heal(int32 amount);
+
 	UFUNCTION(BlueprintNativeEvent)
 		void Die();
 	virtual void Die_Implementation();

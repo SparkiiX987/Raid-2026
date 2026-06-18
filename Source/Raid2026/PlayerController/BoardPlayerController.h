@@ -78,6 +78,10 @@ public:
         void ServerPlayCard(UUCardData* Card, FIntPoint TargetCell);
         bool ServerPlayCard_Validate(UUCardData* Card, FIntPoint TargetCell);
 
+    UFUNCTION(Server, Reliable, WithValidation)
+        void ServerPlaceExpert(UUCardData* Card, AAMotherShip* Mothership);
+        bool ServerPlaceExpert_Validate(UUCardData* Card, AAMotherShip* Mothership);
+
     UFUNCTION(Server, Reliable)
         void ServerRequestReachableCells(AAShip* Ship);
 

@@ -239,7 +239,7 @@ void UCombatResolver::DestroyShip(AAShip* Ship)
 
 	if (Board) Board->RemoveShipFromGrid(Ship);
 
-	//OnShipDestroyed.Broadcast(Ship);
+	OnShipDestroyed.Broadcast(Ship);
 
 	if (GEngine)
 	{

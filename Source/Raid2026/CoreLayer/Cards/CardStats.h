@@ -22,7 +22,4 @@ struct FCardStats
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 moveCost;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 spawnCost;
 };
