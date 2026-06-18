@@ -1,4 +1,5 @@
 #include "ResearchAndDeveloppement.h"
+#include "../SubSystem/CombatResolver.h"
 
 FEffectResult USientistExpert::Apply_Implementation(const FEffectContext& Context)
 {
@@ -26,6 +27,26 @@ FEffectResult UAutoRegeneration::Apply_Implementation(const FEffectContext& Cont
 FEffectResult URaffinageExpert::Apply_Implementation(const FEffectContext& Context)
 {
     Context.Turn.Get()->AddBonusEssence(Context.OwnerPlayerID, BonusEssence);
+
+    return FEffectResult::Success();
+}
+
+FEffectResult UHyperspacePilote::Apply_Implementation(const FEffectContext& Context)
+{
+    return FEffectResult::Success();
+}
+
+FEffectResult UArtillerySpecialist::Apply_Implementation(const FEffectContext& Context)
+{
+    int32 ennemyId = Context.OwnerPlayerID == 0 ? 1 : 0;
+
+    currentDelay++;
+
+    if (currentDelay >= delay)
+    {
+        currentDelay = 0;
+        Context.Resolver.Get()->ApplyDamageToMothership(Context.Board.Get()->Motherships[ennemyId], damages);
+    }
 
     return FEffectResult::Success();
 }

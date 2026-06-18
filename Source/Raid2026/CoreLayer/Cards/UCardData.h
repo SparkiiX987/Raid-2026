@@ -22,6 +22,9 @@ public:
 		int32 cardId;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "type==ECardType::SHIP"))
+		int32 shipClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "type==ECardType::SHIP"))
 		FCardStats stats;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

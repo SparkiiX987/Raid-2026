@@ -4,6 +4,7 @@
 #include "../GameState/BoardGameState.h"
 #include "../PlayerState/BoardPlayerState.h"
 #include <Raid2026/Effects/Effect.h>
+#include <Raid2026/Effects/ResearchAndDeveloppement.h>
 
 void AABoardGameMode::BeginPlay()
 {
