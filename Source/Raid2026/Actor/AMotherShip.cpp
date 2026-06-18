@@ -5,6 +5,7 @@ bool AAMotherShip::AddRDCard(UUCardData* Card)
 	if (HasFreeRDSlot())
 	{
 		RDCards.Add(Card);
+		OnRDSlotsChangedBP();
 		return true;
 	}
 	return false;
@@ -13,6 +14,7 @@ bool AAMotherShip::AddRDCard(UUCardData* Card)
 bool AAMotherShip::RemoveRDCard(int32 SlotIndex)
 {
 	RDCards.RemoveAt(SlotIndex);
+	OnRDSlotsChangedBP();
 	return true;
 }
 

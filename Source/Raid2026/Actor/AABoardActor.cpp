@@ -62,6 +62,17 @@ void AABoardActor::SetGridPosition(FIntPoint NewPos)
 	gridPosition = NewPos;
 }
 
+void AABoardActor::Heal(int32 amount)
+{
+	if (currentHealthPoint == maxHealthPoint)
+		return;
+
+	currentHealthPoint += maxHealthPoint;
+
+	if (currentHealthPoint > maxHealthPoint)
+		currentHealthPoint = maxHealthPoint;
+}
+
 void AABoardActor::OnRep_GridPosition()
 {
 }

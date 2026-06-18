@@ -40,12 +40,7 @@ void ABoardPlayerController::GetLifetimeReplicatedProps(
 void ABoardPlayerController::SetupPlayer(int32 ID)
 {
     PlayerID = ID;
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("PlayerController: received PlayerID %d"), PlayerID);
 
-        GEngine->AddOnScreenDebugMessage(-1, 1500.0f, FColor::Blue, text);
-    }
     ClientInitializeInput();
 }
 
@@ -94,7 +89,7 @@ void ABoardPlayerController::ClickOnCell(AABoardCell* Cell)
         }
         break;
 
-    case EActionIntent::SPAWNSHIP:
+    case EActionIntent::PLAYCARD:
 
         if (PendingShipClass && PendingCardData)
         {
@@ -113,6 +108,12 @@ void ABoardPlayerController::ClickOnCell(AABoardCell* Cell)
 void ABoardPlayerController::ClickOnMotherShip(AAMotherShip* Mothership)
 {
     if (!IsValid(Mothership)) return;
+
+    if (PendingIntent == EActionIntent::PLAYCARD && IsValid(PendingCardData))
+    {
+        ServerPlaceExpert(PendingCardData, Mothership);
+        return;
+    }
 
     if (IsValid(SelectedShip))
     {
@@ -152,6 +153,7 @@ void ABoardPlayerController::HandleShipSelected(AAShip* Ship)
 
 void ABoardPlayerController::HandleCellTargeted(AABoardCell* Cell)
 {
+
 }
 
 void ABoardPlayerController::ClearSelection()
@@ -250,6 +252,19 @@ bool ABoardPlayerController::ServerPlayCard_Validate(
     UUCardData* Card, FIntPoint TargetCell)
 {
     return IsValid(Card);
+}
+
+void ABoardPlayerController::ServerPlaceExpert_Implementation(UUCardData* Card, AAMotherShip* Mothership)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandlePlaceExpert(this, Card);
+}
+
+bool ABoardPlayerController::ServerPlaceExpert_Validate(UUCardData* Card, AAMotherShip* Mothership)
+{
+    return IsValid(Card) && IsValid(Mothership);
 }
 
 void ABoardPlayerController::ServerPlayCard_Implementation(

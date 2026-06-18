@@ -344,58 +344,32 @@ void AABoardGameMode::HandleSpawnShip(
     FIntPoint TargetCell,
     UUCardData* CardData)
 {
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("in HandleSpawnShip"));
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
-
     if (!ValidateIsPlayerTurn(playerInstigator)) return;
 
     int32 PlayerID = playerInstigator->PlayerID;
 
+    if (CardData->type != ECardType::SHIP)
+    {
+        RejectAction(playerInstigator, "La carte selectionner n'est pas un vaisseau");
+        return;
+    }
+
     if (!boardManager->GetFreeSpawnCells(PlayerID).Contains(TargetCell))
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("cell pas free"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-        }
         RejectAction(playerInstigator, "Invalid spawn cell");
         return;
     }
 
     if (!deckManager->IsCardInHand(PlayerID, CardData))
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("carte pas en main"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-        }
         RejectAction(playerInstigator, "Card not in hand");
         return;
     }
 
-    if (!turnManager->PayEssence(PlayerID, CardData->stats.spawnCost))
+    if (!turnManager->PayEssence(PlayerID, CardData->playCost))
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("pas assez de tune"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-        }
         RejectAction(playerInstigator, "Not enough essence");
         return;
-    }
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("spawn ship"));
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
     }
 
     AAShip* Ship = GetWorld()->SpawnActor<AAShip>(
@@ -422,11 +396,55 @@ void AABoardGameMode::HandleSpawnShip(
         UEffect* Inst = DuplicateObject<UEffect>(Template, Ship);
         RuntimeEffects.Add(Inst);
     }
-    effectManager->RegisterShipEffects(Ship, RuntimeEffects);
+    effectManager->RegisterEffects(Ship, RuntimeEffects);
 
     UpdateGridState();
     BroadcastEssenceChanged(PlayerID);
     SyncHandToPlayer(PlayerID);
+}
+
+void AABoardGameMode::HandlePlaceExpert(ABoardPlayerController* playerInstigator, UUCardData* CardData)
+{
+    if (!ValidateIsPlayerTurn(playerInstigator)) return;
+
+    int32 PlayerID = playerInstigator->PlayerID;
+
+    if (CardData->type != ECardType::EXPERT)
+    {
+        RejectAction(playerInstigator, "La carte selectionner n'est pas un expert");
+        return;
+    }
+
+    AAMotherShip* motherShip = boardManager->Motherships[PlayerID];
+
+    if (!IsValid(motherShip))
+    {
+        RejectAction(playerInstigator, "mothership invalide");
+        return;
+    }
+
+    if (!motherShip->AddRDCard(CardData))
+    {
+        RejectAction(playerInstigator, "le vaisseau mère n'a plus de place d'e R&D'expert");
+        return;
+    }
+
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("expert placé"));
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
+    }
+    playerInstigator->OnCardPlayedBP();
+
+    TArray<UEffect*> RuntimeEffects;
+    for (const TObjectPtr<UEffect>& Template : CardData->Effects)
+    {
+        if (!Template) continue;
+        UEffect* Inst = DuplicateObject<UEffect>(Template, motherShip);
+        RuntimeEffects.Add(Inst);
+    }
+    effectManager->RegisterEffects(motherShip, RuntimeEffects);
 }
 
 void AABoardGameMode::HandleTurnStarted(int32 PlayerID, int32 TurnNumber)

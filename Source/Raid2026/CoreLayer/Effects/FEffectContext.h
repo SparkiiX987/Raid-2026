@@ -14,13 +14,13 @@ struct FEffectContext
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite)
-		TWeakObjectPtr<AAShip> SourceShip;
+		TWeakObjectPtr<AABoardActor> SourceShip;
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 OwnerPlayerID;
 	
 	UPROPERTY(BlueprintReadWrite)
-	TWeakObjectPtr<AAShip> TargetShip;
+	TWeakObjectPtr<AABoardActor> TargetShip;
 
 	UPROPERTY(BlueprintReadWrite)
 	TWeakObjectPtr<AAMotherShip> TargetMothership;
