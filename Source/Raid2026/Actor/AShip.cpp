@@ -29,6 +29,10 @@ int32 AAShip::GetRadarRange() const
 
 int32 AAShip::GetMaxSpeed() const
 {
+	if (IsFaceDown())
+	{
+		return 1;
+	}
 	return GetEffectiveStats().maxSpeed;
 }
 
@@ -42,16 +46,21 @@ int32 AAShip::GetMoveCost() const
 	return GetEffectiveStats().moveCost;
 }
 
+
+
 void AAShip::Reveal()
 {
-	//State = Face
+	State = EShipState::Visible;
+	if (CanMove())
+	{
+		currentSpeed = GetMaxSpeed();
+	}
 	PlayRevealAnimation();
 }
 
-bool AAShip::IsFaceDown()
+bool AAShip::IsFaceDown() const
 {
-	//return State == EShipState::FaceCachee;
-	return false;
+	return State == EShipState::Hidden;
 }
 
 bool AAShip::CanMove() const
@@ -74,7 +83,7 @@ void AAShip::ResetTurnFlags()
 	bHasMoved = false;
 	bHasActed = false;
 	bJustPlayed = false;
-	currentSpeed = GetEffectiveStats().maxSpeed;
+	currentSpeed = GetMaxSpeed();
 }
 
 void AAShip::OnShipSpawn(bool canMoveOnSpawn)
@@ -103,6 +112,10 @@ void AAShip::OnMove(int32 Distance)
 
 void AAShip::OnAct()
 {
+	if (IsFaceDown())
+	{
+		Reveal();
+	}
 	bHasActed = true;
 
 	if (!CanMove())
@@ -115,6 +128,10 @@ void AAShip::OnAct()
 
 void AAShip::TakeDamage(int32 Damage)
 {
+	if (IsFaceDown())
+	{
+		Reveal();
+	}
 	Super::TakeDamage(Damage);
 }
 

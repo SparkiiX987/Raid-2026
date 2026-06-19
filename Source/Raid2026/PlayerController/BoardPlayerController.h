@@ -82,6 +82,9 @@ public:
         void ServerPlaceExpert(UUCardData* Card, AAMotherShip* Mothership);
         bool ServerPlaceExpert_Validate(UUCardData* Card, AAMotherShip* Mothership);
 
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    void Server_RevealShip(AAShip* Ship);
+
     UFUNCTION(Server, Reliable)
         void ServerRequestReachableCells(AAShip* Ship);
 

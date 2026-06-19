@@ -82,6 +82,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	TArray<FReachableCell> GetReachableCells(AAShip* Ship, int32 AvailableEssence) const;
 	
+	UFUNCTION(BlueprintCallable)
+	TArray<FReachableCell> GetReachableCellsForRadar(AAShip* Ship, int32 AvailableEssence) const;
+	
 	UFUNCTION(BlueprintPure)
 	bool IsLineOfSight(FIntPoint From, FIntPoint To) const;
 
@@ -100,7 +103,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void RemoveShipFromGrid(AAShip* Ship);
-
+	
 	FCell Grid[GridWidth][GridHeight+2];
 
 	TArray<AARefinery*> RefineryActors;

@@ -153,6 +153,29 @@ TArray<FReachableCell> UUBoardManager::GetReachableCells(AAShip* Ship, int32 Ava
 	return ReachableCells;
 }
 
+TArray<FReachableCell> UUBoardManager::GetReachableCellsForRadar(AAShip* Ship, int32 RadarRange) const
+{
+	if (Ship == nullptr) return TArray<FReachableCell>();
+	TArray<FReachableCell> ReachableCells;
+	for (int32 X = -RadarRange; X <= RadarRange; X++)
+	{
+		for (int32 Y = -RadarRange; Y <= RadarRange; Y++)
+		{
+			FIntPoint Target = Ship->gridPosition + FIntPoint(X,Y);
+			int32 TotalMove = FMath::Abs(X) + FMath::Abs(Y);
+			
+			if (!IsValidCell(Target) || X == 0 && Y == 0 || TotalMove > RadarRange)
+			{
+				continue;
+			}
+			FReachableCell ReachableCell;
+			ReachableCell.Cell = Ship->gridPosition + FIntPoint(X, Y);
+			ReachableCells.Add(ReachableCell);
+		}
+	}
+	return ReachableCells;
+}
+
 bool UUBoardManager::IsLineOfSight(FIntPoint From, FIntPoint To) const
 {
 	if (From == To || From.X != To.X && From.Y != To.Y)
@@ -259,11 +282,13 @@ FCell& UUBoardManager::GetCellRef(FIntPoint Pos)
 
 void UUBoardManager::SetOccupant(FIntPoint Pos, AABoardActor* Actor)
 {
-	AARefinery* refinery = Cast<AARefinery>(Actor);
+	AARefinery* Refinery = Cast<AARefinery>(Actor);
+
 	FVector WorldPos;
-	if (refinery)
+
+	if (Refinery)
 	{
-		GetCellRef(Pos).refinery = refinery;
+		GetCellRef(Pos).refinery = Refinery;
 		WorldPos = FVector(Pos.X * CellGap, Pos.Y * CellGap, 100.f);
 	}
 	else
@@ -274,9 +299,85 @@ void UUBoardManager::SetOccupant(FIntPoint Pos, AABoardActor* Actor)
 
 	Actor->gridPosition = Pos;
 	Actor->SetActorLocation(WorldPos);
+
+	AAShip* Ship = Cast<AAShip>(Actor);
+	if (!Ship)
+	{
+		return;
+	}
+
+	const int32 OwnerID = Ship->GetOwnerID();
+	const bool bPlayer1 = OwnerID == 0;
+
+	TArray<FReachableCell> CellsInRadarRange = GetReachableCellsForRadar(Ship, Ship->GetRadarRange());
+
+	for (const FReachableCell& Reachable : CellsInRadarRange)
+	{
+		FCell& Cell = Grid[Reachable.Cell.X][Reachable.Cell.Y];
+
+		if (bPlayer1)
+		{
+			++Cell.isSpyByPlayer1;
+		}
+		else
+		{
+			++Cell.isSpyByPlayer2;
+		}
+
+		if (Cell.IsEmpty())
+		{
+			continue;
+		}
+
+		AAShip* ShipToCheck = Cast<AAShip>(Cell.Occupant);
+
+		if (ShipToCheck && ShipToCheck->IsFaceDown())
+		{
+			ShipToCheck->Reveal();
+		}
+	}
+
+	FCell& CurrentCell = Grid[Pos.X][Pos.Y];
+
+	if (Ship->IsFaceDown())
+	{
+		if (bPlayer1 && CurrentCell.isSpyByThePlayer2())
+		{
+			Ship->Reveal();
+		}
+		else if (!bPlayer1 && CurrentCell.isSpyByThePlayer1())
+		{
+			Ship->Reveal();
+		}
+	}
 }
 
 void UUBoardManager::ClearOccupant(FIntPoint Pos)
 {
+	AAShip* Ship = Cast<AAShip>(Grid[Pos.X][Pos.Y].Occupant);
+
+	if (Ship)
+	{
+		const int32 OwnerID = Ship->GetOwnerID();
+		const bool bPlayer1 = OwnerID == 0;
+
+		TArray<FReachableCell> CellsInRadarRange =
+			GetReachableCellsForRadar(Ship, Ship->GetRadarRange());
+
+		for (const FReachableCell& Reachable : CellsInRadarRange)
+		{
+			FCell& Cell = Grid[Reachable.Cell.X][Reachable.Cell.Y];
+
+			if (bPlayer1)
+			{
+				Cell.isSpyByPlayer1 = FMath::Max(0, Cell.isSpyByPlayer1 - 1);
+			}
+			else
+			{
+				Cell.isSpyByPlayer2 = FMath::Max(0, Cell.isSpyByPlayer2 - 1);
+			}
+		}
+	}
+
 	Grid[Pos.X][Pos.Y].Occupant = nullptr;
 }
