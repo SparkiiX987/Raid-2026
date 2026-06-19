@@ -267,6 +267,12 @@ bool ABoardPlayerController::ServerPlaceExpert_Validate(UUCardData* Card, AAMoth
     return IsValid(Card) && IsValid(Mothership);
 }
 
+void ABoardPlayerController::Server_RevealShip_Implementation(AAShip* Ship)
+{
+    Ship->Reveal();
+    ClearSelection();
+}
+
 void ABoardPlayerController::ServerPlayCard_Implementation(
     UUCardData* Card, FIntPoint TargetCell)
 {
