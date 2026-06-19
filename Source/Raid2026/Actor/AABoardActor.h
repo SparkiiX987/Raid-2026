@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include <Raid2026/Upgrades/Upgrade.h>
 #include "AABoardActor.generated.h"
 
 UCLASS()
@@ -25,6 +26,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 		int32 currentHealthPoint;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+		int32 bonusHealth;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
 		int32 ownerPlayer;
@@ -66,6 +70,9 @@ public:
 		void Die();
 	virtual void Die_Implementation();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnActorDamagedBP();
+
 	UFUNCTION()
 		void OnRep_GridPosition();
 
@@ -74,4 +81,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnGridPositionChanged(FIntPoint OldPos, FIntPoint NewPos);
+
+	UPROPERTY()
+		TArray<TObjectPtr<UUpgrade>> upgrades;
 };

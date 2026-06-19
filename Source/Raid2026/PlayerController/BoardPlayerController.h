@@ -85,6 +85,10 @@ public:
     UFUNCTION(BlueprintCallable, Server, Reliable)
     void Server_RevealShip(AAShip* Ship);
 
+    UFUNCTION(Server, Reliable, WithValidation)
+        void ServerUpgrade(AAShip* Ship, UUCardData* Card);
+        bool ServerUpgrade_Validate(AAShip* Ship, UUCardData* Card);
+
     UFUNCTION(Server, Reliable)
         void ServerRequestReachableCells(AAShip* Ship);
 

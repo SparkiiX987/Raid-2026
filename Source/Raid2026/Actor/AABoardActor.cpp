@@ -8,6 +8,8 @@ void AABoardActor::GetLifetimeReplicatedProps(
 
 	DOREPLIFETIME(AABoardActor, gridPosition);
 	DOREPLIFETIME(AABoardActor, ownerPlayer);
+	DOREPLIFETIME(AABoardActor, currentHealthPoint);
+	DOREPLIFETIME(AABoardActor, bonusHealth);
 }
 
 AABoardActor::AABoardActor()
@@ -19,6 +21,7 @@ AABoardActor::AABoardActor()
 void AABoardActor::TakeDamage(int32 amount)
 {
 	currentHealthPoint -= amount;
+	OnActorDamagedBP();
 }
 
 int32 AABoardActor::GetCurrentHP() const

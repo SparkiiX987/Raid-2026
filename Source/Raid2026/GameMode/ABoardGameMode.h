@@ -6,6 +6,7 @@
 #include "../SubSystem/DeckManager.h"
 #include "../SubSystem/UTurnManager.h"
 #include "../SubSystem/UBoardManager.h"
+#include "../SubSystem/UpgradesManager.h"
 #include "../PlayerController/BoardPlayerController.h"
 #include "../Actor/ABoardCell.h"
 #include "Raid2026/SubSystem/UPathFinder.h"
@@ -49,6 +50,10 @@ public:
 
 	void HandlePlaceExpert(ABoardPlayerController* playerInstigator, UUCardData* CardData);
 
+	void HandlePlaceUpgrade(ABoardPlayerController* playerInstigator, UUCardData* CardData, AAShip* ship);
+
+	void HandleRemoveUpgrade(UUpgrade* upgrade, AAShip* ship);
+
 	UFUNCTION()
 		void HandleTurnStarted(int32 PlayerID, int32 TurnNumber);
 
@@ -74,6 +79,9 @@ public:
 		TSubclassOf<UEffectManager> effectManagerClass;
 
 	UPROPERTY(EditAnywhere)
+		TSubclassOf<UUpgradesManager> upgradeManagerClass;
+
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<UPathFinder> pathFinderClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -93,6 +101,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		TObjectPtr<UEffectManager> effectManager;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		TObjectPtr<UUpgradesManager> upgradesManager;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UPathFinder> PathFinder;

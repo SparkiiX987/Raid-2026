@@ -132,6 +132,7 @@ void AABoardGameMode::SpawnManagers()
     deckManager = NewObject<UDeckManager>(this, deckManagerClass);
     combatResolver = NewObject<UCombatResolver>(this, combatResolverClass);
     effectManager = NewObject<UEffectManager>(this, effectManagerClass);
+    upgradesManager = NewObject<UUpgradesManager>(this, upgradeManagerClass);
     PathFinder = NewObject<UPathFinder>(this, pathFinderClass);
 
     turnManager->boardManager = boardManager;
@@ -453,6 +454,51 @@ void AABoardGameMode::HandlePlaceExpert(ABoardPlayerController* playerInstigator
         RuntimeEffects.Add(Inst);
     }
     effectManager->RegisterEffects(motherShip, RuntimeEffects);
+}
+
+void AABoardGameMode::HandlePlaceUpgrade(ABoardPlayerController* playerInstigator, UUCardData* CardData, AAShip* ship)
+{
+    if (!ValidateIsPlayerTurn(playerInstigator)) return;
+
+    int32 PlayerID = playerInstigator->PlayerID;
+
+    if (CardData->type != ECardType::UPGRADE)
+    {
+        RejectAction(playerInstigator, "La carte selectionner n'est pas une amélioration");
+        return;
+    }
+
+    if (!CardData->Upgrade.Get()->targetedShipClass.Contains(ship->CardData->shipClass))
+    {
+        RejectAction(playerInstigator, "le vaisseau n'est pas de la bonne classe");
+        return;
+    }
+
+
+    if (!IsValid(ship))
+    {
+        RejectAction(playerInstigator, "le vaisseau n'est pas valide");
+        return;
+    }
+
+    if (!turnManager->PayEssence(PlayerID, CardData->playCost))
+    {
+        RejectAction(playerInstigator, "Not enough essence");
+        return;
+    }
+
+    upgradesManager.Get()->AddUpgrade(ship, CardData->Upgrade);
+    playerInstigator->ClientOnPlayCard();
+}
+
+void AABoardGameMode::HandleRemoveUpgrade(UUpgrade* upgrade, AAShip* ship)
+{
+    if (!IsValid(ship) || !IsValid(upgrade))
+    {
+        return;
+    }
+
+    upgradesManager.Get()->RemoveUpgrade(ship, upgrade);
 }
 
 void AABoardGameMode::HandleTurnStarted(int32 PlayerID, int32 TurnNumber)
