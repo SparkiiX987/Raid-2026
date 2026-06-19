@@ -27,7 +27,10 @@ public:
     int32 EssenceCost = 0;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (EditCondition = "Trigger==EEffectTrigger::Passive"))
-        bool canCaptureRefinery;
+        bool bCanCaptureRefinery = false;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (EditCondition = "Trigger==EEffectTrigger::Passive"))
+        bool bCanMoveOnFirstTurn = false;
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     FEffectResult Apply(const FEffectContext& Context);

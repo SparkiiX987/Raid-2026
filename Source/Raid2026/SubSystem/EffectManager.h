@@ -52,6 +52,12 @@ public:
     UFUNCTION(BlueprintCallable)
         bool CanCaptureRefinery(AAShip* Ship);
 
+    UFUNCTION(BlueprintCallable)
+        bool HasHyperspace(AAShip* Ship);
+
+    UFUNCTION(BlueprintCallable)
+        bool HasHyperspacePilote(AAMotherShip* Mothership);
+
     UPROPERTY(BlueprintReadWrite)
         TObjectPtr<UUBoardManager> boardManager;
 
