@@ -73,7 +73,7 @@ public:
 	UArtillerySpecialist()
 	{
 		Trigger = EEffectTrigger::OnStartOfTurn;
-		DisplayName = FText::FromString(TEXT("Artilleur Spécialisé"));
+		DisplayName = FText::FromString(TEXT("Artilleur Spécialise"));
 		Description = FText::FromString(FString::Printf(TEXT("A partir du prochain tour où vous jouer cette carte, le Canon a Ion inflige %d dégat a un vaisseau mére adverse, un tour sur deux"), damages));
 	}
 
