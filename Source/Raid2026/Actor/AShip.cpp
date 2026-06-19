@@ -125,7 +125,6 @@ void AAShip::TakeDamage(int32 amount)
 	{
 		Reveal();
 	}
-	Super::TakeDamage(Damage);
 
 	OnActorDamagedBP();
 }

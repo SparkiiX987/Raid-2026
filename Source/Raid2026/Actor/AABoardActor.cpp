@@ -21,6 +21,7 @@ AABoardActor::AABoardActor()
 void AABoardActor::TakeDamage(int32 amount)
 {
 	currentHealthPoint -= amount;
+	OnActorDamagedBP();
 }
 
 int32 AABoardActor::GetCurrentHP() const
