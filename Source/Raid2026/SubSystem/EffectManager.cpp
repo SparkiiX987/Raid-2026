@@ -1,5 +1,6 @@
 ﻿#include "EffectManager.h"
 #include "UBoardManager.h"
+#include "CombatResolver.h"
 
 
 void UEffectManager::Initialize(UUBoardManager* BoardManager, UUTurnManager* TurnManager, UDeckManager* Deckmanager, UCombatResolver* CombatResolver)
@@ -8,6 +9,8 @@ void UEffectManager::Initialize(UUBoardManager* BoardManager, UUTurnManager* Tur
     turnManager = TurnManager;
     deckManager = Deckmanager;
     combatResolver = CombatResolver;
+
+    combatResolver->OnShipDestroyed.AddDynamic(this, &UEffectManager::UnregisterShipEffects);
 }
 
 FEffectContext UEffectManager::BuildContextWithSubsystems(FEffectContext BaseContext) const
@@ -20,10 +23,10 @@ FEffectContext UEffectManager::BuildContextWithSubsystems(FEffectContext BaseCon
     return BaseContext;
 }
 
-void UEffectManager::RegisterShipEffects(AAShip* Ship,
+void UEffectManager::RegisterEffects(AABoardActor* Ship,
     const TArray<UEffect*>& Effects)
 {
-    if (!Ship || Effects.IsEmpty()) return;
+    if (!IsValid(Ship) || Effects.IsEmpty()) return;
 
     FShipEffectList& Existing = RegisteredEffects.FindOrAdd(Ship);
 
@@ -46,6 +49,11 @@ void UEffectManager::RegisterShipEffects(AAShip* Ship,
 
 void UEffectManager::UnregisterShipEffects(AAShip* Ship)
 {
+    UnregisterEffects(Ship);
+}
+
+void UEffectManager::UnregisterEffects(AABoardActor* Ship)
+{
     if (!Ship) return;
 
     const int32 Removed = RegisteredEffects.Remove(Ship);
@@ -66,7 +74,7 @@ void UEffectManager::NotifyEvent(EEffectTrigger Trigger,
 
     const FEffectContext Context = BuildContextWithSubsystems(BaseContext);
 
-    TArray<TObjectPtr<AAShip>> ShipSnapshot;
+    TArray<TObjectPtr<AABoardActor>> ShipSnapshot;
     RegisteredEffects.GetKeys(ShipSnapshot);
 
     if (GEngine)
@@ -77,7 +85,7 @@ void UEffectManager::NotifyEvent(EEffectTrigger Trigger,
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
 
-    for (AAShip* Ship : ShipSnapshot)
+    for (AABoardActor* Ship : ShipSnapshot)
     {
         if (!IsValid(Ship)) continue;
 
@@ -181,7 +189,7 @@ FEffectResult UEffectManager::ActivateEffect(UEffect* Effect,
 }
 
 TArray<UEffect*> UEffectManager::GetAvailableActivatedEffects(
-    AAShip* Ship,
+    AABoardActor* Ship,
     const FEffectContext& BaseContext) const
 {
     TArray<UEffect*> Available;
@@ -212,13 +220,13 @@ TArray<UEffect*> UEffectManager::GetEffectsOfPlayer(EEffectTrigger effectTrigger
 {
     TArray<UEffect*> effects = TArray<UEffect*>();
 
-    TArray<TObjectPtr<AAShip>> ShipSnapshot;
+    TArray<TObjectPtr<AABoardActor>> ShipSnapshot;
     RegisteredEffects.GetKeys(ShipSnapshot);
 
     if (ShipSnapshot.Num() < 1)
         return effects;
 
-    for (AAShip* ship : ShipSnapshot)
+    for (AABoardActor* ship : ShipSnapshot)
     {
         if (!IsValid(ship) || ship->ownerPlayer != playerId) continue;
 
@@ -238,13 +246,43 @@ bool UEffectManager::CanCaptureRefinery(AAShip* Ship)
 {
     const FShipEffectList* List = RegisteredEffects.Find(Ship);
 
-    if (!List) return true;
+    if (!List) return false;
 
     for (const TObjectPtr<UEffect>& effect : List->Effects)
     {
-        if (IsValid(effect) && !effect->canCaptureRefinery)
-            return false;
+        if (IsValid(effect) && effect->bCanCaptureRefinery)
+            return true;
     }
         
-    return true;
+    return false;
+}
+
+bool UEffectManager::HasHyperspace(AAShip* Ship)
+{
+    const FShipEffectList* List = RegisteredEffects.Find(Ship);
+
+    if (!List) return false;
+
+    for (const TObjectPtr<UEffect>& effect : List->Effects)
+    {
+        if (IsValid(effect) && effect->bCanMoveOnFirstTurn)
+            return true;
+    }
+
+    return false;
+}
+
+bool UEffectManager::HasHyperspacePilote(AAMotherShip* Mothership)
+{
+    const FShipEffectList* List = RegisteredEffects.Find(Mothership);
+
+    if (!List) return false;
+
+    for (const TObjectPtr<UEffect>& effect : List->Effects)
+    {
+        if (IsValid(effect) && effect->bCanMoveOnFirstTurn)
+            return true;
+    }
+
+    return false;
 }

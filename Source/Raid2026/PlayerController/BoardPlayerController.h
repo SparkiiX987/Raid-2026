@@ -78,6 +78,17 @@ public:
         void ServerPlayCard(UUCardData* Card, FIntPoint TargetCell);
         bool ServerPlayCard_Validate(UUCardData* Card, FIntPoint TargetCell);
 
+    UFUNCTION(Server, Reliable, WithValidation)
+        void ServerPlaceExpert(UUCardData* Card, AAMotherShip* Mothership);
+        bool ServerPlaceExpert_Validate(UUCardData* Card, AAMotherShip* Mothership);
+
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    void Server_RevealShip(AAShip* Ship);
+
+    UFUNCTION(Server, Reliable, WithValidation)
+        void ServerUpgrade(AAShip* Ship, UUCardData* Card);
+        bool ServerUpgrade_Validate(AAShip* Ship, UUCardData* Card);
+
     UFUNCTION(Server, Reliable)
         void ServerRequestReachableCells(AAShip* Ship);
 
@@ -96,6 +107,9 @@ public:
 
     UFUNCTION(Client, Reliable)
         void ClientOnTurnEnded();
+
+    UFUNCTION(Client, Reliable)
+        void ClientOnPlayCard();
 
     UFUNCTION(Client, Reliable)
         void ClientUpdateHand(const TArray<UUCardData*>& NewHand);

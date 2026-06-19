@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "CardType.h"
+#include "../../Upgrades/Upgrade.h"
 #include "CardStats.h"
 #include "UCardData.generated.h"
 
@@ -16,14 +17,29 @@ class RAID2026_API UUCardData : public UDataAsset
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString cardName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 cardId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "type==ECardType::SHIP"))
+		int32 shipClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "type==ECardType::SHIP"))
 		FCardStats stats;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 playCost;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		ECardType type;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "type==ECardType::SHIP"))
 		TObjectPtr<UStaticMesh> shipMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, meta = (EditCondition = "type==ECardType::SHIP || type==ECardType::EXPERT"))
 		TArray<TObjectPtr<UEffect>> Effects;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, meta = (EditCondition = "type==ECardType::UPGRADE"))
+		TObjectPtr<UUpgrade> Upgrade;
 };

@@ -29,10 +29,13 @@ public:
         FEffectContext BuildContextWithSubsystems(FEffectContext BaseContext) const;
 
     UFUNCTION(BlueprintCallable)
-        void RegisterShipEffects(AAShip* Ship, const TArray<UEffect*>& Effects);
+        void RegisterEffects(AABoardActor* Ship, const TArray<UEffect*>& Effects);
 
     UFUNCTION(BlueprintCallable)
         void UnregisterShipEffects(AAShip* Ship);
+
+    UFUNCTION(BlueprintCallable)
+        void UnregisterEffects(AABoardActor* Ship);
 
     UFUNCTION(BlueprintCallable)
         void NotifyEvent(EEffectTrigger Trigger, const FEffectContext& Context);
@@ -41,13 +44,19 @@ public:
         FEffectResult ActivateEffect(UEffect* Effect, const FEffectContext& Context);
 
     UFUNCTION(BlueprintCallable)
-        TArray<UEffect*> GetAvailableActivatedEffects(AAShip* Ship, const FEffectContext& Context) const;
+        TArray<UEffect*> GetAvailableActivatedEffects(AABoardActor* Ship, const FEffectContext& Context) const;
 
     UFUNCTION(BlueprintCallable)
         TArray<UEffect*> GetEffectsOfPlayer(EEffectTrigger effectTrigger, int32 playerId) const;
 
     UFUNCTION(BlueprintCallable)
         bool CanCaptureRefinery(AAShip* Ship);
+
+    UFUNCTION(BlueprintCallable)
+        bool HasHyperspace(AAShip* Ship);
+
+    UFUNCTION(BlueprintCallable)
+        bool HasHyperspacePilote(AAMotherShip* Mothership);
 
     UPROPERTY(BlueprintReadWrite)
         TObjectPtr<UUBoardManager> boardManager;
@@ -63,6 +72,6 @@ public:
 
 protected:
     UPROPERTY()
-        TMap<TObjectPtr<AAShip>, FShipEffectList> RegisteredEffects;
+        TMap<TObjectPtr<AABoardActor>, FShipEffectList> RegisteredEffects;
 
 };

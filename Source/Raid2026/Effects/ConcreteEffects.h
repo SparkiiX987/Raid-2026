@@ -57,7 +57,7 @@ class RAID2026_API UEffect_TestOnStartTurn : public UTriggeredEffect
 public:
     UEffect_TestOnStartTurn()
     {
-        canCaptureRefinery = false;
+        bCanCaptureRefinery = false;
         Trigger = EEffectTrigger::OnStartOfTurn;
         DisplayName = FText::FromString(TEXT("test effect"));
         Description = FText::FromString(FString::Printf(TEXT("test effect.")));
@@ -188,14 +188,30 @@ public:
 };
 
 UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
-class RAID2026_API UEffect_ImpossibleCapture : public UPassiveEffect
+class RAID2026_API UEffect_HyperSpace : public UPassiveEffect
 {
     GENERATED_BODY()
 
 public:
-    UEffect_ImpossibleCapture()
+    UEffect_HyperSpace()
     {
-        canCaptureRefinery = false;
+        bCanMoveOnFirstTurn = true;
+        Trigger = EEffectTrigger::Passive;
+        DisplayName = FText::FromString(TEXT("Hyperespace"));
+        Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau peut se déplacer au premier tour.")));
+    }
+
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_CanCapture : public UPassiveEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_CanCapture()
+    {
+        bCanCaptureRefinery = true;
         Trigger = EEffectTrigger::Passive;
         DisplayName = FText::FromString(TEXT("Capture impossible"));
         Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau ne peut pas contrôler de rafinerie.")));

@@ -22,10 +22,26 @@ struct FCell
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AARefinery> refinery;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 isSpyByPlayer1;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 isSpyByPlayer2;
 	
 	
 	bool IsEmpty()
 	{
 		return !IsValid(Occupant);
+	}
+
+	bool isSpyByThePlayer1()
+	{
+		return isSpyByPlayer1 > 0;
+	}
+
+	bool isSpyByThePlayer2()
+	{
+		return isSpyByPlayer2 > 0;
 	}
 };

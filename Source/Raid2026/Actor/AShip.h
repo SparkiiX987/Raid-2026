@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "AABoardActor.h"
 #include "Raid2026/CoreLayer/Cards/UCardData.h"
+#include "Raid2026/CoreLayer/Ship/EShipState.h"
 #include "AShip.generated.h"
 
 UCLASS()
@@ -12,14 +13,14 @@ class RAID2026_API AAShip : public AABoardActor
 
 	public:
  
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
  UUCardData* CardData;
 //
 // UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 //  TArray<UEffect*> ActiveEffects;
-//
-// UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-//  EShipState State = EShipState::FaceCachee;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	EShipState State = EShipState::Hidden;
 
 	UFUNCTION(BlueprintCallable)
 		FCardStats GetEffectiveStats() const;
@@ -38,12 +39,14 @@ class RAID2026_API AAShip : public AABoardActor
 
 	UFUNCTION(BlueprintPure)
 		int32 GetMoveCost() const;
+	
+
 
 	UFUNCTION(BlueprintCallable)
 		void Reveal();
 
 	UFUNCTION(BlueprintPure)
-		bool IsFaceDown();
+		bool IsFaceDown() const;
 
 	UFUNCTION(BlueprintPure)
 		bool CanMove() const;
@@ -54,11 +57,17 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION(BlueprintPure)
 		bool CanBePlayed() const;
 
+	UFUNCTION()
+		void ApplyUpgrade(UUpgrade* upgrade);
+
+	UFUNCTION()
+		void RemoveUpgrade(UUpgrade* upgrade);
+
 	UFUNCTION(BlueprintCallable)
 		void ResetTurnFlags();
 
 	UFUNCTION()
-		void OnShipSpawn();
+		void OnShipSpawn(bool canMoveOnSpawn);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnShipSpawnBP();
@@ -78,6 +87,9 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION()
 		void OnAct();
 
+	UFUNCTION()
+		void ServerRemoveUpgrade(UUpgrade* upgrade);
+
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnActBP();
 
@@ -93,13 +105,16 @@ protected:
 		bool bJustPlayed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
-		bool bHasMoved;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
-		bool bHasActed;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		int32 currentSpeed;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+		int32 bonusDamage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+		int32 actions;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+		int32 actionsPerTurn = 1;
 
 // UFUNCTION(BlueprintImplementableEvent)
 //  void SetHighlightState(EHighlightType Type);

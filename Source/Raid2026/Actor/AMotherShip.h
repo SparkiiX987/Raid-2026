@@ -46,6 +46,6 @@ public:
 		void PlayDestructionSequence();
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void OnRDSlotsChanged();
+		void OnRDSlotsChangedBP();
 	
 };
