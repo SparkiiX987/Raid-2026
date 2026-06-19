@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "CardType.h"
+#include "../../Upgrades/Upgrade.h"
 #include "CardStats.h"
 #include "UCardData.generated.h"
 
@@ -36,6 +37,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "type==ECardType::SHIP"))
 		TObjectPtr<UStaticMesh> shipMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, meta = (EditCondition = "type==ECardType::SHIP || type==ECardType::EXPERT"))
 		TArray<TObjectPtr<UEffect>> Effects;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, meta = (EditCondition = "type==ECardType::UPGRADE"))
+		TObjectPtr<UUpgrade> Upgrade;
 };

@@ -8,6 +8,8 @@ void AABoardActor::GetLifetimeReplicatedProps(
 
 	DOREPLIFETIME(AABoardActor, gridPosition);
 	DOREPLIFETIME(AABoardActor, ownerPlayer);
+	DOREPLIFETIME(AABoardActor, currentHealthPoint);
+	DOREPLIFETIME(AABoardActor, bonusHealth);
 }
 
 AABoardActor::AABoardActor()

@@ -1,5 +1,7 @@
 #include "AShip.h"
+#include "../Upgrades/Upgrade.h"
 #include "Net/UnrealNetwork.h"
+#include <Raid2026/GameMode/ABoardGameMode.h>
 
 void AAShip::GetLifetimeReplicatedProps(
 	TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -7,9 +9,9 @@ void AAShip::GetLifetimeReplicatedProps(
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AAShip, bJustPlayed);
-	DOREPLIFETIME(AAShip, bHasActed);
-	DOREPLIFETIME(AAShip, bHasMoved);
 	DOREPLIFETIME(AAShip, currentSpeed);
+	DOREPLIFETIME(AAShip, actions);
+	DOREPLIFETIME(AAShip, actionsPerTurn);
 }
 
 FCardStats AAShip::GetEffectiveStats() const
@@ -19,7 +21,7 @@ FCardStats AAShip::GetEffectiveStats() const
 
 int32 AAShip::GetFirePower() const
 {
-	return GetEffectiveStats().firePower;
+	return GetEffectiveStats().firePower + bonusDamage;
 }
 
 int32 AAShip::GetRadarRange() const
@@ -46,8 +48,6 @@ int32 AAShip::GetMoveCost() const
 	return GetEffectiveStats().moveCost;
 }
 
-
-
 void AAShip::Reveal()
 {
 	State = EShipState::Visible;
@@ -70,7 +70,7 @@ bool AAShip::CanMove() const
 
 bool AAShip::CanAct() const
 {
-	return !bHasActed && !bJustPlayed;
+	return actions > 0 && !bJustPlayed;
 }
 
 bool AAShip::CanBePlayed() const
@@ -78,10 +78,89 @@ bool AAShip::CanBePlayed() const
 	return CanMove() || CanAct();
 }
 
+void AAShip::TakeDamage(int32 amount)
+{
+	int32 remainingDamages = amount;
+
+	TArray<UUpgrade*> shieldsToDestroy;
+
+	for (UUpgrade* upgrade : upgrades)
+	{
+		if (remainingDamages <= 0)
+		{
+			break;
+		}
+
+		if (!upgrade || upgrade->EffectiveShieldHealth <= 0)
+		{
+			continue;
+		}
+
+		if (upgrade->EffectiveShieldHealth > remainingDamages)
+		{
+			upgrade->EffectiveShieldHealth -= remainingDamages;
+			bonusHealth -= remainingDamages;
+			remainingDamages = 0;
+		}
+		else
+		{
+			remainingDamages -= upgrade->EffectiveShieldHealth;
+			bonusHealth -= upgrade->EffectiveShieldHealth;
+			upgrade->EffectiveShieldHealth = 0;
+			shieldsToDestroy.Add(upgrade);
+		}
+	}
+
+	for (UUpgrade* upgrade : shieldsToDestroy)
+	{
+		ServerRemoveUpgrade(upgrade);
+	}
+
+	if (remainingDamages > 0)
+	{
+		currentHealthPoint -= remainingDamages;
+	}
+
+	if (IsFaceDown())
+	{
+		Reveal();
+	}
+	Super::TakeDamage(Damage);
+
+	OnActorDamagedBP();
+}
+
+void AAShip::ApplyUpgrade(UUpgrade* upgrade)
+{
+	upgrades.Add(upgrade);
+
+	int32 shield = maxHealthPoint * upgrade->ShieldHealthRatio;
+	bonusHealth += shield;
+	upgrade->EffectiveShieldHealth = shield;
+	bonusDamage += upgrade->DamageBonus;
+	actionsPerTurn += upgrade->BonusActions;
+	CardData->stats.maxSpeed += upgrade->BonusMovespeed;
+}
+
+void AAShip::RemoveUpgrade(UUpgrade* upgrade)
+{
+	upgrades.Remove(upgrade);
+
+	bonusHealth = bonusHealth - upgrade->EffectiveShieldHealth;
+	
+	bonusDamage = (bonusDamage - upgrade->DamageBonus <= 0)
+		? 1 : bonusDamage - upgrade->DamageBonus;
+
+	actionsPerTurn = (actionsPerTurn - upgrade->BonusActions <= 0)
+		? 1 : actionsPerTurn - upgrade->BonusActions;
+
+	CardData->stats.maxSpeed = (CardData->stats.maxSpeed - upgrade->BonusMovespeed <= 0)
+		? 1 : CardData->stats.maxSpeed - upgrade->BonusMovespeed;
+}
+
 void AAShip::ResetTurnFlags()
 {
-	bHasMoved = false;
-	bHasActed = false;
+	actions = actionsPerTurn;
 	bJustPlayed = false;
 	currentSpeed = GetMaxSpeed();
 }
@@ -99,8 +178,6 @@ void AAShip::OnMove(int32 Distance)
 
 	if (!CanMove())
 	{
-		bHasMoved = true;
-
 		if (!CanAct())
 		{
 			bJustPlayed = true;
@@ -116,23 +193,26 @@ void AAShip::OnAct()
 	{
 		Reveal();
 	}
-	bHasActed = true;
 
-	if (!CanMove())
+	actions--;
+	
+	if (!CanAct())
 	{
-		bJustPlayed = true;
+		if (!CanMove())
+		{
+			bJustPlayed = true;
+		}
 	}
 
 	OnActBP();
 }
 
-void AAShip::TakeDamage(int32 Damage)
+void AAShip::ServerRemoveUpgrade(UUpgrade* upgrade)
 {
-	if (IsFaceDown())
-	{
-		Reveal();
-	}
-	Super::TakeDamage(Damage);
+	AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+	if (!GM) return;
+
+	GM->HandleRemoveUpgrade(upgrade,this);
 }
 
 void AAShip::Die_Implementation()

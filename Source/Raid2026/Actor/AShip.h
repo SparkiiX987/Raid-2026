@@ -57,6 +57,12 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION(BlueprintPure)
 		bool CanBePlayed() const;
 
+	UFUNCTION()
+		void ApplyUpgrade(UUpgrade* upgrade);
+
+	UFUNCTION()
+		void RemoveUpgrade(UUpgrade* upgrade);
+
 	UFUNCTION(BlueprintCallable)
 		void ResetTurnFlags();
 
@@ -81,6 +87,9 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION()
 		void OnAct();
 
+	UFUNCTION()
+		void ServerRemoveUpgrade(UUpgrade* upgrade);
+
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnActBP();
 
@@ -96,13 +105,16 @@ protected:
 		bool bJustPlayed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
-		bool bHasMoved;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
-		bool bHasActed;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		int32 currentSpeed;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+		int32 bonusDamage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+		int32 actions;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+		int32 actionsPerTurn = 1;
 
 // UFUNCTION(BlueprintImplementableEvent)
 //  void SetHighlightState(EHighlightType Type);

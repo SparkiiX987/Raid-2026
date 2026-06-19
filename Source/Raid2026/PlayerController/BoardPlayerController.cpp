@@ -69,6 +69,10 @@ void ABoardPlayerController::ClickOnShip(AAShip* Ship)
         }
         HandleShipSelected(Ship);
     }
+    else if (PendingIntent == EActionIntent::PLAYCARD && IsValid(PendingCardData))
+    {
+        ServerUpgrade(Ship, PendingCardData);
+    }
     else if (SelectedShip)
     {
         PendingIntent = EActionIntent::FIRE;
@@ -271,6 +275,19 @@ void ABoardPlayerController::Server_RevealShip_Implementation(AAShip* Ship)
 {
     Ship->Reveal();
     ClearSelection();
+}
+
+bool ABoardPlayerController::ServerUpgrade_Validate(AAShip* Ship, UUCardData* Card)
+{
+    return IsValid(Ship) && IsValid(Card);
+}
+
+void ABoardPlayerController::ServerUpgrade_Implementation(AAShip* Ship, UUCardData* Card)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandlePlaceUpgrade(this, Card, Ship);
 }
 
 void ABoardPlayerController::ServerPlayCard_Implementation(
