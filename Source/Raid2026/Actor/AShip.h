@@ -58,7 +58,7 @@ class RAID2026_API AAShip : public AABoardActor
 		void ResetTurnFlags();
 
 	UFUNCTION()
-		void OnShipSpawn();
+		void OnShipSpawn(bool canMoveOnSpawn);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnShipSpawnBP();

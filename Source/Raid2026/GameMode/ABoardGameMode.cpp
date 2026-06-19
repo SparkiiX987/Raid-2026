@@ -387,7 +387,6 @@ void AABoardGameMode::HandleSpawnShip(
     boardManager->PlaceShip(Ship, TargetCell);
     deckManager->PlayCard(PlayerID, CardData);
     Ship->SetHealthPoint(CardData->stats.resistance);
-    Ship->OnShipSpawn();
     playerInstigator->ClientOnPlayCard();
 
     TArray<UEffect*> RuntimeEffects;
@@ -398,6 +397,8 @@ void AABoardGameMode::HandleSpawnShip(
         RuntimeEffects.Add(Inst);
     }
     effectManager->RegisterEffects(Ship, RuntimeEffects);
+
+    Ship->OnShipSpawn(effectManager->HasHyperspacePilote(boardManager->Motherships[PlayerID]) || effectManager->HasHyperspace(Ship));
 
     UpdateGridState();
     BroadcastEssenceChanged(PlayerID);
@@ -413,6 +414,12 @@ void AABoardGameMode::HandlePlaceExpert(ABoardPlayerController* playerInstigator
     if (CardData->type != ECardType::EXPERT)
     {
         RejectAction(playerInstigator, "La carte selectionner n'est pas un expert");
+        return;
+    }
+
+    if (!turnManager->PayEssence(PlayerID, CardData->playCost))
+    {
+        RejectAction(playerInstigator, "Not enough essence");
         return;
     }
 
@@ -436,7 +443,7 @@ void AABoardGameMode::HandlePlaceExpert(ABoardPlayerController* playerInstigator
 
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
-    playerInstigator->OnCardPlayedBP();
+    playerInstigator->ClientOnPlayCard();
 
     TArray<UEffect*> RuntimeEffects;
     for (const TObjectPtr<UEffect>& Template : CardData->Effects)

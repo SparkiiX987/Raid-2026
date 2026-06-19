@@ -77,12 +77,9 @@ void AAShip::ResetTurnFlags()
 	currentSpeed = GetEffectiveStats().maxSpeed;
 }
 
-void AAShip::OnShipSpawn()
+void AAShip::OnShipSpawn(bool canMoveOnSpawn)
 {
-	if (true) // check si le vaisseau peut joueur au premier tour
-	{
-		bJustPlayed = true;
-	}
+	bJustPlayed = canMoveOnSpawn;
 
 	OnShipSpawnBP();
 }
