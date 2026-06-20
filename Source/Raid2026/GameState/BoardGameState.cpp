@@ -13,6 +13,9 @@ void ABoardGameState::GetLifetimeReplicatedProps(
     DOREPLIFETIME(ABoardGameState, CurrentPhase);
     DOREPLIFETIME(ABoardGameState, GridState);
     DOREPLIFETIME(ABoardGameState, WinnerId);
+    DOREPLIFETIME(ABoardGameState, CurrentTurnTimer);
+    DOREPLIFETIME(ABoardGameState, Player1Timer);
+    DOREPLIFETIME(ABoardGameState, Player2Timer);
 }
 
 void ABoardGameState::BeginPlay()

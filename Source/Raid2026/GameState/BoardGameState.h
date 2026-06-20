@@ -52,6 +52,15 @@ public:
     UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WinnerID)
         int32 WinnerId = -1;
 
+    UPROPERTY(Replicated, BlueprintReadOnly)
+    float CurrentTurnTimer;
+
+    UPROPERTY(Replicated, BlueprintReadOnly)
+    float Player1Timer;
+
+    UPROPERTY(Replicated, BlueprintReadOnly)
+    float Player2Timer;
+
     void SetActivePlayer(int32 PlayerID, int32 Turn, ETurnPhase Phase);
     void SetTurnPhase(ETurnPhase phase);
     void UpdateCellState(FIntPoint pos, const FReplicatedCellState & newState);

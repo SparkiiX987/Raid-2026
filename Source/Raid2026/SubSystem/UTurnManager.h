@@ -18,6 +18,11 @@ public:
 	static constexpr int32 essenceIncrement = 1;
 	static constexpr int32 fireCost = 1;
 
+    float turnTimer = 10;
+    float CurrentTurnTimer = 10;
+    float Player1Timer = 30;
+    float Player2Timer = 30;
+
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTurnStarted, int32, PlayerID, int32, TurnNumber);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnEnded, int32, PlayerID);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPhaseChanged, ETurnPhase, OldPhase, ETurnPhase, NewPhase);
@@ -38,6 +43,8 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "Events") 
         FOnBonusEssenceGained OnBonusEssenceGained;
+
+    void SetTurnTimer(float DeltaTime);
 
     UFUNCTION(BlueprintCallable)
         void StartTurn(int32 playerId);

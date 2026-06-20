@@ -720,3 +720,33 @@ void AABoardGameMode::HandleCardDrawn(int32 PlayerId, UUCardData* Card)
         (*PCPtr)->ClientOnCardDrawn(Card);
     }
 }
+
+AABoardGameMode::AABoardGameMode()
+{
+    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bStartWithTickEnabled = true;
+}
+
+void AABoardGameMode::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    
+    if (!turnManager) return;
+
+    turnManager->SetTurnTimer(DeltaTime);
+
+    if (turnManager->CurrentTurnTimer <= 0
+        && (turnManager->GetCurrentPlayer() == 0 && turnManager->Player1Timer <= 0
+        || turnManager->GetCurrentPlayer() == 1 && turnManager->Player2Timer <= 0))
+        {
+        HandleEndTurn(connectedPlayers.FindRef(turnManager->GetCurrentPlayer()));
+        }
+
+    ABoardGameState* GS = GetGameState<ABoardGameState>();
+
+    if (!GS) return;
+
+    GS->CurrentTurnTimer = turnManager->CurrentTurnTimer;
+    GS->Player1Timer = turnManager->Player1Timer;
+    GS->Player2Timer = turnManager->Player2Timer;
+}

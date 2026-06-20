@@ -164,4 +164,7 @@ public:
 
 	UFUNCTION()
 		void HandleCardDrawn(int32 PlayerId, UUCardData* Card);
+	
+	AABoardGameMode();
+	virtual void Tick(float DeltaTime) override;
 };

@@ -6,9 +6,33 @@
 #include <Raid2026/PlayerState/BoardPlayerState.h>
 #include <Kismet/GameplayStatics.h>
 
+#include "Net/UnrealNetwork.h"
+
+
+
+
+void UUTurnManager::SetTurnTimer(float DeltaTime)
+{
+    
+    if (CurrentTurnTimer >= 0)
+    {
+        CurrentTurnTimer -= DeltaTime;
+        return;
+    }
+    
+    if (activePlayerId == 0)
+    {
+        Player1Timer -= DeltaTime;
+    }
+    else
+    {
+        Player2Timer -= DeltaTime;
+    }
+}
 
 void UUTurnManager::StartTurn(int32 playerId)
 {
+    CurrentTurnTimer = turnTimer;
     activePlayerId = playerId;
     ++currentTurn;
     SetTurnPhase(ETurnPhase::StartTurn);
