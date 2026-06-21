@@ -384,6 +384,7 @@ void AABoardGameMode::HandleSpawnShip(
     }
 
     Ship->CardData = CardData;
+    Ship->RuntimeStats = CardData->stats;
     Ship->ownerPlayer = PlayerID;
     boardManager->PlaceShip(Ship, TargetCell);
     deckManager->PlayCard(PlayerID, CardData);

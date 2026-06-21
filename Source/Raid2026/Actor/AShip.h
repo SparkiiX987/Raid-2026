@@ -13,14 +13,14 @@ class RAID2026_API AAShip : public AABoardActor
 
 	public:
  
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
- UUCardData* CardData;
-//
-// UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-//  TArray<UEffect*> ActiveEffects;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		UUCardData* CardData;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		FCardStats RuntimeStats;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
-	EShipState State = EShipState::Hidden;
+		EShipState State = EShipState::Hidden;
 
 	UFUNCTION(BlueprintCallable)
 		FCardStats GetEffectiveStats() const;

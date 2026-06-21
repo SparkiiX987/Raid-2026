@@ -61,7 +61,7 @@ FCell UUBoardManager::GetCell(FIntPoint Pos) const
 
 FCell UUBoardManager::GetCells(int32 X, int32 Y) const
 {
-	if (IsValidCell(FIntPoint(X, Y))) return FCell();
+	if (!IsValidCell(FIntPoint(X, Y))) return FCell();
 
 	return Grid[X][Y];
 }
@@ -208,21 +208,15 @@ int32 UUBoardManager::CheckRefineries(int32 playerID)
 	return RefineriesPossessed;
 }
 
-void UUBoardManager::MoveShipTo(AAShip* Ship, const TArray<FIntPoint>& TargetCell)
+void UUBoardManager::MoveShipTo(AAShip* Ship, const TArray<FIntPoint>& Path)
 {
-	if (!Ship || TargetCell.Num() == 0)
-		return;
+	if (!Ship || Path.Num() == 0) return;
 
-	MovingShip = Ship;
-	CurrentPath = TargetCell;
-	CurrentIndex = 0;
+	const FIntPoint FinalCell = Path.Last();
 
-	MoveAlpha = 0.f;
-
-	StartWorldPos = GridToWorld(Ship->gridPosition);
-	TargetWorldPos = GridToWorld(CurrentPath[0]);
-	
-	GetWorld()->GetTimerManager().SetTimer(MoveTimerHandle,this,&UUBoardManager::MoveStep,TimerRate,true);
+	ClearOccupant(Ship->gridPosition);
+	Ship->gridPosition = FinalCell;
+	SetOccupant(FinalCell, Ship);
 }
 
 void UUBoardManager::MoveStep()

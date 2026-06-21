@@ -12,11 +12,13 @@ void AAShip::GetLifetimeReplicatedProps(
 	DOREPLIFETIME(AAShip, currentSpeed);
 	DOREPLIFETIME(AAShip, actions);
 	DOREPLIFETIME(AAShip, actionsPerTurn);
+	DOREPLIFETIME(AAShip, State);
+	DOREPLIFETIME(AAShip, bonusDamage);
 }
 
 FCardStats AAShip::GetEffectiveStats() const
 {
-	return CardData->stats;
+	return RuntimeStats;
 }
 
 int32 AAShip::GetFirePower() const
@@ -138,23 +140,18 @@ void AAShip::ApplyUpgrade(UUpgrade* upgrade)
 	upgrade->EffectiveShieldHealth = shield;
 	bonusDamage += upgrade->DamageBonus;
 	actionsPerTurn += upgrade->BonusActions;
-	CardData->stats.maxSpeed += upgrade->BonusMovespeed;
+	RuntimeStats.maxSpeed += upgrade->BonusMovespeed;
 }
 
 void AAShip::RemoveUpgrade(UUpgrade* upgrade)
 {
 	upgrades.Remove(upgrade);
 
-	bonusHealth = bonusHealth - upgrade->EffectiveShieldHealth;
-	
-	bonusDamage = (bonusDamage - upgrade->DamageBonus <= 0)
-		? 1 : bonusDamage - upgrade->DamageBonus;
+	bonusHealth -= upgrade->EffectiveShieldHealth;
 
-	actionsPerTurn = (actionsPerTurn - upgrade->BonusActions <= 0)
-		? 1 : actionsPerTurn - upgrade->BonusActions;
-
-	CardData->stats.maxSpeed = (CardData->stats.maxSpeed - upgrade->BonusMovespeed <= 0)
-		? 1 : CardData->stats.maxSpeed - upgrade->BonusMovespeed;
+	bonusDamage = FMath::Max(1, bonusDamage - upgrade->DamageBonus);
+	actionsPerTurn = FMath::Max(1, actionsPerTurn - upgrade->BonusActions);
+	RuntimeStats.maxSpeed = FMath::Max(1, RuntimeStats.maxSpeed - upgrade->BonusMovespeed);
 }
 
 void AAShip::ResetTurnFlags()

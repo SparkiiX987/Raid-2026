@@ -298,5 +298,7 @@ FIntPoint UCombatResolver::DirectionToIntPoint(EDirections dir) const
 
 EDirections UCombatResolver::IntPointToDirection(FIntPoint Delta)
 {
-	return EDirections();
+	const FIntPoint Norm(FMath::Sign(Delta.X), FMath::Sign(Delta.Y));
+	const int32 Index = AllDirections.IndexOfByKey(Norm);
+	return Index != INDEX_NONE ? static_cast<EDirections>(Index) : static_cast<EDirections>(0);
 }
