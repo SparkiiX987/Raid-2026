@@ -22,6 +22,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 cardId;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 maxNumber;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "type==ECardType::SHIP"))
 		int32 shipClass;
 
