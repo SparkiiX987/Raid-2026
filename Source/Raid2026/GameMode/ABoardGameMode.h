@@ -61,9 +61,13 @@ public:
 
 	void HandlePlaySabotage(ABoardPlayerController* playerInstigator, UUCardData* Card, const FEffectContext& context);
 
+	void HandleActivateEffect(ABoardPlayerController* PC, AAShip* Ship, int32 EffectIndex);
+
 	void ResolveSabotageTarget(ABoardPlayerController* PC, int32 ChosenIndex);
 
 	void FinalizeSabotage(ABoardPlayerController* PC, UUCardData* Card, int32 cost);
+
+	void RebuildMothershipEffects(AAMotherShip* MS);
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UUBoardManager> boardManagerClass;

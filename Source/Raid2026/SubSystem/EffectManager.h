@@ -43,6 +43,8 @@ public:
     UFUNCTION(BlueprintCallable)
         FEffectResult ActivateEffect(UEffect* Effect, const FEffectContext& Context);
 
+    void NotifyShipEvent(AABoardActor* Ship, EEffectTrigger Trigger, const FEffectContext& Context);
+
     UFUNCTION(BlueprintCallable)
         TArray<UEffect*> GetAvailableActivatedEffects(AABoardActor* Ship, const FEffectContext& Context) const;
 

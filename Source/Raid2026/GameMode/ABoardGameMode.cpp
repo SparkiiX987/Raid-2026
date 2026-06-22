@@ -317,30 +317,52 @@ void AABoardGameMode::HandlePlaySabotage(ABoardPlayerController* PC, UUCardData*
     FinalizeSabotage(PC, Card, Card->Sabotage->EssenceCost);
 }
 
+void AABoardGameMode::HandleActivateEffect(ABoardPlayerController* PC, AAShip* Ship, int32 EffectIndex)
+{
+    if (!ValidateIsPlayerTurn(PC)) return;
+    if (!ValidateShipOwnership(PC, Ship)) return;
+
+    FEffectContext ctx;
+    ctx.SourceShip = Ship;
+    ctx.OwnerPlayerID = PC->PlayerID;
+    ctx.TargetShip = PC->SelectedShip;
+
+    TArray<UEffect*> Activatables = effectManager->GetAvailableActivatedEffects(Ship, ctx);
+    if (!Activatables.IsValidIndex(EffectIndex)) { RejectAction(PC, TEXT("Effet active indisponible")); return; }
+
+    const FEffectResult Result = effectManager->ActivateEffect(Activatables[EffectIndex], ctx);
+
+    if (!Result.bSuccess && !Result.bNeedsTarget) { RejectAction(PC, Result.FailReason); return; }
+
+    BroadcastEssenceChanged(PC->PlayerID);
+    SyncHandToPlayer(PC->PlayerID);
+    UpdateGridState();
+}
+
 void AABoardGameMode::ResolveSabotageTarget(ABoardPlayerController* PC, int32 ChosenIndex)
 {
     UUCardData* Card = PC->PendingSabotageCard;
     if (!IsValid(Card) || !IsValid(Card->Sabotage)) { RejectAction(PC, TEXT("Aucun sabotage en attente")); return; }
 
     FEffectContext ctx = PC->PendingSabotageContext;
+    const int32 cost = Card->Sabotage->EssenceCost;
 
     if (AAShip* Ship = Cast<AAShip>(ctx.TargetShip.Get()))
     {
         if (!Ship->upgrades.IsValidIndex(ChosenIndex)) { RejectAction(PC, TEXT("Index invalide")); return; }
         ctx.targetedUpgrade = Ship->upgrades[ChosenIndex];
+
+        const FEffectResult Result = effectManager->ActivateEffect(Card->Sabotage, ctx);
+        if (!Result.bSuccess) { RejectAction(PC, Result.FailReason); return; }
     }
     else if (AAMotherShip* MS = ctx.TargetMothership.Get())
     {
         if (!MS->RDCards.IsValidIndex(ChosenIndex)) { RejectAction(PC, TEXT("Index invalide")); return; }
-
-        ctx.targetedExpert = MS->RDCards[ChosenIndex] ? MS->RDCards[ChosenIndex]->Sabotage : nullptr;
+        MS->RemoveRDCard(ChosenIndex);
+        RebuildMothershipEffects(MS);
     }
     else { RejectAction(PC, TEXT("Cible disparue")); return; }
 
-    const FEffectResult Result = effectManager->ActivateEffect(Card->Sabotage, ctx);
-    if (!Result.bSuccess) { RejectAction(PC, Result.FailReason); return; }
-
-    const int32 cost = Card->Sabotage->EssenceCost;
     PC->PendingSabotageCard = nullptr;
     FinalizeSabotage(PC, Card, cost);
 }
@@ -354,6 +376,19 @@ void AABoardGameMode::FinalizeSabotage(ABoardPlayerController* PC, UUCardData* C
     PC->ClearSelection();
 }
 
+void AABoardGameMode::RebuildMothershipEffects(AAMotherShip* MS)
+{
+    effectManager->UnregisterEffects(MS);
+
+    TArray<UEffect*> Effects;
+    for (UUCardData* Card : MS->RDCards)
+    {
+        if (!Card) continue;
+        for (const TObjectPtr<UEffect>& Template : Card->Effects)
+            if (Template) Effects.Add(DuplicateObject<UEffect>(Template, MS));
+    }
+    effectManager->RegisterEffects(MS, Effects);
+}
 void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInstigator, AAShip* ship, AAMotherShip* TargetMothership)
 {
     FFireResult Result = combatResolver->ResolveFireMothership(ship, TargetMothership);
@@ -470,19 +505,33 @@ void AABoardGameMode::HandleSpawnShip(
     Ship->ownerPlayer = PlayerID;
     boardManager->PlaceShip(Ship, TargetCell);
     deckManager->PlayCard(PlayerID, CardData);
-    Ship->SetHealthPoint(CardData->stats.resistance);
-    playerInstigator->ClientOnPlayCard();
 
     TArray<UEffect*> RuntimeEffects;
     for (const TObjectPtr<UEffect>& Template : CardData->Effects)
     {
         if (!Template) continue;
-        UEffect* Inst = DuplicateObject<UEffect>(Template, Ship);
-        RuntimeEffects.Add(Inst);
+        RuntimeEffects.Add(DuplicateObject<UEffect>(Template, Ship));
     }
-    effectManager->RegisterEffects(Ship, RuntimeEffects);
 
-    Ship->OnShipSpawn(effectManager->HasHyperspacePilote(boardManager->Motherships[PlayerID]) || effectManager->HasHyperspace(Ship));
+    for (UEffect* Eff : RuntimeEffects)
+    {
+        if (IsValid(Eff) && Eff->Trigger == EEffectTrigger::Passive)
+        {
+            const FCardStats B = Eff->GetPassiveStatBonus();
+            Ship->RuntimeStats.firePower += B.firePower;
+            Ship->RuntimeStats.maxSpeed += B.maxSpeed;
+            Ship->RuntimeStats.resistance += B.resistance;
+            Ship->RuntimeStats.radar += B.radar;
+            Ship->RuntimeStats.moveCost += B.moveCost;
+        }
+    }
+
+    Ship->SetHealthPoint(Ship->RuntimeStats.resistance);
+    effectManager->RegisterEffects(Ship, RuntimeEffects);
+    playerInstigator->ClientOnPlayCard();
+
+    Ship->OnShipSpawn(effectManager->HasHyperspacePilote(boardManager->Motherships[PlayerID])
+        || effectManager->HasHyperspace(Ship));
 
     UpdateGridState();
     BroadcastEssenceChanged(PlayerID);

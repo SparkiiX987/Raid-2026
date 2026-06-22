@@ -143,41 +143,28 @@ bool UEffect_ActivatedPush::CanApply_Implementation(const FEffectContext& Contex
 
 FEffectResult UEffect_ActivatedPush::Apply_Implementation(const FEffectContext& Context)
 {
-    /*if (!Context.TargetShip.IsValid())
-        return FEffectResult::NeedsTarget();
+    if (!Context.TargetShip.IsValid())   return FEffectResult::NeedsTarget();
+    if (!Context.Turn || !Context.Resolver)
+        return FEffectResult::Fail(TEXT("ActivatedPush: subsystems manquants"));
 
-    if (!Context.Turn)
-        return FEffectResult::Fail(TEXT("ActivatedPush: TurnManager absent"));
+    if (!Context.Turn->PayEssence(Context.OwnerPlayerID, EssenceCost))
+        return FEffectResult::Fail(TEXT("ActivatedPush: paiement echoue"));
 
-    const bool bPaid = Context.Turn->PayEssence(Context.OwnerPlayerID, EssenceCost);
-    if (!bPaid)
-        return FEffectResult::Fail(TEXT("ActivatedPush: Paiement échoué"));
+    AAShip* Target = Cast<AAShip>(Context.TargetShip.Get());
+    if (!Target) return FEffectResult::Fail(TEXT("ActivatedPush: cible invalide"));
 
     EDirections Dir = FixedDirection;
     if (!bFixedDirection)
     {
-        const FIntPoint Delta =
-            Context.TargetShip->GetGridPosition() - Context.SourceShip->GetGridPosition();
-        Dir = IntPointToDirection(Delta);
+        const FIntPoint Delta = Target->GetGridPosition() - Context.SourceShip->GetGridPosition();
+        Dir = Context.Resolver->IntPointToDirection(Delta);
     }
 
-    FPushResult PushResult = Context.Resolver.Get()->ApplyPush(Context.TargetShip.Get(), Dir);*/
-    
+    const FPushResult Push = Context.Resolver->ApplyPush(Target, Dir);
+
     FEffectResult Out = FEffectResult::Success();
-    /*Out.bNeedsTarget = !PushResult.bMoved && PushResult.Collisions.Num() == 0;
-    Out.IntValue = PushResult.Collisions.Num();
-    Out.AffectedCells.Add(PushResult.FinalCell);
-    
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("Effect_ActivatedPush: %s poussé → (%d,%d), %d collision(s)"),
-            *Context.TargetShip->GetName(),
-            PushResult.FinalCell.X, PushResult.FinalCell.Y,
-            PushResult.Collisions.Num());
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }*/
-
+    Out.IntValue = Push.Collisions.Num();
+    Out.AffectedCells.Add(Push.FinalCell);
     return Out;
 }
 

@@ -89,6 +89,10 @@ public:
         void ServerPlaceExpert(UUCardData* Card, AAMotherShip* Mothership);
         bool ServerPlaceExpert_Validate(UUCardData* Card, AAMotherShip* Mothership);
 
+    UFUNCTION(Server, Reliable, WithValidation)
+        void ServerActivateEffect(AAShip* Ship, int32 EffectIndex);
+        bool ServerActivateEffect_Validate(AAShip* Ship, int32 EffectIndex);
+
     UFUNCTION(BlueprintCallable, Server, Reliable)
     void Server_RevealShip(AAShip* Ship);
 

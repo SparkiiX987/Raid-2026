@@ -49,6 +49,7 @@ void UEffectManager::RegisterEffects(AABoardActor* Ship,
 
 void UEffectManager::UnregisterShipEffects(AAShip* Ship)
 {
+    NotifyShipEvent(Ship, EEffectTrigger::OnDestroyed, FEffectContext());
     UnregisterEffects(Ship);
 }
 
@@ -186,6 +187,27 @@ FEffectResult UEffectManager::ActivateEffect(UEffect* Effect,
         OnEffectApplied.Broadcast(Effect, Result);
 
     return Result;
+}
+
+void UEffectManager::NotifyShipEvent(AABoardActor* Ship, EEffectTrigger Trigger, const FEffectContext& BaseContext)
+{
+    if (!IsValid(Ship)) return;
+
+    FShipEffectList* List = RegisteredEffects.Find(Ship);
+    if (!List) return;
+
+    FEffectContext Context = BuildContextWithSubsystems(BaseContext);
+    Context.SourceShip = Ship;
+    Context.OwnerPlayerID = Ship->GetOwnerID();
+
+    for (UEffect* Effect : List->Effects)
+    {
+        if (!IsValid(Effect) || !Effect->MatchesTrigger(Trigger)) continue;
+        if (!Effect->CanApply(Context)) continue;
+
+        const FEffectResult Result = Effect->Apply(Context);
+        OnEffectApplied.Broadcast(Effect, Result);
+    }
 }
 
 TArray<UEffect*> UEffectManager::GetAvailableActivatedEffects(

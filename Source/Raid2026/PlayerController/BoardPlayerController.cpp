@@ -314,6 +314,19 @@ bool ABoardPlayerController::ServerPlaceExpert_Validate(UUCardData* Card, AAMoth
     return IsValid(Card) && IsValid(Mothership);
 }
 
+bool ABoardPlayerController::ServerActivateEffect_Validate(AAShip* Ship, int32 EffectIndex)
+{
+    return IsValid(Ship) && EffectIndex >= 0;
+}
+
+void ABoardPlayerController::ServerActivateEffect_Implementation(AAShip* Ship, int32 EffectIndex)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandleActivateEffect(this, Ship, EffectIndex);
+}
+
 void ABoardPlayerController::Server_RevealShip_Implementation(AAShip* Ship)
 {
     Ship->Reveal();

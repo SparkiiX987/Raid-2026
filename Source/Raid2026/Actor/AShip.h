@@ -4,6 +4,7 @@
 #include "AABoardActor.h"
 #include "Raid2026/CoreLayer/Cards/UCardData.h"
 #include "Raid2026/CoreLayer/Ship/EShipState.h"
+#include "../CoreLayer/Effects/EEffectTrigger.h"
 #include "AShip.generated.h"
 
 UCLASS()
@@ -72,6 +73,8 @@ class RAID2026_API AAShip : public AABoardActor
 
 	UFUNCTION(BlueprintCallable)
 		void ResetTurnFlags();
+
+	void NotifyEffectTrigger(EEffectTrigger Trigger);
 
 	UFUNCTION()
 		void OnShipSpawn(bool canMoveOnSpawn);

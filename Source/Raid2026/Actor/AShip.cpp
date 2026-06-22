@@ -71,6 +71,7 @@ void AAShip::StopParalize()
 void AAShip::Reveal()
 {
 	State = EShipState::Visible;
+	NotifyEffectTrigger(EEffectTrigger::OnReveal);
 	if (CanMove())
 	{
 		currentSpeed = GetMaxSpeed();
@@ -147,6 +148,7 @@ void AAShip::TakeDamage(int32 amount)
 	}
 
 	OnActorDamagedBP();
+	NotifyEffectTrigger(EEffectTrigger::OnDamageTaken);
 }
 
 void AAShip::ApplyUpgrade(UUpgrade* upgrade)
@@ -183,6 +185,15 @@ void AAShip::ResetTurnFlags()
 	actions = actionsPerTurn;
 	bJustPlayed = false;
 	currentSpeed = GetMaxSpeed();
+}
+
+void AAShip::NotifyEffectTrigger(EEffectTrigger Trigger)
+{
+	UWorld* World = GetWorld();
+	AABoardGameMode* GM = World ? World->GetAuthGameMode<AABoardGameMode>() : nullptr;
+	if (!GM || !GM->effectManager) return;
+
+	GM->effectManager->NotifyShipEvent(this, Trigger, FEffectContext());
 }
 
 void AAShip::OnShipSpawn(bool canMoveOnSpawn)

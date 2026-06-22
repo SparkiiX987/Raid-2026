@@ -60,31 +60,26 @@ FEffectResult UImplementedSabotage::Apply_Implementation(const FEffectContext& C
 
 FEffectResult UEmperorGift::Apply_Implementation(const FEffectContext& Context)
 {
-	if (!IsValid(Context.Deck))
-	{
-		return FEffectResult::Fail(TEXT("EmperorGift : deckManager non valid !"));
-	}
+    if (!IsValid(Context.Deck) || !IsValid(Context.Turn))
+        return FEffectResult::Fail(TEXT("EmperorGift : managers invalides"));
 
-	UDeckManager* deckManager = Context.Deck.Get();
-	deckManager->DrawCards(Context.OwnerPlayerID, 1);
+    UDeckManager* Deck = Context.Deck.Get();
+    Deck->DrawCards(Context.OwnerPlayerID, 1);
 
-	deckManager->DiscardCard(
-		Context.OwnerPlayerID == 0 ? 1 : 0,
-		Context.discardedCard.Get());
+    const int32 Opponent = Context.Turn->GetOpponent(Context.OwnerPlayerID);
+    const TArray<UUCardData*>& Hand = Deck->GetHand(Opponent);
+    if (Hand.Num() > 0)
+        Deck->DiscardCard(Opponent, Hand[FMath::RandRange(0, Hand.Num() - 1)]);
 
-	return FEffectResult::Success();
+    return FEffectResult::Success();
 }
 
 FEffectResult UEssenceExplosion::Apply_Implementation(const FEffectContext& Context)
 {
-	int32 targetedPlayer = Context.Turn.Get()->GetOpponent(Context.OwnerPlayerID);
+    if (!IsValid(Context.Turn))
+        return FEffectResult::Fail(TEXT("Essence explosion : turnManager non valid !"));
 
-	if (!IsValid(Context.Turn))
-	{
-		return FEffectResult::Fail(TEXT("Essence explosion : turnManager non valid !"));
-	}
-
-	Context.Turn.Get()->RemoveAllBonusEssence(targetedPlayer);
-
-	return FEffectResult::Success();
+    const int32 targetedPlayer = Context.Turn->GetOpponent(Context.OwnerPlayerID);
+    Context.Turn->RemoveAllBonusEssence(targetedPlayer);
+    return FEffectResult::Success();
 }
