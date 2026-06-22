@@ -293,6 +293,67 @@ void AABoardGameMode::HandleBonusEssenceGained(int32 PlayerId, int32 Amount)
     BroadcastEssenceChanged(PlayerId);
 }
 
+void AABoardGameMode::HandlePlaySabotage(ABoardPlayerController* PC, UUCardData* Card, const FEffectContext& context)
+{
+    if (!ValidateIsPlayerTurn(PC)) return;
+    if (!IsValid(Card) || !IsValid(Card->Sabotage)) { RejectAction(PC, TEXT("Carte invalide")); return; }
+    if (!deckManager->IsCardInHand(PC->PlayerID, Card)) { RejectAction(PC, TEXT("Carte absente de la main")); return; }
+
+    FEffectContext ctx = context;
+    ctx.OwnerPlayerID = PC->PlayerID;
+
+    const FEffectResult Result = effectManager->ActivateEffect(Card->Sabotage, ctx);
+
+    if (Result.bNeedsTarget)
+    {
+        PC->PendingSabotageCard = Card;
+        PC->PendingSabotageContext = ctx;
+        PC->ClientPromptSabotageTarget(Result.AffectedCards);
+        return;
+    }
+
+    if (!Result.bSuccess) { RejectAction(PC, Result.FailReason); return; }
+
+    FinalizeSabotage(PC, Card, Card->Sabotage->EssenceCost);
+}
+
+void AABoardGameMode::ResolveSabotageTarget(ABoardPlayerController* PC, int32 ChosenIndex)
+{
+    UUCardData* Card = PC->PendingSabotageCard;
+    if (!IsValid(Card) || !IsValid(Card->Sabotage)) { RejectAction(PC, TEXT("Aucun sabotage en attente")); return; }
+
+    FEffectContext ctx = PC->PendingSabotageContext;
+
+    if (AAShip* Ship = Cast<AAShip>(ctx.TargetShip.Get()))
+    {
+        if (!Ship->upgrades.IsValidIndex(ChosenIndex)) { RejectAction(PC, TEXT("Index invalide")); return; }
+        ctx.targetedUpgrade = Ship->upgrades[ChosenIndex];
+    }
+    else if (AAMotherShip* MS = ctx.TargetMothership.Get())
+    {
+        if (!MS->RDCards.IsValidIndex(ChosenIndex)) { RejectAction(PC, TEXT("Index invalide")); return; }
+
+        ctx.targetedExpert = MS->RDCards[ChosenIndex] ? MS->RDCards[ChosenIndex]->Sabotage : nullptr;
+    }
+    else { RejectAction(PC, TEXT("Cible disparue")); return; }
+
+    const FEffectResult Result = effectManager->ActivateEffect(Card->Sabotage, ctx);
+    if (!Result.bSuccess) { RejectAction(PC, Result.FailReason); return; }
+
+    const int32 cost = Card->Sabotage->EssenceCost;
+    PC->PendingSabotageCard = nullptr;
+    FinalizeSabotage(PC, Card, cost);
+}
+
+void AABoardGameMode::FinalizeSabotage(ABoardPlayerController* PC, UUCardData* Card, int32 cost)
+{
+    if (!turnManager->PayEssence(PC->PlayerID, cost)) { RejectAction(PC, TEXT("Pas assez d'essence")); return; }
+
+    deckManager->DiscardCard(PC->PlayerID, Card);
+    PC->ClientOnPlayCard();
+    PC->ClearSelection();
+}
+
 void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInstigator, AAShip* ship, AAMotherShip* TargetMothership)
 {
     FFireResult Result = combatResolver->ResolveFireMothership(ship, TargetMothership);
@@ -509,6 +570,7 @@ void AABoardGameMode::HandlePlaceUpgrade(ABoardPlayerController* playerInstigato
         return;
     }
 
+    CardData->Upgrade->SourceCard = CardData;
     upgradesManager.Get()->AddUpgrade(ship, CardData->Upgrade);
     playerInstigator->ClientOnPlayCard();
 }

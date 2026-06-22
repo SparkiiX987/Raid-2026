@@ -24,11 +24,6 @@ void UDeckManager::InitializeDeck(int32 playerId, const TArray<UUCardData*>& Car
     {
 
         DrawSingleCard(State);
-        /*UUCardData* Card = State.Deck[0];
-        State.Deck.RemoveAt(0);
-        State.Hand.Add(Card);
-
-        OnCardDrawn.Broadcast(playerId, Card);*/
     }
 
     BroadcastHandUpdate(State);

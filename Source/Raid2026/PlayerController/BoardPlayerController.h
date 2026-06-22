@@ -8,6 +8,7 @@
 #include "../Actor/AShip.h"
 #include "../CoreLayer/Inputs/ActionIntent.h"
 #include <EnhancedInputSubsystems.h>
+#include "../CoreLayer/Effects/FEffectContext.h"
 #include "BoardPlayerController.generated.h"
 
 UCLASS()
@@ -36,6 +37,12 @@ public:
 
     UPROPERTY(BlueprintReadOnly)    
         bool bIsMyTurn = false;
+
+    UPROPERTY()
+        TObjectPtr<UUCardData> PendingSabotageCard;
+
+    UPROPERTY()
+        FEffectContext PendingSabotageContext;
 
     UPROPERTY(ReplicatedUsing=OnRep_BoardVisualiser)
     TObjectPtr<AABoardVisualiser> BoardVisualiser;
@@ -89,6 +96,10 @@ public:
         void ServerUpgrade(AAShip* Ship, UUCardData* Card);
         bool ServerUpgrade_Validate(AAShip* Ship, UUCardData* Card);
 
+    UFUNCTION(Server, Reliable, WithValidation)
+        void ServerPlaySabotage(UUCardData* Card, const FEffectContext& context);
+        bool ServerPlaySabotage_Validate(UUCardData* Card, const FEffectContext& context);
+
     UFUNCTION(Server, Reliable)
         void ServerRequestReachableCells(AAShip* Ship);
 
@@ -101,6 +112,16 @@ public:
     UFUNCTION(Server, Reliable, WithValidation)
         void ServerSpawnShip(TSubclassOf<AAShip> Ship, FIntPoint TargetCell, UUCardData* cardData);
         bool ServerSpawnShip_Validate(TSubclassOf<AAShip> Ship, FIntPoint TargetCell, UUCardData* cardData);
+
+    UFUNCTION(Server, Reliable, WithValidation)
+        void ServerConfirmSabotageTarget(int32 ChosenIndex);
+        bool ServerConfirmSabotageTarget_Validate(int32 ChosenIndex);
+
+    UFUNCTION(Client, Reliable)
+        void ClientPromptSabotageTarget(const TArray<UUCardData*>& Candidates);
+
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnSabotageTargetPromptBP(const TArray<UUCardData*>& Candidates);
 
     UFUNCTION(Client, Reliable)
         void ClientOnTurnStarted(int32 ActivePlayerID);
@@ -131,7 +152,6 @@ public:
 
     UFUNCTION(Client, Reliable)
         void ClientInitializeInput();
-
 
     UFUNCTION(Client, Reliable)
         void ClientOnCardDrawn(UUCardData* Card);

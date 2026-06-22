@@ -16,7 +16,7 @@ class RAID2026_API AAShip : public AABoardActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		UUCardData* CardData;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		FCardStats RuntimeStats;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
@@ -39,8 +39,15 @@ class RAID2026_API AAShip : public AABoardActor
 
 	UFUNCTION(BlueprintPure)
 		int32 GetMoveCost() const;
-	
 
+	UFUNCTION(BlueprintPure)
+		bool IsParalized() const;
+
+	UFUNCTION()
+		void StartParalize();
+
+	UFUNCTION()
+		void StopParalize();
 
 	UFUNCTION(BlueprintCallable)
 		void Reveal();
@@ -93,6 +100,12 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnActBP();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnParalizeStartBP();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnParalizeStopBP();
+
 	virtual void TakeDamage(int32 Damage) override;
 
 	virtual void Die_Implementation() override;
@@ -115,6 +128,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		int32 actionsPerTurn = 1;
+
+	UPROPERTY(BlueprintReadOnly)
+		bool bIsParalized = false;
 
 // UFUNCTION(BlueprintImplementableEvent)
 //  void SetHighlightState(EHighlightType Type);

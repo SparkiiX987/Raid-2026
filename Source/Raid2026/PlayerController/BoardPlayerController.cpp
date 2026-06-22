@@ -59,7 +59,7 @@ void ABoardPlayerController::ClickOnShip(AAShip* Ship)
     if (!bIsMyTurn) return;
     if (!Ship) return;
 
-    if (Ship->ownerPlayer == PlayerID && Ship->CanBePlayed())
+    if (Ship->ownerPlayer == PlayerID)
     {
         if (GEngine)
         {
@@ -67,11 +67,21 @@ void ABoardPlayerController::ClickOnShip(AAShip* Ship)
 
             GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
         }
-        HandleShipSelected(Ship);
+        if (PendingIntent == EActionIntent::PLAYCARD && IsValid(PendingCardData))
+        {
+            ServerUpgrade(Ship, PendingCardData);
+        }
+        else if (Ship->CanBePlayed())
+        {
+            HandleShipSelected(Ship);
+        }
     }
     else if (PendingIntent == EActionIntent::PLAYCARD && IsValid(PendingCardData))
     {
-        ServerUpgrade(Ship, PendingCardData);
+        FEffectContext context = FEffectContext();
+        context.TargetShip = Ship;
+        context.OwnerPlayerID = PlayerID;
+        ServerPlaySabotage(PendingCardData, context);
     }
     else if (SelectedShip)
     {
@@ -115,7 +125,19 @@ void ABoardPlayerController::ClickOnMotherShip(AAMotherShip* Mothership)
 
     if (PendingIntent == EActionIntent::PLAYCARD && IsValid(PendingCardData))
     {
-        ServerPlaceExpert(PendingCardData, Mothership);
+        if (PendingCardData.Get()->type == ECardType::EXPERT)
+        {
+            ServerPlaceExpert(PendingCardData, Mothership);
+        }
+
+        else if (PendingCardData.Get()->type == ECardType::SABOTAGE)
+        {
+            FEffectContext context = FEffectContext();
+            context.TargetMothership = Mothership;
+            context.OwnerPlayerID = PlayerID;
+            ServerPlaySabotage(PendingCardData, context);
+        }
+        
         return;
     }
 
@@ -157,6 +179,23 @@ void ABoardPlayerController::HandleShipSelected(AAShip* Ship)
     OnShipSelectedBP(Ship);
 
     ServerRequestReachableCells(Ship);
+}
+
+void ABoardPlayerController::ClientPromptSabotageTarget_Implementation(const TArray<UUCardData*>& Candidates)
+{
+    OnSabotageTargetPromptBP(Candidates);
+}
+
+bool ABoardPlayerController::ServerConfirmSabotageTarget_Validate(int32 ChosenIndex)
+{
+    return ChosenIndex >= 0;
+}
+
+void ABoardPlayerController::ServerConfirmSabotageTarget_Implementation(int32 ChosenIndex)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+    GM->ResolveSabotageTarget(this, ChosenIndex);
 }
 
 void ABoardPlayerController::HandleCellTargeted(AABoardCell* Cell)
@@ -284,6 +323,19 @@ void ABoardPlayerController::Server_RevealShip_Implementation(AAShip* Ship)
 bool ABoardPlayerController::ServerUpgrade_Validate(AAShip* Ship, UUCardData* Card)
 {
     return IsValid(Ship) && IsValid(Card);
+}
+
+bool ABoardPlayerController::ServerPlaySabotage_Validate(UUCardData* Card, const FEffectContext& context)
+{
+    return IsValid(Card);
+}
+
+void ABoardPlayerController::ServerPlaySabotage_Implementation(UUCardData* Card, const FEffectContext& context)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandlePlaySabotage(this, Card, context);
 }
 
 void ABoardPlayerController::ServerUpgrade_Implementation(AAShip* Ship, UUCardData* Card)

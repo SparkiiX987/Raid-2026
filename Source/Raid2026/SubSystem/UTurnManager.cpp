@@ -203,6 +203,12 @@ void UUTurnManager::AddBonusEssence(int32 playerId, int32 amount)
     }
 }
 
+void UUTurnManager::RemoveAllBonusEssence(int32 playerId)
+{
+    FEssenceState& S = GetOrCreateEssenceState(playerId);
+    S.bonusEssence = 0;
+}
+
 int32 UUTurnManager::GetAvaliableEssence(int32 playerId) const
 {
     const FEssenceState* S = essenceStates.Find(playerId);
@@ -294,6 +300,11 @@ void UUTurnManager::RefillEssence(int32 playerId)
 int32 UUTurnManager::GetNextPlayerId() const
 {
     return (activePlayerId + 1) % playerCount;
+}
+
+int32 UUTurnManager::GetOpponent(int32 playerId)
+{
+    return (playerId + 1) % playerCount;
 }
 
 void UUTurnManager::NotifyOnTurnStartEffects()

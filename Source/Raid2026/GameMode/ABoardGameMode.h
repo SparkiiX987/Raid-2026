@@ -53,14 +53,17 @@ public:
 
 	void HandleRemoveUpgrade(UUpgrade* upgrade, AAShip* ship);
 
-	UFUNCTION()
-		void HandleTurnStarted(int32 PlayerID, int32 TurnNumber);
+	void HandleTurnStarted(int32 PlayerID, int32 TurnNumber);
+	
+	void HandleEssenceSpent(int32 PlayerId, int32 Amount, bool bWasBonus);
 
-	UFUNCTION()
-		void HandleEssenceSpent(int32 PlayerId, int32 Amount, bool bWasBonus);
+	void HandleBonusEssenceGained(int32 PlayerId, int32 Amount);
 
-	UFUNCTION()
-		void HandleBonusEssenceGained(int32 PlayerId, int32 Amount);
+	void HandlePlaySabotage(ABoardPlayerController* playerInstigator, UUCardData* Card, const FEffectContext& context);
+
+	void ResolveSabotageTarget(ABoardPlayerController* PC, int32 ChosenIndex);
+
+	void FinalizeSabotage(ABoardPlayerController* PC, UUCardData* Card, int32 cost);
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UUBoardManager> boardManagerClass;

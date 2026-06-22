@@ -14,6 +14,7 @@ void AAShip::GetLifetimeReplicatedProps(
 	DOREPLIFETIME(AAShip, actionsPerTurn);
 	DOREPLIFETIME(AAShip, State);
 	DOREPLIFETIME(AAShip, bonusDamage);
+	DOREPLIFETIME(AAShip, RuntimeStats);
 }
 
 FCardStats AAShip::GetEffectiveStats() const
@@ -48,6 +49,23 @@ int32 AAShip::GetCurrentSpeed() const
 int32 AAShip::GetMoveCost() const
 {
 	return GetEffectiveStats().moveCost;
+}
+
+bool AAShip::IsParalized() const
+{
+	return bIsParalized;
+}
+
+void AAShip::StartParalize()
+{
+	bIsParalized = true;
+	OnParalizeStartBP();
+}
+
+void AAShip::StopParalize()
+{
+	bIsParalized = false;
+	OnParalizeStopBP();
 }
 
 void AAShip::Reveal()
@@ -156,6 +174,12 @@ void AAShip::RemoveUpgrade(UUpgrade* upgrade)
 
 void AAShip::ResetTurnFlags()
 {
+	if (IsParalized())
+	{
+		StopParalize();
+		return;
+	}
+
 	actions = actionsPerTurn;
 	bJustPlayed = false;
 	currentSpeed = GetMaxSpeed();
