@@ -9,6 +9,8 @@
 #include "../CoreLayer/Inputs/ActionIntent.h"
 #include <EnhancedInputSubsystems.h>
 #include "../CoreLayer/Effects/FEffectContext.h"
+#include "../CoreLayer/Effects/ActivableInfo.h"
+#include "../CoreLayer/Effects/EffectTargetKind.h"
 #include "BoardPlayerController.generated.h"
 
 UCLASS()
@@ -18,37 +20,31 @@ class RAID2026_API ABoardPlayerController : public APlayerController
 
 public:
 
-    UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_PlayerID)
-        int32 PlayerID = -1;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Input")
-        TObjectPtr<UInputMappingContext> BoardMappingContext;
-
     void SetupPlayer(int32 ID);
 
-    UPROPERTY(BlueprintReadOnly)
-        TObjectPtr<AAShip> SelectedShip;
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-    UPROPERTY(BlueprintReadWrite)
-        TSubclassOf<AAShip> PendingShipClass;
+    UFUNCTION(BlueprintCallable)
+    void ClearSelection();
 
-    UPROPERTY(BlueprintReadWrite)
-        TObjectPtr<UUCardData> PendingCardData;
+#pragma region Request
 
-    UPROPERTY(BlueprintReadOnly)    
-        bool bIsMyTurn = false;
+    UFUNCTION(BlueprintCallable)
+    void RequestEndTurn();
 
-    UPROPERTY()
-        TObjectPtr<UUCardData> PendingSabotageCard;
+    UFUNCTION(BlueprintCallable)
+    void RequestPlayCard(UUCardData* Card, FIntPoint TargetCell);
 
-    UPROPERTY()
-        FEffectContext PendingSabotageContext;
+#pragma endregion
 
-    UPROPERTY(ReplicatedUsing=OnRep_BoardVisualiser)
-    TObjectPtr<AABoardVisualiser> BoardVisualiser;
+#pragma region Handle
 
-    UFUNCTION()
-    void OnRep_BoardVisualiser();
+    void HandleShipSelected(AAShip* Ship);
+    void HandleCellTargeted(AABoardCell* Cell);
+
+#pragma endregion
+
+#pragma region Click
 
     UFUNCTION(BlueprintCallable)
         void ClickOnShip(AAShip* Ship);
@@ -59,73 +55,99 @@ public:
     UFUNCTION(BlueprintCallable)
         void ClickOnMotherShip(AAMotherShip* Mothership);
 
-    UFUNCTION(BlueprintCallable)
-        void RequestEndTurn();
+#pragma endregion
 
-    UFUNCTION(BlueprintCallable)
-        void RequestPlayCard(UUCardData* Card, FIntPoint TargetCell);
+#pragma region OnRep
 
-    UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
-        void ServerSetupFinish();
-        bool ServerSetupFinish_Validate();
+    UFUNCTION()
+        void OnRep_BoardVisualiser();
 
-    UFUNCTION(Server, Reliable, WithValidation)
-        void ServerMoveShip(AAShip* Ship, FIntPoint TargetCell);
-        bool ServerMoveShip_Validate(AAShip* Ship, FIntPoint TargetCell);
+    UFUNCTION()
+        void OnRep_PlayerID();
 
-    UFUNCTION(Server, Reliable, WithValidation)
-        void ServerFireAt(AAShip* Shooter, FIntPoint TargetCell);
-        bool ServerFireAt_Validate(AAShip* Shooter, FIntPoint TargetCell);
+#pragma endregion
 
-    UFUNCTION(Server, Reliable, WithValidation)
-        void ServerFireAtMothership(AAShip* Ship, AAMotherShip* Mothership);
-        bool ServerFireAtMothership_Validate(AAShip* Ship, AAMotherShip* Mothership);
+#pragma region ServerMethodes
 
-    UFUNCTION(Server, Reliable, WithValidation)
-        void ServerPlayCard(UUCardData* Card, FIntPoint TargetCell);
-        bool ServerPlayCard_Validate(UUCardData* Card, FIntPoint TargetCell);
+        UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
+            void ServerSetupFinish();
+            bool ServerSetupFinish_Validate();
 
-    UFUNCTION(Server, Reliable, WithValidation)
-        void ServerPlaceExpert(UUCardData* Card, AAMotherShip* Mothership);
-        bool ServerPlaceExpert_Validate(UUCardData* Card, AAMotherShip* Mothership);
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerMoveShip(AAShip* Ship, FIntPoint TargetCell);
+            bool ServerMoveShip_Validate(AAShip* Ship, FIntPoint TargetCell);
 
-    UFUNCTION(Server, Reliable, WithValidation)
-        void ServerActivateEffect(AAShip* Ship, int32 EffectIndex);
-        bool ServerActivateEffect_Validate(AAShip* Ship, int32 EffectIndex);
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerFireAt(AAShip* Shooter, FIntPoint TargetCell);
+            bool ServerFireAt_Validate(AAShip* Shooter, FIntPoint TargetCell);
 
-    UFUNCTION(BlueprintCallable, Server, Reliable)
-    void Server_RevealShip(AAShip* Ship);
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerFireAtMothership(AAShip* Ship, AAMotherShip* Mothership);
+            bool ServerFireAtMothership_Validate(AAShip* Ship, AAMotherShip* Mothership);
 
-    UFUNCTION(Server, Reliable, WithValidation)
-        void ServerUpgrade(AAShip* Ship, UUCardData* Card);
-        bool ServerUpgrade_Validate(AAShip* Ship, UUCardData* Card);
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerPlayCard(UUCardData* Card, FIntPoint TargetCell);
+            bool ServerPlayCard_Validate(UUCardData* Card, FIntPoint TargetCell);
 
-    UFUNCTION(Server, Reliable, WithValidation)
-        void ServerPlaySabotage(UUCardData* Card, const FEffectContext& context);
-        bool ServerPlaySabotage_Validate(UUCardData* Card, const FEffectContext& context);
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerPlaceExpert(UUCardData* Card, AAMotherShip* Mothership);
+            bool ServerPlaceExpert_Validate(UUCardData* Card, AAMotherShip* Mothership);
 
-    UFUNCTION(Server, Reliable)
-        void ServerRequestReachableCells(AAShip* Ship);
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerActivateEffect(AAShip* Ship, int32 EffectIndex);
+            bool ServerActivateEffect_Validate(AAShip* Ship, int32 EffectIndex);
+
+        UFUNCTION(BlueprintCallable, Server, Reliable)
+            void Server_RevealShip(AAShip* Ship);
+
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerUpgrade(AAShip* Ship, UUCardData* Card);
+            bool ServerUpgrade_Validate(AAShip* Ship, UUCardData* Card);
+
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerPlaySabotage(UUCardData* Card, const FEffectContext& context);
+            bool ServerPlaySabotage_Validate(UUCardData* Card, const FEffectContext& context);
+
+        UFUNCTION(Server, Reliable)
+            void ServerRequestReachableCells(AAShip* Ship);
+
+        UFUNCTION(Server, Reliable)
+            void ServerEndTurn();
+
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerSpawnShip(TSubclassOf<AAShip> Ship, FIntPoint TargetCell, UUCardData* cardData);
+            bool ServerSpawnShip_Validate(TSubclassOf<AAShip> Ship, FIntPoint TargetCell, UUCardData* cardData);
+
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerConfirmSabotageTarget(int32 ChosenIndex);
+            bool ServerConfirmSabotageTarget_Validate(int32 ChosenIndex);
+
+        UFUNCTION(Server, Reliable)
+            void ServerRequestActivatableEffects(AAShip* Ship);
+
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerConfirmEffectTarget(AAShip* TargetShip);
+            bool ServerConfirmEffectTarget_Validate(AAShip* TargetShip);
+
+        UFUNCTION(Server, Reliable, WithValidation)
+            void ServerConfirmEffectTargetCell(FIntPoint Cell);
+            bool ServerConfirmEffectTargetCell_Validate(FIntPoint Cell);
+
+#pragma endregion
+
+#pragma region ClientMethodes
 
     UFUNCTION(Client, Reliable)
         void ClientOnReachableCells(const TArray<FIntPoint>& Cells);
 
-    UFUNCTION(Server, Reliable)
-        void ServerEndTurn();
+    UFUNCTION(Client, Reliable)
+        void ClientReceiveActivatableEffects(const TArray<FActivatableEffectInfo>& Infos);
 
-    UFUNCTION(Server, Reliable, WithValidation)
-        void ServerSpawnShip(TSubclassOf<AAShip> Ship, FIntPoint TargetCell, UUCardData* cardData);
-        bool ServerSpawnShip_Validate(TSubclassOf<AAShip> Ship, FIntPoint TargetCell, UUCardData* cardData);
-
-    UFUNCTION(Server, Reliable, WithValidation)
-        void ServerConfirmSabotageTarget(int32 ChosenIndex);
-        bool ServerConfirmSabotageTarget_Validate(int32 ChosenIndex);
+    UFUNCTION(Client, Reliable)
+        void ClientPromptEffectTarget(EEffectTargetKind Kind);
 
     UFUNCTION(Client, Reliable)
         void ClientPromptSabotageTarget(const TArray<UUCardData*>& Candidates);
-
-    UFUNCTION(BlueprintImplementableEvent)
-        void OnSabotageTargetPromptBP(const TArray<UUCardData*>& Candidates);
 
     UFUNCTION(Client, Reliable)
         void ClientOnTurnStarted(int32 ActivePlayerID);
@@ -160,27 +182,23 @@ public:
     UFUNCTION(Client, Reliable)
         void ClientOnCardDrawn(UUCardData* Card);
 
+    UFUNCTION(BlueprintCallable, Client, Reliable)
+        void ClientClearSelection();
+
+    void ClearPendingActivation();
+
+#pragma endregion
+
+#pragma region BlueprintImplementableEvents
+
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnActivatableEffectsReceivedBP(const TArray<FActivatableEffectInfo>& Infos);
+
     UFUNCTION(BlueprintImplementableEvent)
         void OnCardDrawnBP(UUCardData* Card);
 
     UFUNCTION(BlueprintImplementableEvent)
         void InitializeInputBP();
-
-    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-    bool bWaitingForCellTarget = false;
-
-    UPROPERTY(BlueprintReadWrite)
-        EActionIntent PendingIntent = EActionIntent::NONE;
-
-    void HandleShipSelected(AAShip* Ship);
-    void HandleCellTargeted(AABoardCell* Cell);
-
-    UFUNCTION(BlueprintCallable)
-        void ClearSelection();
-
-    UFUNCTION(BlueprintCallable, Client, Reliable)
-        void ClientClearSelection();
 
     UFUNCTION(BlueprintImplementableEvent)
         void OnTurnStartedBP(int32 ActivePlayerID, bool bIsLocalPlayerTurn);
@@ -212,11 +230,56 @@ public:
     UFUNCTION(BlueprintImplementableEvent)
         void OnShipSelectedBP(AAShip* Ship);
 
-    UFUNCTION()
-        void OnRep_PlayerID();
-	
-};
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnSabotageTargetPromptBP(const TArray<UUCardData*>& Candidates);
 
-inline void ABoardPlayerController::OnRep_BoardVisualiser()
-{
-}
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnEffectTargetPromptBP(EEffectTargetKind Kind);
+
+#pragma endregion
+
+#pragma region vars
+
+    UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_PlayerID)
+        int32 PlayerID = -1;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+        TObjectPtr<UInputMappingContext> BoardMappingContext;
+
+    UPROPERTY(BlueprintReadOnly)
+        TObjectPtr<AAShip> SelectedShip;
+
+    UPROPERTY(BlueprintReadWrite)
+        TSubclassOf<AAShip> PendingShipClass;
+
+    UPROPERTY(BlueprintReadWrite)
+        TObjectPtr<UUCardData> PendingCardData;
+
+    UPROPERTY(BlueprintReadOnly)
+        bool bIsMyTurn = false;
+
+    UPROPERTY()
+        TObjectPtr<UUCardData> PendingSabotageCard;
+
+    UPROPERTY()
+        FEffectContext PendingSabotageContext;
+
+    UPROPERTY(ReplicatedUsing = OnRep_BoardVisualiser)
+        TObjectPtr<AABoardVisualiser> BoardVisualiser;
+
+    UPROPERTY(BlueprintReadWrite)
+        EActionIntent PendingIntent = EActionIntent::NONE;
+
+    UPROPERTY()
+        EEffectTargetKind PendingActivationTargetKind = EEffectTargetKind::None;
+
+    UPROPERTY()
+        TObjectPtr<AAShip> PendingActivationShip;
+
+        int32 PendingActivationEffectIndex = -1;
+
+        bool bWaitingForCellTarget = false;
+
+#pragma endregion
+
+};

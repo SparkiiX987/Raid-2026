@@ -317,23 +317,78 @@ void AABoardGameMode::HandlePlaySabotage(ABoardPlayerController* PC, UUCardData*
     FinalizeSabotage(PC, Card, Card->Sabotage->EssenceCost);
 }
 
+TArray<FActivatableEffectInfo> AABoardGameMode::BuildActivatableInfos(ABoardPlayerController* PC, AAShip* Ship)
+{
+    TArray<FActivatableEffectInfo> Infos;
+    if (!IsValid(Ship)) return Infos;
+
+    TArray<UEffect*> List = effectManager->GetActivatableEffects(Ship, PC->PlayerID);
+    for (int32 i = 0; i < List.Num(); ++i)
+    {
+        FActivatableEffectInfo Info;
+        Info.Index = i;
+        Info.DisplayName = List[i]->DisplayName;
+        Info.Description = List[i]->Description;
+        Info.EssenceCost = List[i]->EssenceCost;
+        Info.bNeedsTarget = List[i]->RequiresTarget();
+        Info.TargetKind = List[i]->GetTargetKind();
+        Info.bNeedsTarget = (Info.TargetKind != EEffectTargetKind::None);
+        Infos.Add(Info);
+    }
+    return Infos;
+}
+
 void AABoardGameMode::HandleActivateEffect(ABoardPlayerController* PC, AAShip* Ship, int32 EffectIndex)
 {
     if (!ValidateIsPlayerTurn(PC)) return;
     if (!ValidateShipOwnership(PC, Ship)) return;
 
+    TArray<UEffect*> Activatables = effectManager->GetActivatableEffects(Ship, PC->PlayerID);
+    if (!Activatables.IsValidIndex(EffectIndex)) { RejectAction(PC, TEXT("Effet indisponible")); return; }
+
     FEffectContext ctx;
     ctx.SourceShip = Ship;
     ctx.OwnerPlayerID = PC->PlayerID;
-    ctx.TargetShip = PC->SelectedShip;
-
-    TArray<UEffect*> Activatables = effectManager->GetAvailableActivatedEffects(Ship, ctx);
-    if (!Activatables.IsValidIndex(EffectIndex)) { RejectAction(PC, TEXT("Effet active indisponible")); return; }
 
     const FEffectResult Result = effectManager->ActivateEffect(Activatables[EffectIndex], ctx);
 
-    if (!Result.bSuccess && !Result.bNeedsTarget) { RejectAction(PC, Result.FailReason); return; }
+    if (Result.bNeedsTarget)
+    {
+        PC->PendingActivationShip = Ship;
+        PC->PendingActivationEffectIndex = EffectIndex;
+        PC->ClientPromptEffectTarget(Activatables[EffectIndex]->GetTargetKind());
+        return;
+    }
 
+    if (!Result.bSuccess) { RejectAction(PC, Result.FailReason); return; }
+
+    FinalizeActivation(PC, Ship);
+}
+
+void AABoardGameMode::ResolveActivationTarget(ABoardPlayerController* PC, AAShip* TargetShip)
+{
+    AAShip* Ship = PC->PendingActivationShip;
+    const int32 Index = PC->PendingActivationEffectIndex;
+    if (!IsValid(Ship) || Index < 0) { RejectAction(PC, TEXT("Aucune activation en attente")); return; }
+
+    TArray<UEffect*> Activatables = effectManager->GetActivatableEffects(Ship, PC->PlayerID);
+    if (!Activatables.IsValidIndex(Index)) { RejectAction(PC, TEXT("Effet indisponible")); return; }
+
+    FEffectContext ctx;
+    ctx.SourceShip = Ship;
+    ctx.OwnerPlayerID = PC->PlayerID;
+    ctx.TargetShip = TargetShip;
+
+    const FEffectResult Result = effectManager->ActivateEffect(Activatables[Index], ctx);
+    if (!Result.bSuccess) { RejectAction(PC, Result.FailReason); return; }
+
+    PC->PendingActivationShip = nullptr;
+    PC->PendingActivationEffectIndex = -1;
+    FinalizeActivation(PC, Ship);
+}
+
+void AABoardGameMode::FinalizeActivation(ABoardPlayerController* PC, AAShip* Ship)
+{
     BroadcastEssenceChanged(PC->PlayerID);
     SyncHandToPlayer(PC->PlayerID);
     UpdateGridState();
@@ -389,6 +444,28 @@ void AABoardGameMode::RebuildMothershipEffects(AAMotherShip* MS)
     }
     effectManager->RegisterEffects(MS, Effects);
 }
+void AABoardGameMode::ResolveActivationTargetCell(ABoardPlayerController* PC, FIntPoint Cell)
+{
+    AAShip* Ship = PC->PendingActivationShip;
+    const int32 Index = PC->PendingActivationEffectIndex;
+    if (!IsValid(Ship) || Index < 0) { RejectAction(PC, TEXT("Aucune activation en attente")); return; }
+
+    TArray<UEffect*> Activatables = effectManager->GetActivatableEffects(Ship, PC->PlayerID);
+    if (!Activatables.IsValidIndex(Index)) { RejectAction(PC, TEXT("Effet indisponible")); return; }
+
+    FEffectContext ctx;
+    ctx.SourceShip = Ship;
+    ctx.OwnerPlayerID = PC->PlayerID;
+    ctx.TargetCell = Cell;
+
+    const FEffectResult Result = effectManager->ActivateEffect(Activatables[Index], ctx);
+    if (!Result.bSuccess) { RejectAction(PC, Result.FailReason); return; }
+
+    PC->PendingActivationShip = nullptr;
+    PC->PendingActivationEffectIndex = -1;
+    FinalizeActivation(PC, Ship);
+}
+
 void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInstigator, AAShip* ship, AAMotherShip* TargetMothership)
 {
     FFireResult Result = combatResolver->ResolveFireMothership(ship, TargetMothership);

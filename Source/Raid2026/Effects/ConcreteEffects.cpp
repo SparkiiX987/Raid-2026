@@ -128,24 +128,23 @@ FEffectResult UEffect_ActivatedDraw::Apply_Implementation(const FEffectContext& 
 
 bool UEffect_ActivatedPush::CanApply_Implementation(const FEffectContext& Context) const
 {
-    if (!Super::CanApply_Implementation(Context)) return false;
-
-    if (!Context.TargetShip.IsValid()) return false;
-
-    if (!Context.SourceShip.IsValid()) return false;
-
-    const FIntPoint Delta =
-        Context.TargetShip->GetGridPosition() - Context.SourceShip->GetGridPosition();
-    const int32 ManhattanDist = FMath::Abs(Delta.X) + FMath::Abs(Delta.Y);
-
-    return ManhattanDist <= Range;
+    return Super::CanApply_Implementation(Context);
 }
 
 FEffectResult UEffect_ActivatedPush::Apply_Implementation(const FEffectContext& Context)
 {
-    if (!Context.TargetShip.IsValid())   return FEffectResult::NeedsTarget();
+    if (!Context.SourceShip.IsValid())
+        return FEffectResult::Fail(TEXT("ActivatedPush: source invalide"));
+
+    if (!Context.TargetShip.IsValid())
+        return FEffectResult::NeedsTarget();
+
     if (!Context.Turn || !Context.Resolver)
         return FEffectResult::Fail(TEXT("ActivatedPush: subsystems manquants"));
+
+    const FIntPoint Delta = Context.TargetShip->GetGridPosition() - Context.SourceShip->GetGridPosition();
+    if (FMath::Abs(Delta.X) + FMath::Abs(Delta.Y) > Range)
+        return FEffectResult::Fail(TEXT("ActivatedPush: cible hors de portee"));
 
     if (!Context.Turn->PayEssence(Context.OwnerPlayerID, EssenceCost))
         return FEffectResult::Fail(TEXT("ActivatedPush: paiement echoue"));
@@ -153,13 +152,7 @@ FEffectResult UEffect_ActivatedPush::Apply_Implementation(const FEffectContext& 
     AAShip* Target = Cast<AAShip>(Context.TargetShip.Get());
     if (!Target) return FEffectResult::Fail(TEXT("ActivatedPush: cible invalide"));
 
-    EDirections Dir = FixedDirection;
-    if (!bFixedDirection)
-    {
-        const FIntPoint Delta = Target->GetGridPosition() - Context.SourceShip->GetGridPosition();
-        Dir = Context.Resolver->IntPointToDirection(Delta);
-    }
-
+    EDirections Dir = bFixedDirection ? FixedDirection : Context.Resolver->IntPointToDirection(Delta);
     const FPushResult Push = Context.Resolver->ApplyPush(Target, Dir);
 
     FEffectResult Out = FEffectResult::Success();

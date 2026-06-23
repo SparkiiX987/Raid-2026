@@ -210,6 +210,21 @@ void UEffectManager::NotifyShipEvent(AABoardActor* Ship, EEffectTrigger Trigger,
     }
 }
 
+TArray<UEffect*> UEffectManager::GetActivatableEffects(AABoardActor* Ship, int32 PlayerId) const
+{
+    TArray<UEffect*> Out;
+    const FShipEffectList* List = RegisteredEffects.Find(Ship);
+    if (!List) return Out;
+
+    const int32 Essence = turnManager ? turnManager->GetAvaliableEssence(PlayerId) : 0;
+    for (UEffect* E : List->Effects)
+    {
+        if (IsValid(E) && E->Trigger == EEffectTrigger::Activated && E->EssenceCost <= Essence)
+            Out.Add(E);
+    }
+    return Out;
+}
+
 TArray<UEffect*> UEffectManager::GetAvailableActivatedEffects(
     AABoardActor* Ship,
     const FEffectContext& BaseContext) const

@@ -11,6 +11,7 @@
 #include "../Actor/ABoardCell.h"
 #include "Raid2026/SubSystem/UPathFinder.h"
 #include <Raid2026/SubSystem/EffectManager.h>
+#include "../CoreLayer/Effects/ActivableInfo.h"
 #include "ABoardGameMode.generated.h"
 
 UCLASS()
@@ -63,11 +64,19 @@ public:
 
 	void HandleActivateEffect(ABoardPlayerController* PC, AAShip* Ship, int32 EffectIndex);
 
+	TArray<FActivatableEffectInfo> BuildActivatableInfos(ABoardPlayerController* PC, AAShip* Ship);
+
+	void ResolveActivationTarget(ABoardPlayerController* PC, AAShip* TargetShip);
+
+	void FinalizeActivation(ABoardPlayerController* PC, AAShip* Ship);
+
 	void ResolveSabotageTarget(ABoardPlayerController* PC, int32 ChosenIndex);
 
 	void FinalizeSabotage(ABoardPlayerController* PC, UUCardData* Card, int32 cost);
 
 	void RebuildMothershipEffects(AAMotherShip* MS);
+
+	void ResolveActivationTargetCell(ABoardPlayerController* PC, FIntPoint Cell);
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UUBoardManager> boardManagerClass;

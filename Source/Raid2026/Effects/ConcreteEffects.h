@@ -124,6 +124,8 @@ public:
         Description = FText::FromString(FString::Printf(TEXT("Payez %d → Poussez un vaisseau ciblé d'une case."), EssenceCost));
     }
 
+    virtual EEffectTargetKind GetTargetKind() const override { return EEffectTargetKind::Ship; }
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Push",
         meta = (ClampMin = 1))
     int32 Range = 2;

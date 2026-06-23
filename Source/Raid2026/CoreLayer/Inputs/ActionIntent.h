@@ -8,5 +8,6 @@ enum class EActionIntent : uint8
 	NONE UMETA(DisplayName = "None"),
 	MOVE UMETA(DisplayName = "Move"),
 	FIRE UMETA(DisplayName = "Fire"),
-	PLAYCARD UMETA(DisplayName = "play card")
+	PLAYCARD UMETA(DisplayName = "play card"),
+	ACTIVATE UMETA(DisplayName = "activate effect")
 };

@@ -45,6 +45,8 @@ public:
 
     void NotifyShipEvent(AABoardActor* Ship, EEffectTrigger Trigger, const FEffectContext& Context);
 
+    TArray<UEffect*> GetActivatableEffects(AABoardActor* Ship, int32 PlayerId) const;
+
     UFUNCTION(BlueprintCallable)
         TArray<UEffect*> GetAvailableActivatedEffects(AABoardActor* Ship, const FEffectContext& Context) const;
 

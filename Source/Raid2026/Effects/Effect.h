@@ -6,6 +6,7 @@
 #include "../CoreLayer/Effects/FEffectResult.h"
 #include "../CoreLayer/Effects/FEffectContext.h"
 #include "../CoreLayer/Cards/CardStats.h"
+#include "../CoreLayer/Effects/EffectTargetKind.h"
 #include "Effect.generated.h"
 
 UCLASS(BlueprintType, Blueprintable)
@@ -42,7 +43,12 @@ public:
 
     UFUNCTION(BlueprintNativeEvent, BlueprintPure)
     FCardStats GetPassiveStatBonus() const;
+
     virtual FCardStats GetPassiveStatBonus_Implementation() const;
+
+    virtual EEffectTargetKind GetTargetKind() const { return EEffectTargetKind::None; }
+
+    bool RequiresTarget() const { return GetTargetKind() != EEffectTargetKind::None; }
 
     UFUNCTION(BlueprintPure)
     bool MatchesTrigger(EEffectTrigger InTrigger) const { return Trigger == InTrigger; }

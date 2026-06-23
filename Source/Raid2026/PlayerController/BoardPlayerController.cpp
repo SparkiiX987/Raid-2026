@@ -29,6 +29,13 @@ void ABoardPlayerController::ClientOnCardDrawn_Implementation(UUCardData* Card)
     OnCardDrawnBP(Card);
 }
 
+void ABoardPlayerController::ClearPendingActivation()
+{
+    PendingActivationShip = nullptr;
+    PendingActivationEffectIndex = -1;
+    PendingActivationTargetKind = EEffectTargetKind::None;
+}
+
 void ABoardPlayerController::GetLifetimeReplicatedProps(
     TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -42,6 +49,11 @@ void ABoardPlayerController::SetupPlayer(int32 ID)
     PlayerID = ID;
 
     ClientInitializeInput();
+}
+
+void ABoardPlayerController::OnRep_BoardVisualiser()
+{
+
 }
 
 void ABoardPlayerController::OnRep_PlayerID()
@@ -59,6 +71,12 @@ void ABoardPlayerController::ClickOnShip(AAShip* Ship)
     if (!bIsMyTurn) return;
     if (!Ship) return;
 
+    if(PendingIntent == EActionIntent::ACTIVATE)
+    {
+        if (PendingActivationTargetKind == EEffectTargetKind::Ship)
+            ServerConfirmEffectTarget(Ship);
+        return;
+    }
     if (Ship->ownerPlayer == PlayerID)
     {
         if (GEngine)
@@ -96,26 +114,36 @@ void ABoardPlayerController::ClickOnCell(AABoardCell* Cell)
 
     switch (PendingIntent)
     {
-    case EActionIntent::MOVE:
-        if (IsValid(SelectedShip))
-        {
-            ServerMoveShip(SelectedShip, Cell->cellData.Pos);
-        }
-        break;
+        case EActionIntent::MOVE:
 
-    case EActionIntent::PLAYCARD:
+            if (IsValid(SelectedShip))
+            {
+                ServerMoveShip(SelectedShip, Cell->cellData.Pos);
+            }
+            break;
 
-        if (PendingShipClass && PendingCardData)
-        {
-            ServerSpawnShip(PendingShipClass,
-                Cell->cellData.Pos,
-                PendingCardData);
-        }
-        break;
+        case EActionIntent::PLAYCARD:
 
-    default:
-        ClearSelection();
-        break;
+            if (PendingShipClass && PendingCardData)
+            {
+                ServerSpawnShip(PendingShipClass,
+                    Cell->cellData.Pos,
+                    PendingCardData);
+            }
+            break;
+
+        case EActionIntent::ACTIVATE:
+
+            if (PendingActivationTargetKind == EEffectTargetKind::Cell)
+            {
+                ServerConfirmEffectTargetCell(Cell->cellData.Pos);
+            }
+            break;
+
+        default:
+
+            ClearSelection();
+            break;
     }
 }
 
@@ -178,6 +206,7 @@ void ABoardPlayerController::HandleShipSelected(AAShip* Ship)
     bWaitingForCellTarget = true;
     OnShipSelectedBP(Ship);
 
+    ServerRequestActivatableEffects(Ship);
     ServerRequestReachableCells(Ship);
 }
 
@@ -189,6 +218,51 @@ void ABoardPlayerController::ClientPromptSabotageTarget_Implementation(const TAr
 bool ABoardPlayerController::ServerConfirmSabotageTarget_Validate(int32 ChosenIndex)
 {
     return ChosenIndex >= 0;
+}
+
+bool ABoardPlayerController::ServerConfirmEffectTarget_Validate(AAShip* TargetShip)
+{
+    return IsValid(TargetShip);
+}
+
+bool ABoardPlayerController::ServerConfirmEffectTargetCell_Validate(FIntPoint Cell)
+{
+    return true;
+}
+void ABoardPlayerController::ServerConfirmEffectTargetCell_Implementation(FIntPoint Cell)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->ResolveActivationTargetCell(this, Cell);
+}
+
+void ABoardPlayerController::ClientPromptEffectTarget_Implementation(EEffectTargetKind Kind)
+{
+    PendingIntent = EActionIntent::ACTIVATE;
+    PendingActivationTargetKind = Kind;
+    OnEffectTargetPromptBP(Kind);
+}
+
+void ABoardPlayerController::ServerConfirmEffectTarget_Implementation(AAShip* TargetShip)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->ResolveActivationTarget(this, TargetShip);
+}
+
+void ABoardPlayerController::ServerRequestActivatableEffects_Implementation(AAShip* Ship)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    ClientReceiveActivatableEffects(GM->BuildActivatableInfos(this, Ship));
+}
+
+void ABoardPlayerController::ClientReceiveActivatableEffects_Implementation(const TArray<FActivatableEffectInfo>& Infos)
+{
+    OnActivatableEffectsReceivedBP(Infos);
 }
 
 void ABoardPlayerController::ServerConfirmSabotageTarget_Implementation(int32 ChosenIndex)
@@ -220,6 +294,8 @@ void ABoardPlayerController::ClientClearSelection_Implementation()
     PendingShipClass = nullptr;
     PendingCardData = nullptr;
     bWaitingForCellTarget = false;
+
+    ClearPendingActivation();
 
     if (BoardVisualiser)
         BoardVisualiser->ClearHighlights();
@@ -411,7 +487,7 @@ void ABoardPlayerController::ServerRequestReachableCells_Implementation(
     {
         FString text = FString::Printf(TEXT("message %d"), Reachable.Num());
 
-        GEngine->AddOnScreenDebugMessage(-1, 1005.0f, FColor::Blue, text);
+        GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Blue, text);
     }
     ClientOnReachableCells(Reachable);
 }
@@ -431,6 +507,7 @@ void ABoardPlayerController::ClientOnTurnEnded_Implementation()
 {
     bIsMyTurn = false;
     ClearSelection();
+    ClearPendingActivation();
     OnTurnEndedBP();
 }
 
