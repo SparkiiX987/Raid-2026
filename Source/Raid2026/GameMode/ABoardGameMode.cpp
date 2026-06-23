@@ -252,6 +252,12 @@ void AABoardGameMode::HandlePlaySabotage(ABoardPlayerController* PC, UUCardData*
     if (!IsValid(Card) || !IsValid(Card->Sabotage)) { RejectAction(PC, TEXT("Carte invalide")); return; }
     if (!deckManager->IsCardInHand(PC->PlayerID, Card)) { RejectAction(PC, TEXT("Carte absente de la main")); return; }
 
+    if (!turnManager->PayEssence(PC->PlayerID, Card->playCost))
+    {
+        RejectAction(PC, "Not enough essence");
+        return;
+    }
+
     FEffectContext ctx = context;
     ctx.OwnerPlayerID = PC->PlayerID;
 
@@ -384,7 +390,7 @@ void AABoardGameMode::FinalizeSabotage(ABoardPlayerController* PC, UUCardData* C
     PC->ClearSelection();
 }
 
-void AABoardGameMode::RebuildMothershipEffects(AAMotherShip* MS)
+void AABoardGameMode::RebuildMothershipEffects(AAMotherShip* MS) // a revoir
 {
     effectManager->UnregisterEffects(MS);
 
@@ -397,6 +403,7 @@ void AABoardGameMode::RebuildMothershipEffects(AAMotherShip* MS)
     }
     effectManager->RegisterEffects(MS, Effects);
 }
+
 void AABoardGameMode::ResolveActivationTargetCell(ABoardPlayerController* PC, FIntPoint Cell)
 {
     AAShip* Ship = PC->PendingActivationShip;
@@ -421,6 +428,17 @@ void AABoardGameMode::ResolveActivationTargetCell(ABoardPlayerController* PC, FI
 
 void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInstigator, AAShip* ship, AAMotherShip* TargetMothership)
 {
+    if (!ValidateIsPlayerTurn(playerInstigator)) return;
+    if (!ValidateShipOwnership(playerInstigator, ship)) return;
+
+    int32 PlayerID = playerInstigator->PlayerID;
+
+    if (!turnManager->PayEssence(PlayerID, UUTurnManager::fireCost))
+    {
+        RejectAction(playerInstigator, "Not enough essence");
+        return;
+    }
+
     FFireResult Result = combatResolver->ResolveFireMothership(ship, TargetMothership);
 
     if (Result.bMothershipHit && Result.bShipDestroyed)
