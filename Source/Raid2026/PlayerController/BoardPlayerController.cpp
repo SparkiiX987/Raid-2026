@@ -3,6 +3,15 @@
 #include <Net/UnrealNetwork.h>
 #include "../PlayerState/BoardPlayerState.h"
 
+
+void ABoardPlayerController::GetLifetimeReplicatedProps(
+    TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(ABoardPlayerController, PlayerID);
+    DOREPLIFETIME(ABoardPlayerController, BoardVisualiser);
+}
+
 void ABoardPlayerController::ClientInitializeInput_Implementation()
 {
     if (!InputComponent)
@@ -36,14 +45,6 @@ void ABoardPlayerController::ClearPendingActivation()
     PendingActivationTargetKind = EEffectTargetKind::None;
 }
 
-void ABoardPlayerController::GetLifetimeReplicatedProps(
-    TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(ABoardPlayerController, PlayerID);
-    DOREPLIFETIME(ABoardPlayerController, BoardVisualiser);
-}
-
 void ABoardPlayerController::SetupPlayer(int32 ID)
 {
     PlayerID = ID;
@@ -58,12 +59,7 @@ void ABoardPlayerController::OnRep_BoardVisualiser()
 
 void ABoardPlayerController::OnRep_PlayerID()
 {
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("PlayerController: received PlayerID %d"), PlayerID);
 
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
 }
 
 void ABoardPlayerController::ClickOnShip(AAShip* Ship)
@@ -79,12 +75,6 @@ void ABoardPlayerController::ClickOnShip(AAShip* Ship)
     }
     if (Ship->ownerPlayer == PlayerID)
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("Selecting ship"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
         if (PendingIntent == EActionIntent::PLAYCARD && IsValid(PendingCardData))
         {
             ServerUpgrade(Ship, PendingCardData);
@@ -191,16 +181,11 @@ void ABoardPlayerController::RequestPlayCard(
 
 void ABoardPlayerController::HandleShipSelected(AAShip* Ship)
 {
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("handle ship selected"));
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
     if (IsValid(SelectedShip))
     {
         SelectedShip->OnShipUnselectedBP();
     }
+    
     SelectedShip = Ship;
     PendingIntent = EActionIntent::MOVE;
     bWaitingForCellTarget = true;
@@ -483,12 +468,7 @@ void ABoardPlayerController::ServerRequestReachableCells_Implementation(
     if (!GM) return;
 
     TArray<FIntPoint> Reachable = GM->PathFinder->GetAllCellAroundShip(Ship);
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("message %d"), Reachable.Num());
 
-        GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Blue, text);
-    }
     ClientOnReachableCells(Reachable);
 }
 
@@ -542,13 +522,6 @@ void ABoardPlayerController::ClientOnShipDestroyed_Implementation(
 {
     if (!Ship || Ship->IsPendingKillPending())
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("Ship déjà destroyed ou en cours"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
-
         return;
     }
 

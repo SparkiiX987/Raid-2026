@@ -3,8 +3,8 @@
 #include "../CoreLayer/Cells/FReachableCell.h"
 #include "../GameState/BoardGameState.h"
 #include "../PlayerState/BoardPlayerState.h"
-#include <Raid2026/Effects/Effect.h>
-#include <Raid2026/Effects/ResearchAndDeveloppement.h>
+#include "../Effects/Effect.h"
+#include "../Effects/ResearchAndDeveloppement.h"
 
 void AABoardGameMode::BeginPlay()
 {
@@ -31,14 +31,6 @@ void AABoardGameMode::HandleSeamlessTravelPlayer(AController*& Controller)
 
     PState->SetPlayerId(AssignedID);
     PState->InitializeDeckBP();
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("GameMode: Player %d connected (%d/%d)"),
-            AssignedID, connectedPlayers.Num(), playerCount);
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
 }
 
 void AABoardGameMode::Logout(AController* Exiting)
@@ -60,14 +52,6 @@ void AABoardGameMode::StartGameWhenReady()
 {
     if (connectedPlayers.Num() < playerCount) return;
 
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("GameMode: Player connected : %d"),
-            connectedPlayers.Num());
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Purple, text);
-    }
-
     StartGame();
 }
 
@@ -75,9 +59,6 @@ void AABoardGameMode::StartGame()
 {
     if (connectedPlayers.Num() < playerCount)
     {
-        if (GEngine)
-            GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow,
-                TEXT("StartGame appel� trop t�t, abandon"));
         return;
     }
 
@@ -99,14 +80,6 @@ void AABoardGameMode::StartGame()
     for (auto& [PlayerId, PC] : connectedPlayers)
     {
         BroadcastEssenceChanged(PlayerId);
-    }
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("GameMode: Player connected : %d"),
-            connectedPlayers.Num());
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
 
     for (auto& [ID, PC] : connectedPlayers)
@@ -132,14 +105,6 @@ void AABoardGameMode::StartGame()
 void AABoardGameMode::PlayerSetupFinished(ABoardPlayerController* PC, int32 playerId)
 {
     connectedPlayers.Add(playerId, PC);
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("GameMode: Player setuped : %d"),
-            playerId);
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
 
     StartGameWhenReady();
 }
@@ -176,12 +141,6 @@ void AABoardGameMode::SpawnVisualiser()
 {
     if (!boardVisualiserClass)
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("SpawnVisualiser: boardVisualiserClass non assign�e !"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-        }
         return;
     }
 
@@ -192,12 +151,6 @@ void AABoardGameMode::SpawnVisualiser()
 
     if (!boardVisualiser)
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("SpawnVisualiser: �chec du spawn !"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-        }
         return;
     }
 
@@ -643,7 +596,7 @@ void AABoardGameMode::HandlePlaceExpert(ABoardPlayerController* playerInstigator
 
     if (!motherShip->AddRDCard(CardData))
     {
-        RejectAction(playerInstigator, "le vaisseau mère n'a plus de place d'e R&D'expert");
+        RejectAction(playerInstigator, "le vaisseau mère n'a plus de place d'expert");
         return;
     }
 

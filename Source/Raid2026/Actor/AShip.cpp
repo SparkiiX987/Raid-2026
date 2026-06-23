@@ -153,6 +153,14 @@ void AAShip::TakeDamage(int32 amount)
 
 void AAShip::ApplyUpgrade(UUpgrade* upgrade)
 {
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Upgrade "));
+		text += upgrade->SourceCard->cardName += " added on ship ";
+		text += CardData->cardName;
+		
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
+	}
 	upgrades.Add(upgrade);
 
 	int32 shield = maxHealthPoint * upgrade->ShieldHealthRatio;
@@ -165,6 +173,14 @@ void AAShip::ApplyUpgrade(UUpgrade* upgrade)
 
 void AAShip::RemoveUpgrade(UUpgrade* upgrade)
 {
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Upgrade "));
+		text += upgrade->SourceCard->cardName += " removed on ship ";
+		text += CardData->cardName;
+
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
+	}
 	upgrades.Remove(upgrade);
 
 	bonusHealth -= upgrade->EffectiveShieldHealth;
