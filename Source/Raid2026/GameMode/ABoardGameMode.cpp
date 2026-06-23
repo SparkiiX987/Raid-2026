@@ -390,18 +390,21 @@ void AABoardGameMode::FinalizeSabotage(ABoardPlayerController* PC, UUCardData* C
     PC->ClearSelection();
 }
 
-void AABoardGameMode::RebuildMothershipEffects(AAMotherShip* MS) // a revoir
+void AABoardGameMode::RebuildMothershipEffects(AAMotherShip* MS)
 {
-    effectManager->UnregisterEffects(MS);
-
-    TArray<UEffect*> Effects;
+    TArray<UEffect*> DesiredEffects;
     for (UUCardData* Card : MS->RDCards)
     {
         if (!Card) continue;
         for (const TObjectPtr<UEffect>& Template : Card->Effects)
-            if (Template) Effects.Add(DuplicateObject<UEffect>(Template, MS));
+        {
+            if (Template)
+                DesiredEffects.Add(DuplicateObject<UEffect>(Template, MS));
+        }
     }
-    effectManager->RegisterEffects(MS, Effects);
+
+    effectManager->RemoveEffectsNotIn(MS, DesiredEffects);
+    effectManager->AddEffectsIfAbsent(MS, DesiredEffects);
 }
 
 void AABoardGameMode::ResolveActivationTargetCell(ABoardPlayerController* PC, FIntPoint Cell)

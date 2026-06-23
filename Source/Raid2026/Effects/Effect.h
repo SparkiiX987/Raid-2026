@@ -33,6 +33,9 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (EditCondition = "Trigger==EEffectTrigger::Passive"))
         bool bCanMoveOnFirstTurn = false;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+        FName EffectID;
+
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     FEffectResult Apply(const FEffectContext& Context);
     virtual FEffectResult Apply_Implementation(const FEffectContext& Context);

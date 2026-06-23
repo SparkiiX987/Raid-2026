@@ -62,6 +62,10 @@ public:
     UFUNCTION(BlueprintCallable)
         bool HasHyperspacePilote(AAMotherShip* Mothership);
 
+    void AddEffectsIfAbsent(AABoardActor* Ship, const TArray<UEffect*>& DesiredEffects);
+
+    void RemoveEffectsNotIn(AABoardActor* Ship, const TArray<UEffect*>& DesiredEffects);
+
     UPROPERTY(BlueprintReadWrite)
         TObjectPtr<UUBoardManager> boardManager;
 

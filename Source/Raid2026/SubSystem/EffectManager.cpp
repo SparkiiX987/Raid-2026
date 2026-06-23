@@ -323,3 +323,43 @@ bool UEffectManager::HasHyperspacePilote(AAMotherShip* Mothership)
 
     return false;
 }
+
+void UEffectManager::AddEffectsIfAbsent(AABoardActor* Ship, const TArray<UEffect*>& DesiredEffects)
+{
+    if (!IsValid(Ship)) return;
+
+    FShipEffectList& Existing = RegisteredEffects.FindOrAdd(Ship);
+
+    for (UEffect* Effect : DesiredEffects)
+    {
+        if (!IsValid(Effect)) continue;
+
+        const bool bAlreadyRegistered = Existing.Effects.ContainsByPredicate(
+            [Effect](const TObjectPtr<UEffect>& E)
+            {
+                return IsValid(E) && E->EffectID == Effect->EffectID;
+            });
+
+        if (!bAlreadyRegistered)
+            Existing.Effects.Add(Effect);
+    }
+}
+
+void UEffectManager::RemoveEffectsNotIn(AABoardActor* Ship, const TArray<UEffect*>& DesiredEffects)
+{
+    if (!IsValid(Ship)) return;
+
+    FShipEffectList* List = RegisteredEffects.Find(Ship);
+    if (!List) return;
+
+    List->Effects.RemoveAll([&DesiredEffects](const TObjectPtr<UEffect>& Existing)
+        {
+            if (!IsValid(Existing)) return true;
+
+            return !DesiredEffects.ContainsByPredicate(
+                [&Existing](const UEffect* Desired)
+                {
+                    return IsValid(Desired) && Desired->GetClass() == Existing->GetClass();
+                });
+        });
+}
