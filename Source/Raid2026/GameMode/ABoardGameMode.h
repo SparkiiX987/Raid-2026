@@ -28,8 +28,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 NextPlayerID;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<TObjectPtr<UUCardData>> testDeck;
+	TMap<int32, TArray<TObjectPtr<UUCardData>>> testDeck;
 
 	virtual void BeginPlay() override;
 	virtual void HandleSeamlessTravelPlayer(AController*& Controller) override;

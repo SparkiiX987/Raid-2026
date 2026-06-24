@@ -21,6 +21,16 @@ void AABoardGameMode::HandleSeamlessTravelPlayer(AController*& Controller)
 
     int32 AssignedID = NextPlayerID++;
     PC->SetupPlayer(AssignedID);
+    
+    ABoardPlayerState* PState = PC->GetPlayerState<ABoardPlayerState>();
+    
+    if (!PState)
+    {
+        return;
+    }
+
+    PState->SetPlayerId(AssignedID);
+    PState->InitializeDeckBP();
 
     if (GEngine)
     {
@@ -101,7 +111,18 @@ void AABoardGameMode::StartGame()
 
     for (auto& [ID, PC] : connectedPlayers)
     {
-        deckManager->InitializeDeck(ID, testDeck/*TODO changer et r�cup�rer le deck du joueur*/);
+        ABoardPlayerState* PS =
+            PC->GetPlayerState<ABoardPlayerState>();
+        
+        if (!PS)
+        {
+            continue;
+        }
+
+        if (TArray<UUCardData*>* DeckPtr = PS->allDecks.Find(ID))
+        {
+            deckManager->InitializeDeck(ID, *DeckPtr);
+        }
     }
 
     turnManager->StartTurn(0);
