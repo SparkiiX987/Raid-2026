@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "../CoreLayer/Cards/UCardData.h"
+#include "Raid2026/CoreLayer/Cards/AllCards.h"
 #include "BoardPlayerState.generated.h"
 
 UCLASS()
@@ -46,6 +47,12 @@ public:
 
     UPROPERTY(BlueprintReadOnly, Replicated)
         int32 id;
+    
+    UPROPERTY(BlueprintReadOnly, Replicated)
+     TArray<TObjectPtr<UUCardData>> deck;
+
+    TMap<int32, TArray<UUCardData*>> allDecks;
+
 
     UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Hand)
         TArray<UUCardData*> Hand;
@@ -53,6 +60,12 @@ public:
     void SetEssence(int32 current, int32 max, int32 bonus);
     void SetHand(const TArray<UUCardData*>& newHand);
     void SetPlayerId(int32 id);
+
+    UFUNCTION(BlueprintCallable)
+    void AddDeck(TArray<UUCardData*> name);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void InitializeDeckBP();
 
     void UpdateEssenceUi();
 

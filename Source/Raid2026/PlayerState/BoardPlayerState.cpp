@@ -3,6 +3,8 @@
 #include <Kismet/GameplayStatics.h>
 #include <Raid2026/PlayerController/BoardPlayerController.h>
 
+#include "Raid2026/Save/DeckSave.h"
+
 void ABoardPlayerState::GetLifetimeReplicatedProps(
     TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -21,6 +23,11 @@ void ABoardPlayerState::GetLifetimeReplicatedProps(
 void ABoardPlayerState::SetPlayerId(int32 ID)
 {
     id = ID;
+}
+
+void ABoardPlayerState::AddDeck(TArray<UUCardData*> Deck)
+{
+    allDecks.Add(id, Deck);
 }
 
 void ABoardPlayerState::UpdateEssenceUi()
