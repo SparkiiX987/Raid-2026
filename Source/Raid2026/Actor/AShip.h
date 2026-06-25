@@ -50,6 +50,8 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION()
 		void StopParalize();
 
+	void StopShip();
+
 	UFUNCTION(BlueprintCallable)
 		void Reveal();
 

@@ -3,7 +3,7 @@
 #include "../Actor/AShip.h"
 #include "UBoardManager.h"
 #include "EffectManager.h"
-#include <Raid2026/PlayerState/BoardPlayerState.h>
+#include "../PlayerState/BoardPlayerState.h"
 #include <Kismet/GameplayStatics.h>
 #include "Net/UnrealNetwork.h"
 

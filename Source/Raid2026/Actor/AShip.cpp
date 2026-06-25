@@ -58,14 +58,34 @@ bool AAShip::IsParalized() const
 
 void AAShip::StartParalize()
 {
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Paralized"));
+
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
+	}
+
 	bIsParalized = true;
+	bJustPlayed = true;
 	OnParalizeStartBP();
 }
 
 void AAShip::StopParalize()
 {
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Stop paralize"));
+
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
+	}
 	bIsParalized = false;
+	bJustPlayed = true;
 	OnParalizeStopBP();
+}
+
+void AAShip::StopShip()
+{
+	bJustPlayed = true;
 }
 
 void AAShip::Reveal()

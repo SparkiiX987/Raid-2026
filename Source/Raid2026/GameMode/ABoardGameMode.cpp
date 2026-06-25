@@ -444,6 +444,13 @@ void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInsti
 
     FFireResult Result = combatResolver->ResolveFireMothership(ship, TargetMothership);
 
+    ship->OnAct();
+
+    if (!ship->CanBePlayed())
+    {
+        playerInstigator->ClearSelection();
+    }
+
     if (Result.bMothershipHit && Result.bShipDestroyed)
     {
         if (GEngine)
@@ -451,13 +458,6 @@ void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInsti
             FString text = FString::Printf(TEXT("Victoire du joueur %d !"), ship->ownerPlayer);
 
             GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-        }
-
-        ship->OnAct();
-
-        if (!ship->CanBePlayed())
-        {
-            playerInstigator->ClearSelection();
         }
 
         OnVictoryConditionMet(playerInstigator->PlayerID);

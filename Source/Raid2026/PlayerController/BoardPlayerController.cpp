@@ -272,6 +272,10 @@ void ABoardPlayerController::ClientClearSelection_Implementation()
     if (IsValid(SelectedShip))
     {
         SelectedShip->OnShipUnselectedBP();
+        if (!SelectedShip->CanAct())
+        {
+            SelectedShip->StopShip();
+        }
         SelectedShip = nullptr;
     }
 
