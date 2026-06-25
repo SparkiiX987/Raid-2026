@@ -147,6 +147,10 @@ void ABoardPlayerController::HandleShipSelected(AAShip* Ship)
 
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
     }
+    if (IsValid(SelectedShip))
+    {
+        SelectedShip->OnShipUnselectedBP();
+    }
     SelectedShip = Ship;
     PendingIntent = EActionIntent::MOVE;
     bWaitingForCellTarget = true;
