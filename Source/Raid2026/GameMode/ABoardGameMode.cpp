@@ -372,8 +372,12 @@ void AABoardGameMode::ResolveSabotageTarget(ABoardPlayerController* PC, int32 Ch
     else if (AAMotherShip* MS = ctx.TargetMothership.Get())
     {
         if (!MS->RDCards.IsValidIndex(ChosenIndex)) { RejectAction(PC, TEXT("Index invalide")); return; }
-        MS->RemoveRDCard(ChosenIndex);
-        RebuildMothershipEffects(MS);
+        ctx.targetedExpert = MS->RDCards[ChosenIndex];
+
+        const FEffectResult Result = effectManager->ActivateEffect(Card->Sabotage, ctx);
+        if (!Result.bSuccess) { RejectAction(PC, Result.FailReason); return; }
+       /* MS->RemoveRDCard(ChosenIndex);
+        RebuildMothershipEffects(MS);*/
     }
     else { RejectAction(PC, TEXT("Cible disparue")); return; }
 
@@ -383,8 +387,6 @@ void AABoardGameMode::ResolveSabotageTarget(ABoardPlayerController* PC, int32 Ch
 
 void AABoardGameMode::FinalizeSabotage(ABoardPlayerController* PC, UUCardData* Card, int32 cost)
 {
-    if (!turnManager->PayEssence(PC->PlayerID, cost)) { RejectAction(PC, TEXT("Pas assez d'essence")); return; }
-
     deckManager->DiscardCard(PC->PlayerID, Card);
     PC->ClientOnPlayCard();
     PC->ClearSelection();

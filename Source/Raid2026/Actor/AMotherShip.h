@@ -23,7 +23,7 @@ public:
 	static constexpr int32 MaxRDSlots = 3;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		TArray<UUCardData*> RDCards;
+		TArray<TObjectPtr<UUCardData>> RDCards;
 
 	UFUNCTION(BlueprintCallable)
 		bool AddRDCard(UUCardData* Card);

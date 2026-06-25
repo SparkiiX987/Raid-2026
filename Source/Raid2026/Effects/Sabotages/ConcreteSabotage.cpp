@@ -48,7 +48,7 @@ FEffectResult UImplementedSabotage::Apply_Implementation(const FEffectContext& C
             return r;
         }
 
-        UEffect* TargetExpert = Context.targetedExpert.Get();
+        UEffect* TargetExpert = Context.targetedExpert.Get()->Effects[0];
         const int32 idx = MS->RDCards.IndexOfByPredicate(
             [TargetExpert](const UUCardData* C) { return C && C->Sabotage == TargetExpert; });
         if (idx != INDEX_NONE) { MS->RemoveRDCard(idx); return FEffectResult::Success(); }
