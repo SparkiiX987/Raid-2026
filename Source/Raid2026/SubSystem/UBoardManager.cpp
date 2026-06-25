@@ -327,7 +327,10 @@ void UUBoardManager::SetOccupant(FIntPoint Pos, AABoardActor* Actor)
 
 		if (ShipToCheck && ShipToCheck->IsFaceDown())
 		{
-			ShipToCheck->Reveal();
+			if (!ShipToCheck->GetOwnerID() == OwnerID)
+			{
+				ShipToCheck->Reveal();
+			}
 		}
 	}
 
