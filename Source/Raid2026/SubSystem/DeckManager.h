@@ -5,6 +5,8 @@
 #include "../CoreLayer/Cards/PlayerDeckState.h"
 #include "DeckManager.generated.h"
 
+class UEffectManager;
+
 UCLASS(BlueprintType, Blueprintable)
 class RAID2026_API UDeckManager : public UObject
 {
@@ -16,6 +18,9 @@ public:
 	static constexpr int32 MaxHandSize = 6;
 	static constexpr int32 DrawPerTurn = 1;
 	static constexpr int32 EmptyDeckDmg = 1;
+
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UEffectManager> effectManager;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCardDrawn, int32, PlayerID, UUCardData*, Card);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCardDiscarded, int32, PlayerID, UUCardData*, Card);
@@ -71,6 +76,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 		FPlayerDeckState GetDeckState(int32 playerId) const;
+
+	UFUNCTION()
+	void NotifyOnPlayCardEffects(int32 playerId, UUCardData* card);
 
 	void SendPlayedCardToDiscard(int32 playerId, UUCardData* card);
 

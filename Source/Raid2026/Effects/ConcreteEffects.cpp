@@ -99,6 +99,48 @@ FEffectResult UEffect_DamageOnDestroyed::Apply_Implementation(const FEffectConte
     return Out;
 }
 
+FEffectResult UEffect_ActivatedDrawOnStartTurn::Apply_Implementation(const FEffectContext& Context)
+{
+    if (!Context.Turn || !Context.Deck)
+        return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
+
+    TArray<FDrawResult> Results = Context.Deck->DrawCards(Context.OwnerPlayerID, DrawCount);
+    
+    FEffectResult Out = FEffectResult::Success();
+    Out.IntValue = Results.Num();
+    for (const FDrawResult& R : Results)
+        if (R.DrawnCard) Out.AffectedCards.Add(R.DrawnCard);
+
+    return Out;
+}
+
+FEffectResult UEffect_ActivatedDrawOnPlayExpertCard::Apply_Implementation(const FEffectContext& Context)
+{
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("TU VAS PIOCHER ???????"));
+    
+        GEngine->AddOnScreenDebugMessage(-1, 1500.0f, FColor::Blue, text);
+    }
+    if (!Context.Turn || !Context.Deck)
+        return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
+
+    if (Context.CardPlay->type != ECardType::EXPERT)
+    {
+        return FEffectResult::Fail(TEXT("Mauvaise carte"));
+    }
+
+    TArray<FDrawResult> Results = Context.Deck->DrawCards(Context.OwnerPlayerID, DrawCount);
+
+    FEffectResult Out = FEffectResult::Success();
+    Out.IntValue = Results.Num();
+    for (const FDrawResult& R : Results)
+        if (R.DrawnCard) Out.AffectedCards.Add(R.DrawnCard);
+
+    return Out;
+    
+}
+
 FEffectResult UEffect_ActivatedDraw::Apply_Implementation(const FEffectContext& Context)
 {
     if (!Context.Turn || !Context.Deck)

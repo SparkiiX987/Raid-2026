@@ -90,6 +90,47 @@ public:
 };
 
 UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_ActivatedDrawOnStartTurn : public UTriggeredEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_ActivatedDrawOnStartTurn()
+    {
+        Trigger = EEffectTrigger::OnStartOfTurn;
+        DisplayName = FText::FromString(FString::Printf(TEXT("Au début de votre tour, piocher %d carte"), DrawCount));
+        Description = FText::FromString(FString::Printf(TEXT("Au début de votre tour, piocher %d carte"), DrawCount));
+    }
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Draw",
+        meta = (ClampMin = 1, ClampMax = 3))
+    int32 DrawCount = 1;
+
+    virtual FEffectResult Apply_Implementation(const FEffectContext& Context) override;
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_ActivatedDrawOnPlayExpertCard : public UTriggeredEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_ActivatedDrawOnPlayExpertCard()
+    {
+        Trigger = EEffectTrigger::OnPlayCard;
+        DisplayName = FText::FromString(FString::Printf(TEXT("Quand vous jouer une carte Expert piocher %d carte"), DrawCount));
+        Description = FText::FromString(FString::Printf(TEXT("Quand vous jouer une carte Expert piocher %d carte"), DrawCount));
+    }
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Draw",
+        meta = (ClampMin = 1, ClampMax = 3))
+    int32 DrawCount = 1;
+
+    virtual FEffectResult Apply_Implementation(const FEffectContext& Context) override;
+};
+
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
 class RAID2026_API UEffect_ActivatedDraw : public UActivatedEffect
 {
     GENERATED_BODY()
@@ -215,7 +256,7 @@ public:
     {
         bCanCaptureRefinery = true;
         Trigger = EEffectTrigger::Passive;
-        DisplayName = FText::FromString(TEXT("Capture impossible"));
-        Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau ne peut pas contrôler de rafinerie.")));
+        DisplayName = FText::FromString(TEXT("Controleur"));
+        Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau peut contrôler les rafineries.")));
     }
 };

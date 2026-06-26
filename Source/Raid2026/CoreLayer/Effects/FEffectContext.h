@@ -47,6 +47,9 @@ struct FEffectContext
 	TWeakObjectPtr<UUCardData> targetedExpert;
 
 	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UUCardData> CardPlay;
+
+	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UUBoardManager> Board;
 	
 	UPROPERTY(BlueprintReadWrite)

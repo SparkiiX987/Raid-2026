@@ -131,6 +131,8 @@ void AABoardGameMode::SpawnManagers()
     PathFinder->BoardManager = boardManager;
     PathFinder->TurnManager = turnManager;
 
+    deckManager->effectManager = effectManager;
+
     boardManager->OnVictoryConditionMet.AddDynamic(
         this, &AABoardGameMode::OnVictoryConditionMet);
 
@@ -651,6 +653,7 @@ void AABoardGameMode::HandlePlaceExpert(ABoardPlayerController* playerInstigator
         UEffect* Inst = DuplicateObject<UEffect>(Template, motherShip);
         RuntimeEffects.Add(Inst);
     }
+    deckManager->PlayCard(PlayerID, CardData);
     effectManager->RegisterEffects(motherShip, RuntimeEffects);
 }
 
