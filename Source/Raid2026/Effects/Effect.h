@@ -6,6 +6,7 @@
 #include "../CoreLayer/Effects/FEffectResult.h"
 #include "../CoreLayer/Effects/FEffectContext.h"
 #include "../CoreLayer/Cards/CardStats.h"
+#include "../CoreLayer/Effects/EffectTargetKind.h"
 #include "Effect.generated.h"
 
 UCLASS(BlueprintType, Blueprintable)
@@ -32,6 +33,9 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (EditCondition = "Trigger==EEffectTrigger::Passive"))
         bool bCanMoveOnFirstTurn = false;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+        FName EffectID;
+
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     FEffectResult Apply(const FEffectContext& Context);
     virtual FEffectResult Apply_Implementation(const FEffectContext& Context);
@@ -42,7 +46,12 @@ public:
 
     UFUNCTION(BlueprintNativeEvent, BlueprintPure)
     FCardStats GetPassiveStatBonus() const;
+
     virtual FCardStats GetPassiveStatBonus_Implementation() const;
+
+    virtual EEffectTargetKind GetTargetKind() const { return EEffectTargetKind::None; }
+
+    bool RequiresTarget() const { return GetTargetKind() != EEffectTargetKind::None; }
 
     UFUNCTION(BlueprintPure)
     bool MatchesTrigger(EEffectTrigger InTrigger) const { return Trigger == InTrigger; }

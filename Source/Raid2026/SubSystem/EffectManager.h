@@ -43,6 +43,10 @@ public:
     UFUNCTION(BlueprintCallable)
         FEffectResult ActivateEffect(UEffect* Effect, const FEffectContext& Context);
 
+    void NotifyShipEvent(AABoardActor* Ship, EEffectTrigger Trigger, const FEffectContext& Context);
+
+    TArray<UEffect*> GetActivatableEffects(AABoardActor* Ship, int32 PlayerId) const;
+
     UFUNCTION(BlueprintCallable)
         TArray<UEffect*> GetAvailableActivatedEffects(AABoardActor* Ship, const FEffectContext& Context) const;
 
@@ -57,6 +61,10 @@ public:
 
     UFUNCTION(BlueprintCallable)
         bool HasHyperspacePilote(AAMotherShip* Mothership);
+
+    void AddEffectsIfAbsent(AABoardActor* Ship, const TArray<UEffect*>& DesiredEffects);
+
+    void RemoveEffectsNotIn(AABoardActor* Ship, const TArray<UEffect*>& DesiredEffects);
 
     UPROPERTY(BlueprintReadWrite)
         TObjectPtr<UUBoardManager> boardManager;

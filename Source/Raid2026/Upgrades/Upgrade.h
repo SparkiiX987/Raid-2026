@@ -3,12 +3,17 @@
 #include "CoreMinimal.h"
 #include "Upgrade.generated.h"
 
+class UUCardData;
+
 UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
 class RAID2026_API UUpgrade : public UObject
 {
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(BlueprintReadOnly)
+		TObjectPtr<UUCardData> SourceCard;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		float ShieldHealthRatio;
 

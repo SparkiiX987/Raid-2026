@@ -24,22 +24,9 @@ void UDeckManager::InitializeDeck(int32 playerId, const TArray<UUCardData*>& Car
     {
 
         DrawSingleCard(State);
-        /*UUCardData* Card = State.Deck[0];
-        State.Deck.RemoveAt(0);
-        State.Hand.Add(Card);
-
-        OnCardDrawn.Broadcast(playerId, Card);*/
     }
 
     BroadcastHandUpdate(State);
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("InitializeDeck P%d : %d en main, %d en deck"),
-            playerId, State.Hand.Num(), State.Deck.Num());
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
 }
 
 TArray<FDrawResult> UDeckManager::DrawCards(int32 playerId, int32 drawCount)
@@ -76,29 +63,22 @@ bool UDeckManager::DiscardCard(int32 playerId, UUCardData* card)
     const int32 Index = State.Hand.Find(card);
     if (Index == INDEX_NONE)
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("DiscardCard P%d : carte '%s' non trouvée en main"),
-                playerId, *card->GetName());
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
         return false;
     }
 
     State.Hand.RemoveAt(Index);
     State.Discard.Add(card);
 
-    OnCardDiscarded.Broadcast(playerId, card);
-    BroadcastHandUpdate(State);
-
     if (GEngine)
     {
         FString text = FString::Printf(TEXT("DiscardCard P%d : '%s' défaussée (%d en main)"),
             playerId, *card->GetName(), State.Hand.Num());
 
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
+
+    OnCardDiscarded.Broadcast(playerId, card);
+    BroadcastHandUpdate(State);
 
     return true;
 }
@@ -112,40 +92,11 @@ bool UDeckManager::PlayCard(int32 playerId, UUCardData* card)
     const int32 Index = State.Hand.Find(card);
     if (Index == INDEX_NONE)
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("PlayCard P%d : '%s' non trouvée en main"),
-                playerId, *card->GetName());
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
         return false;
     }
 
     State.Hand.RemoveAt(Index);
     OnCardPlayed.Broadcast(playerId, card);
-
-    if (card->type == ECardType::SABOTAGE)
-    {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("PlayCard P%d : sabotage '%s' → décharge immédiate"),
-                playerId, *card->GetName());
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
-
-    }
-    else
-    {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("PlayCard P%d : '%s' jouée sur le plateau"),
-                playerId, *card->GetName());
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
-    }
 
     BroadcastHandUpdate(State);
     return true;
@@ -165,15 +116,6 @@ TArray<UUCardData*> UDeckManager::EnforceHandLimit(int32 playerId)
         Discarded.Add(ToDiscard);
 
         OnCardDiscarded.Broadcast(playerId, ToDiscard);
-
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("EnforceHandLimit P%d : '%s' défaussée (main = %d/%d)"),
-                playerId, *ToDiscard->GetName(),
-                State.Hand.Num(), MaxHandSize);
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
     }
 
     if (Discarded.Num() > 0)
@@ -192,14 +134,6 @@ void UDeckManager::SendPlayedCardToDiscard(int32 playerId, UUCardData* card)
     State.Discard.Add(card);
 
     OnCardDiscarded.Broadcast(playerId, card);
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("SendPlayedCardToDiscard P%d : '%s' → décharge"),
-            playerId, *card->GetName());
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
 }
 
 const TArray<UUCardData*>& UDeckManager::GetHand(int32 playerId) const
@@ -248,12 +182,6 @@ void UDeckManager::ShuffleDeck(TArray<UUCardData*>& deck)
         const int32 j = FMath::RandRange(0, i);
         deck.Swap(i, j);
     }
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("ShuffleDeck: %d cartes mélangées"), N);
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
 }
 
 FDrawResult UDeckManager::DrawSingleCard(FPlayerDeckState& state)
@@ -286,14 +214,6 @@ FDrawResult UDeckManager::DrawSingleCard(FPlayerDeckState& state)
     Result.bDeckEmpty = state.Deck.Num() > 0;
 
     OnCardDrawn.Broadcast(state.playerId, card);
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("DrawSingleCard P%d : '%s' piochée (%d restantes)"),
-            state.playerId, *card->GetName(), state.Deck.Num());
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
-    }
 
     return Result;
 }

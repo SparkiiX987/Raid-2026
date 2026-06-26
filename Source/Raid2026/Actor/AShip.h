@@ -4,6 +4,7 @@
 #include "AABoardActor.h"
 #include "Raid2026/CoreLayer/Cards/UCardData.h"
 #include "Raid2026/CoreLayer/Ship/EShipState.h"
+#include "../CoreLayer/Effects/EEffectTrigger.h"
 #include "AShip.generated.h"
 
 UCLASS()
@@ -16,7 +17,7 @@ class RAID2026_API AAShip : public AABoardActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		UUCardData* CardData;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		FCardStats RuntimeStats;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
@@ -39,8 +40,17 @@ class RAID2026_API AAShip : public AABoardActor
 
 	UFUNCTION(BlueprintPure)
 		int32 GetMoveCost() const;
-	
 
+	UFUNCTION(BlueprintPure)
+		bool IsParalized() const;
+
+	UFUNCTION()
+		void StartParalize();
+
+	UFUNCTION()
+		void StopParalize();
+
+	void StopShip();
 
 	UFUNCTION(BlueprintCallable)
 		void Reveal();
@@ -65,6 +75,8 @@ class RAID2026_API AAShip : public AABoardActor
 
 	UFUNCTION(BlueprintCallable)
 		void ResetTurnFlags();
+
+	void NotifyEffectTrigger(EEffectTrigger Trigger);
 
 	UFUNCTION()
 		void OnShipSpawn(bool canMoveOnSpawn);
@@ -93,6 +105,12 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnActBP();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnParalizeStartBP();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnParalizeStopBP();
+
 	virtual void TakeDamage(int32 Damage) override;
 
 	virtual void Die_Implementation() override;
@@ -115,6 +133,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		int32 actionsPerTurn = 1;
+
+	UPROPERTY(BlueprintReadOnly)
+		bool bIsParalized = false;
 
 // UFUNCTION(BlueprintImplementableEvent)
 //  void SetHighlightState(EHighlightType Type);

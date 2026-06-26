@@ -49,6 +49,7 @@ void UEffectManager::RegisterEffects(AABoardActor* Ship,
 
 void UEffectManager::UnregisterShipEffects(AAShip* Ship)
 {
+    NotifyShipEvent(Ship, EEffectTrigger::OnDestroyed, FEffectContext());
     UnregisterEffects(Ship);
 }
 
@@ -188,6 +189,42 @@ FEffectResult UEffectManager::ActivateEffect(UEffect* Effect,
     return Result;
 }
 
+void UEffectManager::NotifyShipEvent(AABoardActor* Ship, EEffectTrigger Trigger, const FEffectContext& BaseContext)
+{
+    if (!IsValid(Ship)) return;
+
+    FShipEffectList* List = RegisteredEffects.Find(Ship);
+    if (!List) return;
+
+    FEffectContext Context = BuildContextWithSubsystems(BaseContext);
+    Context.SourceShip = Ship;
+    Context.OwnerPlayerID = Ship->GetOwnerID();
+
+    for (UEffect* Effect : List->Effects)
+    {
+        if (!IsValid(Effect) || !Effect->MatchesTrigger(Trigger)) continue;
+        if (!Effect->CanApply(Context)) continue;
+
+        const FEffectResult Result = Effect->Apply(Context);
+        OnEffectApplied.Broadcast(Effect, Result);
+    }
+}
+
+TArray<UEffect*> UEffectManager::GetActivatableEffects(AABoardActor* Ship, int32 PlayerId) const
+{
+    TArray<UEffect*> Out;
+    const FShipEffectList* List = RegisteredEffects.Find(Ship);
+    if (!List) return Out;
+
+    const int32 Essence = turnManager ? turnManager->GetAvaliableEssence(PlayerId) : 0;
+    for (UEffect* E : List->Effects)
+    {
+        if (IsValid(E) && E->Trigger == EEffectTrigger::Activated && E->EssenceCost <= Essence)
+            Out.Add(E);
+    }
+    return Out;
+}
+
 TArray<UEffect*> UEffectManager::GetAvailableActivatedEffects(
     AABoardActor* Ship,
     const FEffectContext& BaseContext) const
@@ -285,4 +322,44 @@ bool UEffectManager::HasHyperspacePilote(AAMotherShip* Mothership)
     }
 
     return false;
+}
+
+void UEffectManager::AddEffectsIfAbsent(AABoardActor* Ship, const TArray<UEffect*>& DesiredEffects)
+{
+    if (!IsValid(Ship)) return;
+
+    FShipEffectList& Existing = RegisteredEffects.FindOrAdd(Ship);
+
+    for (UEffect* Effect : DesiredEffects)
+    {
+        if (!IsValid(Effect)) continue;
+
+        const bool bAlreadyRegistered = Existing.Effects.ContainsByPredicate(
+            [Effect](const TObjectPtr<UEffect>& E)
+            {
+                return IsValid(E) && E->EffectID == Effect->EffectID;
+            });
+
+        if (!bAlreadyRegistered)
+            Existing.Effects.Add(Effect);
+    }
+}
+
+void UEffectManager::RemoveEffectsNotIn(AABoardActor* Ship, const TArray<UEffect*>& DesiredEffects)
+{
+    if (!IsValid(Ship)) return;
+
+    FShipEffectList* List = RegisteredEffects.Find(Ship);
+    if (!List) return;
+
+    List->Effects.RemoveAll([&DesiredEffects](const TObjectPtr<UEffect>& Existing)
+        {
+            if (!IsValid(Existing)) return true;
+
+            return !DesiredEffects.ContainsByPredicate(
+                [&Existing](const UEffect* Desired)
+                {
+                    return IsValid(Desired) && Desired->GetClass() == Existing->GetClass();
+                });
+        });
 }

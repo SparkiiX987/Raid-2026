@@ -128,56 +128,36 @@ FEffectResult UEffect_ActivatedDraw::Apply_Implementation(const FEffectContext& 
 
 bool UEffect_ActivatedPush::CanApply_Implementation(const FEffectContext& Context) const
 {
-    if (!Super::CanApply_Implementation(Context)) return false;
-
-    if (!Context.TargetShip.IsValid()) return false;
-
-    if (!Context.SourceShip.IsValid()) return false;
-
-    const FIntPoint Delta =
-        Context.TargetShip->GetGridPosition() - Context.SourceShip->GetGridPosition();
-    const int32 ManhattanDist = FMath::Abs(Delta.X) + FMath::Abs(Delta.Y);
-
-    return ManhattanDist <= Range;
+    return Super::CanApply_Implementation(Context);
 }
 
 FEffectResult UEffect_ActivatedPush::Apply_Implementation(const FEffectContext& Context)
 {
-    /*if (!Context.TargetShip.IsValid())
+    if (!Context.SourceShip.IsValid())
+        return FEffectResult::Fail(TEXT("ActivatedPush: source invalide"));
+
+    if (!Context.TargetShip.IsValid())
         return FEffectResult::NeedsTarget();
 
-    if (!Context.Turn)
-        return FEffectResult::Fail(TEXT("ActivatedPush: TurnManager absent"));
+    if (!Context.Turn || !Context.Resolver)
+        return FEffectResult::Fail(TEXT("ActivatedPush: subsystems manquants"));
 
-    const bool bPaid = Context.Turn->PayEssence(Context.OwnerPlayerID, EssenceCost);
-    if (!bPaid)
-        return FEffectResult::Fail(TEXT("ActivatedPush: Paiement échoué"));
+    const FIntPoint Delta = Context.TargetShip->GetGridPosition() - Context.SourceShip->GetGridPosition();
+    if (FMath::Abs(Delta.X) + FMath::Abs(Delta.Y) > Range)
+        return FEffectResult::Fail(TEXT("ActivatedPush: cible hors de portee"));
 
-    EDirections Dir = FixedDirection;
-    if (!bFixedDirection)
-    {
-        const FIntPoint Delta =
-            Context.TargetShip->GetGridPosition() - Context.SourceShip->GetGridPosition();
-        Dir = IntPointToDirection(Delta);
-    }
+    if (!Context.Turn->PayEssence(Context.OwnerPlayerID, EssenceCost))
+        return FEffectResult::Fail(TEXT("ActivatedPush: paiement echoue"));
 
-    FPushResult PushResult = Context.Resolver.Get()->ApplyPush(Context.TargetShip.Get(), Dir);*/
-    
+    AAShip* Target = Cast<AAShip>(Context.TargetShip.Get());
+    if (!Target) return FEffectResult::Fail(TEXT("ActivatedPush: cible invalide"));
+
+    EDirections Dir = bFixedDirection ? FixedDirection : Context.Resolver->IntPointToDirection(Delta);
+    const FPushResult Push = Context.Resolver->ApplyPush(Target, Dir);
+
     FEffectResult Out = FEffectResult::Success();
-    /*Out.bNeedsTarget = !PushResult.bMoved && PushResult.Collisions.Num() == 0;
-    Out.IntValue = PushResult.Collisions.Num();
-    Out.AffectedCells.Add(PushResult.FinalCell);
-    
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("Effect_ActivatedPush: %s poussé → (%d,%d), %d collision(s)"),
-            *Context.TargetShip->GetName(),
-            PushResult.FinalCell.X, PushResult.FinalCell.Y,
-            PushResult.Collisions.Num());
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }*/
-
+    Out.IntValue = Push.Collisions.Num();
+    Out.AffectedCells.Add(Push.FinalCell);
     return Out;
 }
 

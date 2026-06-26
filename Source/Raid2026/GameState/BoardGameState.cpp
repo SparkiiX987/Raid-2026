@@ -35,13 +35,6 @@ void ABoardGameState::BeginPlay()
             GridState[Index].pos = FIntPoint(X, Y);
         }
     }
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("Grid initialized"));
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
 }
 
 void ABoardGameState::SetActivePlayer(

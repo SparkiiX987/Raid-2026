@@ -100,11 +100,6 @@ void UPathFinder::SearchPath(FIntPoint StartCell, AAShip* Ship)
 
 	if (!bFoundPath)
 	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1,1000.f,FColor::Red,TEXT("Didn't find a path"));
-		}
-
 		return;
 	}
 
@@ -135,20 +130,6 @@ void UPathFinder::BuildPath(FIntPoint StartCell,const TMap<FIntPoint, FIntPoint>
 	PathTaken.Add(StartCell);
 
 	Algo::Reverse(PathTaken);
-
-	if (GEngine)
-	{
-		FString DebugText;
-
-		DebugText += FString::Printf(TEXT("===== PATH FOUND (%d moves) =====\n"),PathTaken.Num() - 1);
-
-		for (int32 i = 0; i < PathTaken.Num(); i++)
-		{
-			DebugText += FString::Printf(TEXT("%d : (%d,%d)\n"),i,PathTaken[i].X,PathTaken[i].Y);
-		}
-
-		GEngine->AddOnScreenDebugMessage(-1,2000.f,FColor::Green,DebugText);
-	}
 }
 
 TArray<FIntPoint> UPathFinder::GetAllCellAroundShip(AAShip* Ship)

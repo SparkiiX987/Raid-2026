@@ -38,6 +38,15 @@ struct FEffectContext
 	int32 DamageDealt;
 
 	UPROPERTY(BlueprintReadWrite)
+	TWeakObjectPtr<UUCardData> discardedCard;
+
+	UPROPERTY(BlueprintReadWrite)
+	TWeakObjectPtr<UUpgrade> targetedUpgrade;
+
+	UPROPERTY(BlueprintReadWrite)
+	TWeakObjectPtr<UUCardData> targetedExpert;
+
+	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UUBoardManager> Board;
 	
 	UPROPERTY(BlueprintReadWrite)

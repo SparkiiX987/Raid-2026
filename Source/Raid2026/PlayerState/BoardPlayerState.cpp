@@ -32,13 +32,6 @@ void ABoardPlayerState::AddDeck(TArray<UUCardData*> Deck)
 
 void ABoardPlayerState::UpdateEssenceUi()
 {
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("Try"));
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
-
     APlayerController* PC = Cast<APlayerController>(GetOwner());
 
     if (!IsValid(PC))
@@ -46,22 +39,8 @@ void ABoardPlayerState::UpdateEssenceUi()
         return;
     }
 
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("PC trouver"));
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
-
     if (ABoardPlayerController* BPC = Cast<ABoardPlayerController>(PC))
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(TEXT("PC valid et bien caster"));
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
-
         BPC->ClientOnEssenceChanged(CurrentEssence, MaxEssence);
     }
 }
@@ -83,12 +62,6 @@ void ABoardPlayerState::SetHand(const TArray<UUCardData*>& NewHand)
 
 void ABoardPlayerState::OnRep_Essence()
 {
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("rep essence"));
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
     OnEssenceChanged.Broadcast(CurrentEssence, MaxEssence);
 
     UpdateEssenceUi();

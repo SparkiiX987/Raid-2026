@@ -14,12 +14,6 @@ FFireResult UCombatResolver::ResolveFire(AAShip* Shooter, FIntPoint TargetCell)
 
 	if (!Shooter)
 	{
-		if (GEngine)
-		{
-			FString text = FString::Printf(TEXT("ResolveFire: Shooter est null"));
-
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-		}
 		return Result;
 	}
 
@@ -27,13 +21,6 @@ FFireResult UCombatResolver::ResolveFire(AAShip* Shooter, FIntPoint TargetCell)
 
 	if (!Board->IsLineOfSight(Shooter->GetGridPosition(), TargetCell))
 	{
-		if (GEngine)
-		{
-			FString text = FString::Printf(TEXT("ResolveFire: Pas de LdV vers (%d,%d)"),
-				TargetCell.X, TargetCell.Y);
-
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-		}
 		return Result;
 	}
 
@@ -71,13 +58,6 @@ FFireResult UCombatResolver::ResolveFire(AAShip* Shooter, FIntPoint TargetCell)
 		return Result;
 	}
 
-	if (GEngine)
-	{
-		FString text = FString::Printf(TEXT("ResolveFire: Cible vide en (%d,%d)"),
-			TargetCell.X, TargetCell.Y);
-
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-	}
 	return Result;
 }
 
@@ -240,14 +220,6 @@ void UCombatResolver::DestroyShip(AAShip* Ship)
 	if (Board) Board->RemoveShipFromGrid(Ship);
 
 	OnShipDestroyed.Broadcast(Ship);
-
-	if (GEngine)
-	{
-		FString text = FString::Printf(TEXT("DestroyShip: %s envoyé à la décharge"),
-			*Ship->GetName());
-
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-	}
 }
 
 void UCombatResolver::ResolveCollision(AAShip* ShipA, AAShip* ShipB, FPushResult& OutResult, int32 RemainingDepth)
@@ -266,7 +238,7 @@ void UCombatResolver::ResolveCollision(AAShip* ShipA, AAShip* ShipB, FPushResult
 
 	if (GEngine)
 	{
-		FString text = FString::Printf(TEXT("ResolveCollision: %s ↔ %s → %d dégâts chacun"),
+		FString text = FString::Printf(TEXT("ResolveCollision: %s <-> %s -> %d dégâts chacun"),
 			*ShipA->GetName(), *ShipB->GetName(), CollisionDamage);
 
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);

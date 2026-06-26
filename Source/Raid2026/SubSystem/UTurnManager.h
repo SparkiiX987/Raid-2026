@@ -18,11 +18,6 @@ public:
 	static constexpr int32 essenceIncrement = 1;
 	static constexpr int32 fireCost = 1;
 
-    float turnTimer = 10;
-    float CurrentTurnTimer = 10;
-    float Player1Timer = 30;
-    float Player2Timer = 30;
-
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTurnStarted, int32, PlayerID, int32, TurnNumber);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnEnded, int32, PlayerID);
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPhaseChanged, ETurnPhase, OldPhase, ETurnPhase, NewPhase);
@@ -58,6 +53,9 @@ public:
     UFUNCTION(BlueprintCallable)
         void AddBonusEssence(int32 playerId, int32 amount);
 
+    UFUNCTION(BlueprintCallable)
+        void RemoveAllBonusEssence(int32 playerId);
+
     UFUNCTION(BlueprintPure)
         int32 GetAvaliableEssence(int32 playerId) const;
 
@@ -90,11 +88,25 @@ public:
 
     int32 GetNextPlayerId() const;
 
+    int32 GetOpponent(int32 playerId);
+
     UFUNCTION()
         void NotifyOnTurnStartEffects();
 
     UFUNCTION()
         void NotifyOnTurnEndEffects();
+
+    UPROPERTY()
+        float CurrentTurnTimer;
+
+    UPROPERTY(BlueprintReadOnly, EditAnywhere)
+        float turnTimer = 10;
+
+    UPROPERTY(BlueprintReadOnly, EditAnywhere)
+        float Player1Timer = 30;
+
+    UPROPERTY(BlueprintReadOnly, EditAnywhere)
+        float Player2Timer = 30;
 
 protected:
     UPROPERTY()

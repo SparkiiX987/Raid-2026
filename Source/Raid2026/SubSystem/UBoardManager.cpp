@@ -40,6 +40,9 @@ void UUBoardManager::InitializeBoard(const TArray<AARefinery*>& Refineries,
 	SetOccupant(FIntPoint(GridWidth/2, GridHeight+1), MothershipP1);
 	Motherships.Add(0,MothershipP0);
 	Motherships.Add(1,MothershipP1);
+
+	MothershipP0->ownerPlayer = 0;
+	MothershipP1->ownerPlayer = 1;
 }
 
 bool UUBoardManager::IsValidCell(FIntPoint Pos) const

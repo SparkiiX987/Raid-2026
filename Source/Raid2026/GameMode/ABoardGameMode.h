@@ -11,6 +11,7 @@
 #include "../Actor/ABoardCell.h"
 #include "Raid2026/SubSystem/UPathFinder.h"
 #include <Raid2026/SubSystem/EffectManager.h>
+#include "../CoreLayer/Effects/ActivableInfo.h"
 #include "ABoardGameMode.generated.h"
 
 UCLASS()
@@ -53,14 +54,35 @@ public:
 
 	void HandleRemoveUpgrade(UUpgrade* upgrade, AAShip* ship);
 
-	UFUNCTION()
-		void HandleTurnStarted(int32 PlayerID, int32 TurnNumber);
+	void HandleTurnStarted(int32 PlayerID, int32 TurnNumber);
+	
+	void HandleEssenceSpent(int32 PlayerId, int32 Amount, bool bWasBonus);
+
+	void HandleBonusEssenceGained(int32 PlayerId, int32 Amount);
+
+	void HandlePlaySabotage(ABoardPlayerController* playerInstigator, UUCardData* Card, const FEffectContext& context);
+
+	void HandleActivateEffect(ABoardPlayerController* PC, AAShip* Ship, int32 EffectIndex);
 
 	UFUNCTION()
-		void HandleEssenceSpent(int32 PlayerId, int32 Amount, bool bWasBonus);
+		void HandleCardDiscarded(int32 PlayerId, UUCardData* Card);
 
 	UFUNCTION()
-		void HandleBonusEssenceGained(int32 PlayerId, int32 Amount);
+		void HandleCardDrawn(int32 PlayerId, UUCardData* Card);
+
+	TArray<FActivatableEffectInfo> BuildActivatableInfos(ABoardPlayerController* PC, AAShip* Ship);
+
+	void ResolveActivationTarget(ABoardPlayerController* PC, AAShip* TargetShip);
+
+	void FinalizeActivation(ABoardPlayerController* PC, AAShip* Ship);
+
+	void ResolveSabotageTarget(ABoardPlayerController* PC, int32 ChosenIndex);
+
+	void FinalizeSabotage(ABoardPlayerController* PC, UUCardData* Card, int32 cost);
+
+	void RebuildMothershipEffects(AAMotherShip* MS);
+
+	void ResolveActivationTargetCell(ABoardPlayerController* PC, FIntPoint Cell);
 
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<UUBoardManager> boardManagerClass;
@@ -161,9 +183,6 @@ public:
 
 	TArray<FIntPoint> GetReachableCellsForShip(ABoardPlayerController* Instigator, AAShip* Ship);
 
-	UFUNCTION()
-		void HandleCardDrawn(int32 PlayerId, UUCardData* Card);
-	
 	AABoardGameMode();
 	virtual void Tick(float DeltaTime) override;
 };

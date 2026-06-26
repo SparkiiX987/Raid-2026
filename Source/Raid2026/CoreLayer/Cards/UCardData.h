@@ -43,6 +43,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, meta = (EditCondition = "type==ECardType::SHIP || type==ECardType::EXPERT"))
 		TArray<TObjectPtr<UEffect>> Effects;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, meta = (EditCondition = "type==ECardType::SABOTAGE"))
+		TObjectPtr<UEffect> Sabotage;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, meta = (EditCondition = "type==ECardType::UPGRADE"))
 		TObjectPtr<UUpgrade> Upgrade;
 };

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-//#include "../Cards/UCardData.h"
 #include "FEffectResult.generated.h"
 
 class UUCardData;

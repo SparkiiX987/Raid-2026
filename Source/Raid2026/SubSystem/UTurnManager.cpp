@@ -3,13 +3,9 @@
 #include "../Actor/AShip.h"
 #include "UBoardManager.h"
 #include "EffectManager.h"
-#include <Raid2026/PlayerState/BoardPlayerState.h>
+#include "../PlayerState/BoardPlayerState.h"
 #include <Kismet/GameplayStatics.h>
-
 #include "Net/UnrealNetwork.h"
-
-
-
 
 void UUTurnManager::SetTurnTimer(float DeltaTime)
 {
@@ -37,17 +33,6 @@ void UUTurnManager::StartTurn(int32 playerId)
     ++currentTurn;
     SetTurnPhase(ETurnPhase::StartTurn);
 
-    if (GEngine)
-    {
-        FString text = FString::Printf(
-            TEXT("=== Tour %d · Joueur P%d ==="), 
-            currentTurn, 
-            playerId
-        );
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
-
     //check condition de victoire
 
     RefillEssence(playerId);
@@ -70,33 +55,12 @@ void UUTurnManager::StartTurn(int32 playerId)
     SetTurnPhase(ETurnPhase::Main);
     OnTurnStarted.Broadcast(playerId, currentTurn);
 
-    if (GEngine)
-    {
-        FString text = FString::Printf(
-            TEXT("StartTurn P%d: Main — base=%d/%d · bonus=%d"),
-            playerId,
-            GetCurrentEssence(playerId), 
-            GetMaxEssence(playerId),
-            GetBonusEssence(playerId)
-        );
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
 }
 
 void UUTurnManager::EndTurn()
 {
     if (currentPhase != ETurnPhase::Main)
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(
-                TEXT("EndTurn: hors phase Main (phase=%s)"),
-                *UEnum::GetValueAsString(currentPhase)
-            );
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
         return;
     }
 
@@ -108,18 +72,6 @@ void UUTurnManager::EndTurn()
     if (deckManager)
     {
         TArray<UUCardData*> Discarded = deckManager->EnforceHandLimit(EndingPlayer);
-        if (Discarded.Num() > 0)
-        {
-            if (GEngine)
-            {
-                FString text = FString::Printf(
-                    TEXT("EndTurn P%d: %d carte(s) défaussée(s)"),
-                    EndingPlayer, Discarded.Num()
-                );
-
-                GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-            }
-        }
     }
 
     OnTurnEnded.Broadcast(EndingPlayer);
@@ -133,18 +85,6 @@ bool UUTurnManager::PayEssence(int32 playerId, int32 cost)
 
     if (S.GetTotalEssence() < cost)
     {
-        if (GEngine)
-        {
-            FString text = FString::Printf(
-                TEXT("PayEssence P%d: insolvable — coût=%d · dispo=%d"),
-                playerId,
-                cost,
-                S.GetTotalEssence()
-            );
-
-            GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-        }
-
         return false;
     }
 
@@ -164,20 +104,6 @@ bool UUTurnManager::PayEssence(int32 playerId, int32 cost)
         OnEssenceSpent.Broadcast(playerId, Rem, false);
     }
 
-    if (GEngine)
-    {
-        FString text = FString::Printf(
-            TEXT("PayEssence P%d: -%d -> base=%d/%d · bonus=%d"),
-            playerId,
-            cost,
-            S.currentEssence,
-            S.maxEssence,
-            S.bonusEssence
-        );
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
-
     return true;
 }
 
@@ -189,18 +115,12 @@ void UUTurnManager::AddBonusEssence(int32 playerId, int32 amount)
     S.bonusEssence += amount;
 
     OnBonusEssenceGained.Broadcast(playerId, amount);
+}
 
-    if (GEngine)
-    {
-        FString text = FString::Printf(
-            TEXT("AddBonusEssence P%d: +%d → total bonus=%d"),
-            playerId,
-            amount,
-            S.bonusEssence
-        );
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
+void UUTurnManager::RemoveAllBonusEssence(int32 playerId)
+{
+    FEssenceState& S = GetOrCreateEssenceState(playerId);
+    S.bonusEssence = 0;
 }
 
 int32 UUTurnManager::GetAvaliableEssence(int32 playerId) const
@@ -276,24 +196,16 @@ void UUTurnManager::RefillEssence(int32 playerId)
         S.maxEssence += essenceIncrement;
 
     S.currentEssence = S.maxEssence;
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(
-            TEXT("RefillEssence P%d: base=%d/%d · bonus=%d (conservé)"),
-            playerId,
-            S.currentEssence,
-            S.maxEssence,
-            S.bonusEssence
-        );
-
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
-    }
 }
 
 int32 UUTurnManager::GetNextPlayerId() const
 {
     return (activePlayerId + 1) % playerCount;
+}
+
+int32 UUTurnManager::GetOpponent(int32 playerId)
+{
+    return (playerId + 1) % playerCount;
 }
 
 void UUTurnManager::NotifyOnTurnStartEffects()

@@ -14,6 +14,7 @@ void AAShip::GetLifetimeReplicatedProps(
 	DOREPLIFETIME(AAShip, actionsPerTurn);
 	DOREPLIFETIME(AAShip, State);
 	DOREPLIFETIME(AAShip, bonusDamage);
+	DOREPLIFETIME(AAShip, RuntimeStats);
 }
 
 FCardStats AAShip::GetEffectiveStats() const
@@ -50,9 +51,47 @@ int32 AAShip::GetMoveCost() const
 	return GetEffectiveStats().moveCost;
 }
 
+bool AAShip::IsParalized() const
+{
+	return bIsParalized;
+}
+
+void AAShip::StartParalize()
+{
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Paralized"));
+
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
+	}
+
+	bIsParalized = true;
+	bJustPlayed = true;
+	OnParalizeStartBP();
+}
+
+void AAShip::StopParalize()
+{
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Stop paralize"));
+
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
+	}
+	bIsParalized = false;
+	bJustPlayed = true;
+	OnParalizeStopBP();
+}
+
+void AAShip::StopShip()
+{
+	bJustPlayed = true;
+}
+
 void AAShip::Reveal()
 {
 	State = EShipState::Visible;
+	NotifyEffectTrigger(EEffectTrigger::OnReveal);
 	if (CanMove())
 	{
 		currentSpeed = GetMaxSpeed();
@@ -129,10 +168,19 @@ void AAShip::TakeDamage(int32 amount)
 	}
 
 	OnActorDamagedBP();
+	NotifyEffectTrigger(EEffectTrigger::OnDamageTaken);
 }
 
 void AAShip::ApplyUpgrade(UUpgrade* upgrade)
 {
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Upgrade "));
+		text += upgrade->SourceCard->cardName += " added on ship ";
+		text += CardData->cardName;
+		
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
+	}
 	upgrades.Add(upgrade);
 
 	int32 shield = maxHealthPoint * upgrade->ShieldHealthRatio;
@@ -145,6 +193,14 @@ void AAShip::ApplyUpgrade(UUpgrade* upgrade)
 
 void AAShip::RemoveUpgrade(UUpgrade* upgrade)
 {
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Upgrade "));
+		text += upgrade->SourceCard->cardName += " removed on ship ";
+		text += CardData->cardName;
+
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
+	}
 	upgrades.Remove(upgrade);
 
 	bonusHealth -= upgrade->EffectiveShieldHealth;
@@ -156,9 +212,24 @@ void AAShip::RemoveUpgrade(UUpgrade* upgrade)
 
 void AAShip::ResetTurnFlags()
 {
+	if (IsParalized())
+	{
+		StopParalize();
+		return;
+	}
+
 	actions = actionsPerTurn;
 	bJustPlayed = false;
 	currentSpeed = GetMaxSpeed();
+}
+
+void AAShip::NotifyEffectTrigger(EEffectTrigger Trigger)
+{
+	UWorld* World = GetWorld();
+	AABoardGameMode* GM = World ? World->GetAuthGameMode<AABoardGameMode>() : nullptr;
+	if (!GM || !GM->effectManager) return;
+
+	GM->effectManager->NotifyShipEvent(this, Trigger, FEffectContext());
 }
 
 void AAShip::OnShipSpawn(bool canMoveOnSpawn)

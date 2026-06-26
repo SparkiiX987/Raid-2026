@@ -97,6 +97,7 @@ class RAID2026_API UHyperspacePilote : public UPassiveEffect
 public:
 	UHyperspacePilote()
 	{
+		bCanMoveOnFirstTurn = true;
 		Trigger = EEffectTrigger::Passive;
 		DisplayName = FText::FromString(TEXT("Pilote d'Hyperespace"));
 		Description = FText::FromString(FString::Printf(TEXT("Tous vos vaisseau gagne Hyperespace")));
