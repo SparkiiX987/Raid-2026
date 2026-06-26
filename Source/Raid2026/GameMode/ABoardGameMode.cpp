@@ -69,6 +69,7 @@ void AABoardGameMode::StartGame()
     OnSpawnFinishedBP();
 
     deckManager->OnCardDrawn.AddDynamic(this, &AABoardGameMode::HandleCardDrawn);
+    deckManager->OnCardDiscarded.AddDynamic(this, &AABoardGameMode::HandleCardDiscarded);
     turnManager->OnTurnStarted.AddDynamic(this, &AABoardGameMode::HandleTurnStarted);
 
     turnManager->OnEssenceSpent.AddDynamic(this, &AABoardGameMode::HandleEssenceSpent);
@@ -904,6 +905,15 @@ void AABoardGameMode::HandleCardDrawn(int32 PlayerId, UUCardData* Card)
     if (PCPtr && *PCPtr)
     {
         (*PCPtr)->ClientOnCardDrawn(Card);
+    }
+}
+
+void AABoardGameMode::HandleCardDiscarded(int32 PlayerId, UUCardData* Card)
+{
+    TObjectPtr<ABoardPlayerController>* PCPtr = connectedPlayers.Find(PlayerId);
+    if (PCPtr && *PCPtr)
+    {
+        (*PCPtr)->ClientOnCardDiscarded(Card);
     }
 }
 

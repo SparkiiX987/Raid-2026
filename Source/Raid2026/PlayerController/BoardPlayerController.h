@@ -182,6 +182,9 @@ public:
     UFUNCTION(Client, Reliable)
         void ClientOnCardDrawn(UUCardData* Card);
 
+    UFUNCTION(Client, Reliable)
+        void ClientOnCardDiscarded(UUCardData* Card);
+
     UFUNCTION(BlueprintCallable, Client, Reliable)
         void ClientClearSelection();
 
@@ -222,7 +225,7 @@ public:
         void OnShipDestroyedBP(AAShip* Ship);
 
     UFUNCTION(BlueprintImplementableEvent)
-        void OnCardDrawBP(UUCardData* cardData);
+        void OnCardDiscardedBP(UUCardData* cardData);
 
     UFUNCTION(BlueprintImplementableEvent)
         void OnCardPlayedBP();

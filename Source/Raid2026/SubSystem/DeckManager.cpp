@@ -69,16 +69,16 @@ bool UDeckManager::DiscardCard(int32 playerId, UUCardData* card)
     State.Hand.RemoveAt(Index);
     State.Discard.Add(card);
 
-    OnCardDiscarded.Broadcast(playerId, card);
-    BroadcastHandUpdate(State);
-
     if (GEngine)
     {
         FString text = FString::Printf(TEXT("DiscardCard P%d : '%s' défaussée (%d en main)"),
             playerId, *card->GetName(), State.Hand.Num());
 
-        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
+
+    OnCardDiscarded.Broadcast(playerId, card);
+    BroadcastHandUpdate(State);
 
     return true;
 }

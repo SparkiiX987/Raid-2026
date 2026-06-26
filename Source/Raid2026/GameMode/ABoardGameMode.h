@@ -64,6 +64,12 @@ public:
 
 	void HandleActivateEffect(ABoardPlayerController* PC, AAShip* Ship, int32 EffectIndex);
 
+	UFUNCTION()
+		void HandleCardDiscarded(int32 PlayerId, UUCardData* Card);
+
+	UFUNCTION()
+		void HandleCardDrawn(int32 PlayerId, UUCardData* Card);
+
 	TArray<FActivatableEffectInfo> BuildActivatableInfos(ABoardPlayerController* PC, AAShip* Ship);
 
 	void ResolveActivationTarget(ABoardPlayerController* PC, AAShip* TargetShip);
@@ -177,9 +183,6 @@ public:
 
 	TArray<FIntPoint> GetReachableCellsForShip(ABoardPlayerController* Instigator, AAShip* Ship);
 
-	UFUNCTION()
-		void HandleCardDrawn(int32 PlayerId, UUCardData* Card);
-	
 	AABoardGameMode();
 	virtual void Tick(float DeltaTime) override;
 };

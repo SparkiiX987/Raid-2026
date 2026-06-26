@@ -38,6 +38,11 @@ void ABoardPlayerController::ClientOnCardDrawn_Implementation(UUCardData* Card)
     OnCardDrawnBP(Card);
 }
 
+void ABoardPlayerController::ClientOnCardDiscarded_Implementation(UUCardData* Card)
+{
+    OnCardDiscardedBP(Card);
+}
+
 void ABoardPlayerController::ClearPendingActivation()
 {
     PendingActivationShip = nullptr;
