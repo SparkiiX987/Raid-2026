@@ -185,4 +185,10 @@ public:
 
 	AABoardGameMode();
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY()
+	TMap<int32, TObjectPtr<UUCardData>> PendingSabotageCards;
+
+	UPROPERTY()
+	TMap<int32, FEffectContext> PendingSabotageContexts;
 };

@@ -171,6 +171,26 @@ void ABoardPlayerController::ClickOnMotherShip(AAMotherShip* Mothership)
     }
 }
 
+void ABoardPlayerController::OnResolveSabotageTarget(UUCardData* SelectedCard, int32 CardIndex)
+{
+    if (!IsValid(SelectedCard) || PendingIntent != EActionIntent::ACTIVATE)
+    {
+        return;
+    }
+
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("Card selected : "));
+        text += SelectedCard->cardName;
+        text += " | index : ";
+        text += FString::FromInt(CardIndex);
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
+    }
+
+    ServerResolveSabotageTarget(CardIndex);
+}
+
 void ABoardPlayerController::RequestEndTurn()
 {
     if (!bIsMyTurn) return;
@@ -219,6 +239,20 @@ bool ABoardPlayerController::ServerConfirmEffectTargetCell_Validate(FIntPoint Ce
 {
     return true;
 }
+
+bool ABoardPlayerController::ServerResolveSabotageTarget_Validate(int32 CardIndex)
+{
+    return CardIndex > -1;
+}
+
+void ABoardPlayerController::ServerResolveSabotageTarget_Implementation(int32 CardIndex)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->ResolveSabotageTarget(this, CardIndex);
+}
+
 void ABoardPlayerController::ServerConfirmEffectTargetCell_Implementation(FIntPoint Cell)
 {
     AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
@@ -290,6 +324,7 @@ void ABoardPlayerController::ClientClearSelection_Implementation()
     bWaitingForCellTarget = false;
 
     ClearPendingActivation();
+    OnClearSelectionBP();
 
     if (BoardVisualiser)
         BoardVisualiser->ClearHighlights();

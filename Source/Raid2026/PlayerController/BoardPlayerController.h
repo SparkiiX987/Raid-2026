@@ -55,6 +55,9 @@ public:
     UFUNCTION(BlueprintCallable)
         void ClickOnMotherShip(AAMotherShip* Mothership);
 
+    UFUNCTION(BlueprintCallable)
+        void OnResolveSabotageTarget(UUCardData* SelectedCard, int32 CardIndex);
+
 #pragma endregion
 
 #pragma region OnRep
@@ -132,6 +135,10 @@ public:
         UFUNCTION(Server, Reliable, WithValidation)
             void ServerConfirmEffectTargetCell(FIntPoint Cell);
             bool ServerConfirmEffectTargetCell_Validate(FIntPoint Cell);
+
+    UFUNCTION(Server, Reliable, WithValidation)
+            void ServerResolveSabotageTarget(int32 CardIndex);
+            bool ServerResolveSabotageTarget_Validate(int32 CardIndex);
 
 #pragma endregion
 
@@ -239,6 +246,9 @@ public:
     UFUNCTION(BlueprintImplementableEvent)
         void OnEffectTargetPromptBP(EEffectTargetKind Kind);
 
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnClearSelectionBP();
+
 #pragma endregion
 
 #pragma region vars
@@ -260,12 +270,6 @@ public:
 
     UPROPERTY(BlueprintReadOnly)
         bool bIsMyTurn = false;
-
-    UPROPERTY()
-        TObjectPtr<UUCardData> PendingSabotageCard;
-
-    UPROPERTY()
-        FEffectContext PendingSabotageContext;
 
     UPROPERTY(ReplicatedUsing = OnRep_BoardVisualiser)
         TObjectPtr<AABoardVisualiser> BoardVisualiser;
