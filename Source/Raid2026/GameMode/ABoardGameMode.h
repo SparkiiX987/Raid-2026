@@ -161,6 +161,9 @@ public:
 
 	void UpdateGridState();
 
+	UFUNCTION()
+	void NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter);
+
 	void BroadcastFireResult(const FFireResult& Result);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

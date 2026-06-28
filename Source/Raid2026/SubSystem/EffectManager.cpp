@@ -309,6 +309,36 @@ bool UEffectManager::HasHyperspace(AAShip* Ship)
     return false;
 }
 
+bool UEffectManager::HaveBigCanon(AAShip* Ship)
+{
+    const FShipEffectList* List = RegisteredEffects.Find(Ship);
+
+    if (!List) return false;
+
+    for (const TObjectPtr<UEffect>& effect : List->Effects)
+    {
+        if (IsValid(effect) && effect->bHaveBigCanon)
+            return true;
+    }
+
+    return false;
+}
+
+bool UEffectManager::MoveInDiagonale(AAShip* Ship)
+{
+    const FShipEffectList* List = RegisteredEffects.Find(Ship);
+
+    if (!List) return false;
+
+    for (const TObjectPtr<UEffect>& effect : List->Effects)
+    {
+        if (IsValid(effect) && effect->bMoveInDiagonal)
+            return true;
+    }
+
+    return false;
+}
+
 bool UEffectManager::HasHyperspacePilote(AAMotherShip* Mothership)
 {
     const FShipEffectList* List = RegisteredEffects.Find(Mothership);

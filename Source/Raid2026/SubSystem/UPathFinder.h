@@ -23,6 +23,8 @@ public:
 
 	static const TArray<FIntPoint> Directions;
 
+	static const TArray<FIntPoint> DiagonalDirections;
+
 	int32 shipSpeed;
 	FIntPoint cellSelect;
 
@@ -39,7 +41,7 @@ public:
 	TArray<FIntPoint> InitializeCheck(AAShip* Ship, FCell CellToCheck);
 
 	UFUNCTION(BlueprintCallable)
-	void SearchPath(FIntPoint StartCell, AAShip* Ship);
+	void SearchPath(FIntPoint StartCell, AAShip* Ship,const TArray<FIntPoint>& DirectionsToUse);
 
 	UFUNCTION(BlueprintCallable)
 	void BuildPath(FIntPoint StartCell, const TMap<FIntPoint, FIntPoint>& Parent);

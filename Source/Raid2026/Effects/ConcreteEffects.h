@@ -110,6 +110,98 @@ public:
 };
 
 UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_WinResistanceWhenControl : public UTriggeredEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_WinResistanceWhenControl()
+    {
+        Trigger = EEffectTrigger::OnStartOfTurn;
+        DisplayName = FText::FromString(FString::Printf(TEXT("Si ce vaisseau controle la rafinerie, il gagne +%d de resistance"), ResistanceToWin));
+        Description = FText::FromString(FString::Printf(TEXT("Si ce vaisseau controle la rafinerie, il gagne +%d de resistance"), ResistanceToWin));
+    }
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|StatWin",
+        meta = (ClampMin = 1, ClampMax = 3))
+    int32 ResistanceToWin = 2;
+
+    virtual FEffectResult Apply_Implementation(const FEffectContext& Context) override;
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_GetResistanceFromInferiorShipClass : public UTriggeredEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_GetResistanceFromInferiorShipClass()
+    {
+        Trigger = EEffectTrigger::OnStartOfTurn;
+        DisplayName = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inferieur à %d est adjacent, Tornade-V model L gagne +%d de resistance"), InferiorClassShip,ResistanceToWin));
+        Description = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inferieur à %d est adjacent, Tornade-V model L gagne +%d de resistance"), InferiorClassShip,ResistanceToWin));
+    }
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|InferiorClassShip",
+        meta = (ClampMin = 0, ClampMax = 5))
+    int32 InferiorClassShip = 3;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|StatWin",
+    meta = (ClampMin = 1, ClampMax = 3))
+    int32 ResistanceToWin = 1;
+
+    virtual FEffectResult Apply_Implementation(const FEffectContext& Context) override;
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_GiveResistanceToInferiorShipClass : public UTriggeredEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_GiveResistanceToInferiorShipClass()
+    {
+        Trigger = EEffectTrigger::OnStartOfTurn;
+        DisplayName = FText::FromString(FString::Printf(TEXT("Chaque vaisseau de classe inférieur a %d adjacent gagne +%d de resistance "), InferiorClassShip,ResistanceToGive));
+        Description = FText::FromString(FString::Printf(TEXT("Chaque vaisseau de classe inférieur a %d adjacent gagne +%d de resistance "), InferiorClassShip,ResistanceToGive));
+    }
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|InferiorClassShip",
+        meta = (ClampMin = 0, ClampMax = 5))
+    int32 InferiorClassShip = 3;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|StatWin",
+    meta = (ClampMin = 1, ClampMax = 3))
+    int32 ResistanceToGive = 1;
+
+    virtual FEffectResult Apply_Implementation(const FEffectContext& Context) override;
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_OnShipBesideTakingDamage : public UTriggeredEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_OnShipBesideTakingDamage()
+    {
+        Trigger = EEffectTrigger::OnDamageTaken;
+        DisplayName = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inférieur à sa droite et à sa gauche devais prendre des dégat, les %d premier dégat infligé à chaque tour ne sont pas apliquer"), DamageToReduce));
+        Description = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inférieur à sa droite et à sa gauche devais prendre des dégat, les %d premier dégat infligé à chaque tour ne sont pas apliquer"), DamageToReduce));
+    }
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Stats",
+        meta = (ClampMin = 1, ClampMax = 3))
+    int32 DamageToReduce = 2;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|InferiorClassShip",
+    meta = (ClampMin = 0, ClampMax = 5))
+    int32 InferiorClassShip = 4;
+
+    virtual FEffectResult Apply_Implementation(const FEffectContext& Context) override;
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
 class RAID2026_API UEffect_ActivatedDrawOnPlayExpertCard : public UTriggeredEffect
 {
     GENERATED_BODY()
@@ -125,6 +217,34 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Draw",
         meta = (ClampMin = 1, ClampMax = 3))
     int32 DrawCount = 1;
+    
+    ECardType TypeOfCardToPlay = ECardType::EXPERT;
+
+    virtual FEffectResult Apply_Implementation(const FEffectContext& Context) override;
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_ActivatedDrawOnPlaySuperiorShipClassCard : public UTriggeredEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_ActivatedDrawOnPlaySuperiorShipClassCard()
+    {
+        Trigger = EEffectTrigger::OnPlayCard;
+        DisplayName = FText::FromString(FString::Printf(TEXT("A chaque fois que vous jouer un vaisseau de classe supérieur à %d, piocher %d carte "), SuperiorClassShip,DrawCount));
+        Description = FText::FromString(FString::Printf(TEXT("A chaque fois que vous jouer un vaisseau de classe supérieur à %d, piocher %d carte "), SuperiorClassShip,DrawCount));
+    }
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Draw",
+        meta = (ClampMin = 1, ClampMax = 3))
+    int32 DrawCount = 1;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|SuperiorClassShip",
+    meta = (ClampMin = 0, ClampMax = 5))
+    int32 SuperiorClassShip = 2;
+    
+    ECardType TypeOfCardToPlay = ECardType::SHIP;
 
     virtual FEffectResult Apply_Implementation(const FEffectContext& Context) override;
 };
@@ -258,5 +378,35 @@ public:
         Trigger = EEffectTrigger::Passive;
         DisplayName = FText::FromString(TEXT("Controleur"));
         Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau peut contrôler les rafineries.")));
+    }
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_BigCanon : public UPassiveEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_BigCanon()
+    {
+        bHaveBigCanon = true;
+        Trigger = EEffectTrigger::Passive;
+        DisplayName = FText::FromString(TEXT("BigCanon"));
+        Description = FText::FromString(FString::Printf(TEXT("Peut tirer 2 fois par tour et effectuer un tir avec lui coute une essence suplémentaire")));
+    }
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_DiagonalMovement : public UPassiveEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_DiagonalMovement()
+    {
+        bMoveInDiagonal = true;
+        Trigger = EEffectTrigger::Passive;
+        DisplayName = FText::FromString(TEXT("DiagonalMovement"));
+        Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau se déplace uniquement en diagonale")));
     }
 };

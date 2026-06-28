@@ -60,6 +60,12 @@ public:
         bool HasHyperspace(AAShip* Ship);
 
     UFUNCTION(BlueprintCallable)
+    bool HaveBigCanon(AAShip* Ship);
+
+    UFUNCTION(BlueprintCallable)
+    bool MoveInDiagonale(AAShip* Ship);
+
+    UFUNCTION(BlueprintCallable)
         bool HasHyperspacePilote(AAMotherShip* Mothership);
 
     void AddEffectsIfAbsent(AABoardActor* Ship, const TArray<UEffect*>& DesiredEffects);

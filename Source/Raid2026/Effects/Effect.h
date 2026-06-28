@@ -35,6 +35,11 @@ public:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
         FName EffectID;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (EditCondition = "Trigger==EEffectTrigger::Passive"))
+        bool bHaveBigCanon = false;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (EditCondition = "Trigger==EEffectTrigger::Passive"))
+    bool bMoveInDiagonal = false;
 
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     FEffectResult Apply(const FEffectContext& Context);

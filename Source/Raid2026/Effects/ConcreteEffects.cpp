@@ -114,20 +114,141 @@ FEffectResult UEffect_ActivatedDrawOnStartTurn::Apply_Implementation(const FEffe
     return Out;
 }
 
-FEffectResult UEffect_ActivatedDrawOnPlayExpertCard::Apply_Implementation(const FEffectContext& Context)
+FEffectResult UEffect_WinResistanceWhenControl::Apply_Implementation(const FEffectContext& Context)
 {
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("TU VAS PIOCHER ???????"));
-    
-        GEngine->AddOnScreenDebugMessage(-1, 1500.0f, FColor::Blue, text);
-    }
     if (!Context.Turn || !Context.Deck)
         return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
 
-    if (Context.CardPlay->type != ECardType::EXPERT)
+    if (Context.Board->Grid[Context.SourceShip->gridPosition.X][Context.SourceShip->gridPosition.Y].refinery == nullptr)
+    {
+        return FEffectResult::Fail(TEXT("Pas sur une raffinerie"));
+    }
+    Context.SourceShip->Heal(2);
+    
+    
+    FEffectResult Out = FEffectResult::Success();
+    Out.IntValue = ResistanceToWin;
+
+    return Out;
+}
+
+FEffectResult UEffect_GetResistanceFromInferiorShipClass::Apply_Implementation(const FEffectContext& Context)
+{
+    if (!Context.Turn || !Context.Deck)
+        return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
+
+    for (const FIntPoint& Direction : Context.Directions)
+    {
+        const FIntPoint NewCell = Context.SourceShip->gridPosition + Direction;
+
+        if (AAShip* Ship = Cast<AAShip>(Context.Board->GetCell(NewCell).Occupant))
+        {
+            if (Ship->GetOwnerID() == Context.OwnerPlayerID && Ship->CardData->shipClass < InferiorClassShip)
+            {
+                Context.SourceShip->Heal(ResistanceToWin);
+                return FEffectResult::Success();
+            }
+        }
+    }
+    
+    return FEffectResult::Fail(TEXT("Pas de vaisseau de classe inferieur a 3 a proximité"));
+}
+
+FEffectResult UEffect_GiveResistanceToInferiorShipClass::Apply_Implementation(const FEffectContext& Context)
+{
+    if (!Context.Turn || !Context.Deck)
+        return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
+
+    TArray<AAShip*> InferiorClassShipClose;
+
+    for (const FIntPoint& Direction : Context.Directions)
+    {
+        const FIntPoint NewCell = Context.SourceShip->gridPosition + Direction;
+
+        if (AAShip* Ship = Cast<AAShip>(Context.Board->GetCell(NewCell).Occupant))
+        {
+            if (Ship->GetOwnerID() == Context.OwnerPlayerID && Ship->CardData->shipClass < InferiorClassShip)
+            {
+                InferiorClassShipClose.Add(Ship);
+            }
+        }
+    }
+
+    if (InferiorClassShipClose.Num() <= 0)
+    {
+        return FEffectResult::Fail(TEXT("Pas de vaisseau de classe inferieur a 3 a proximité"));
+    }
+
+    for (int i = 0; i < InferiorClassShipClose.Num(); i++)
+    {
+        InferiorClassShipClose[i]->Heal(ResistanceToGive);
+    }
+    
+    return FEffectResult::Success();
+}
+
+FEffectResult UEffect_OnShipBesideTakingDamage::Apply_Implementation(const FEffectContext& Context)
+{
+    if (Context.TargetShip == nullptr || !Context.Turn)
+        return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
+
+    if (AAShip* Ship = Cast<AAShip>(Context.TargetShip))
+    {
+        
+        if (Ship->GetOwnerID() != Context.OwnerPlayerID
+            || Ship->CardData->shipClass >= InferiorClassShip
+            || Ship->gridPosition != Context.SourceShip->gridPosition + FIntPoint(1,0) && Ship->gridPosition != Context.SourceShip->gridPosition - FIntPoint(1,0))
+            return FEffectResult::Fail(TEXT("Pas de vaisseau a proteger"));
+
+        if (Context.DamageDealt >= DamageToReduce)
+        {
+            Ship->protection += DamageToReduce;
+        }
+        else
+        {
+            Ship->protection += Context.DamageDealt;
+        }
+        FEffectResult Out = FEffectResult::Success();
+        Out.IntValue = Ship->CardData->stats.resistance;
+        return Out;
+    }
+    return FEffectResult::Fail(TEXT("Pas de vaisseau trouver"));
+}
+
+FEffectResult UEffect_ActivatedDrawOnPlayExpertCard::Apply_Implementation(const FEffectContext& Context)
+{
+    if (!Context.Turn || !Context.Deck)
+        return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
+
+    if (Context.CardPlay->type != TypeOfCardToPlay)
     {
         return FEffectResult::Fail(TEXT("Mauvaise carte"));
+    }
+
+    TArray<FDrawResult> Results = Context.Deck->DrawCards(Context.OwnerPlayerID, DrawCount);
+
+    FEffectResult Out = FEffectResult::Success();
+    Out.IntValue = Results.Num();
+    for (const FDrawResult& R : Results)
+        if (R.DrawnCard) Out.AffectedCards.Add(R.DrawnCard);
+
+    return Out;
+    
+}
+
+FEffectResult UEffect_ActivatedDrawOnPlaySuperiorShipClassCard::Apply_Implementation(const FEffectContext& Context)
+{
+    if (!Context.Turn || !Context.Deck)
+        return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
+
+    if (Context.CardPlay->type != TypeOfCardToPlay)
+    {
+        return FEffectResult::Fail(TEXT("Mauvaise carte"));
+    }
+
+    if (Context.CardPlay->shipClass <= SuperiorClassShip)
+    {
+        return FEffectResult::Fail(TEXT("Vaisseau trop petit"));
     }
 
     TArray<FDrawResult> Results = Context.Deck->DrawCards(Context.OwnerPlayerID, DrawCount);

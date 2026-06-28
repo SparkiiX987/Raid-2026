@@ -491,11 +491,19 @@ void AABoardGameMode::HandleFireAt(
 
     int32 PlayerID = playerInstigator->PlayerID;
 
-    if (!turnManager->PayEssence(PlayerID, UUTurnManager::fireCost))
+    if (!boardManager->IsLineOfSight(Shooter->GetGridPosition(), TargetCell))
+    {
+        RejectAction(playerInstigator, "Pas dans la ligne de tir");
+        return;
+    }
+    
+    if (!turnManager->PayEssence(PlayerID, Shooter->GetFireCost()))
     {
         RejectAction(playerInstigator, "Not enough essence");
         return;
     }
+
+    NotifyOnTakeDamage(boardManager->GetShipAt(TargetCell), Shooter);
 
     FFireResult Result = combatResolver->ResolveFire(Shooter, TargetCell);
 
@@ -598,8 +606,17 @@ void AABoardGameMode::HandleSpawnShip(
     effectManager->RegisterEffects(Ship, RuntimeEffects);
     playerInstigator->ClientOnPlayCard();
 
-    Ship->OnShipSpawn(effectManager->HasHyperspacePilote(boardManager->Motherships[PlayerID])
-        || effectManager->HasHyperspace(Ship));
+    if (effectManager->HaveBigCanon(Ship))
+    {
+        Ship->ApplyBigCanon();
+    }
+
+    if (effectManager->MoveInDiagonale(Ship))
+    {
+        Ship->ApplyMoveInDiagonal();
+    }
+    
+    Ship->OnShipSpawn(effectManager->HasHyperspacePilote(boardManager->Motherships[PlayerID]) || effectManager->HasHyperspace(Ship));
 
     UpdateGridState();
     BroadcastEssenceChanged(PlayerID);
@@ -833,6 +850,21 @@ void AABoardGameMode::UpdateGridState()
             GS->UpdateCellState(FIntPoint(X, Y), RepCell);
         }
     }
+}
+
+void AABoardGameMode::NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter)
+{
+    if (!effectManager || !IsValid(ShipDamaged))
+    {
+        return;
+    }
+
+    FEffectContext Context;
+    Context.OwnerPlayerID = turnManager->GetCurrentPlayer();
+    Context.TargetShip = ShipDamaged;
+    Context.DamageDealt = Shooter->GetFirePower();
+
+    effectManager->NotifyEvent(EEffectTrigger::OnDamageTaken, Context);
 }
 
 void AABoardGameMode::BroadcastFireResult(const FFireResult& Result)

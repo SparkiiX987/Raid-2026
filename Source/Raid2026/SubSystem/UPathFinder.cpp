@@ -14,6 +14,14 @@ const TArray<FIntPoint> UPathFinder::Directions =
 	FIntPoint(0, -1)
 };
 
+const TArray<FIntPoint> UPathFinder::DiagonalDirections =
+{
+	FIntPoint(1, 1),
+	FIntPoint(1, -1),
+	FIntPoint(-1, 1),
+	FIntPoint(-1, -1)
+};
+
 TArray<FIntPoint> UPathFinder::InitializeCheck(AAShip* Ship, FCell CellToCheck)
 {
 	PathTaken.Reset();
@@ -26,8 +34,17 @@ TArray<FIntPoint> UPathFinder::InitializeCheck(AAShip* Ship, FCell CellToCheck)
 	}
 
 	cellSelect = CellToCheck.Pos;
-
-	SearchPath(Ship->gridPosition, Ship);
+	TArray<FIntPoint> DirectionsToUse;
+	if (Ship->GetIfIsMovingInDiagonal())
+	{
+		DirectionsToUse = DiagonalDirections;
+	}
+	else
+	{
+		DirectionsToUse = Directions;
+	}
+	
+	SearchPath(Ship->gridPosition, Ship, DirectionsToUse);
 	if (!PathTaken.IsEmpty())
 	{
 		PathCost = (PathTaken.Num() - 1) * Ship->CardData->stats.moveCost;
@@ -40,7 +57,7 @@ TArray<FIntPoint> UPathFinder::InitializeCheck(AAShip* Ship, FCell CellToCheck)
 	return PathTaken;
 }
 
-void UPathFinder::SearchPath(FIntPoint StartCell, AAShip* Ship)
+void UPathFinder::SearchPath(FIntPoint StartCell, AAShip* Ship,const TArray<FIntPoint>& DirectionsToUse)
 {
 	TQueue<FIntPoint> OpenList;
 
@@ -70,7 +87,7 @@ void UPathFinder::SearchPath(FIntPoint StartCell, AAShip* Ship)
 
 		const int32 CurrentCost = Cost[CurrentCell];
 
-		for (const FIntPoint& Direction : Directions)
+		for (const FIntPoint& Direction : DirectionsToUse)
 		{
 			const FIntPoint NewCell = CurrentCell + Direction;
 
@@ -150,6 +167,16 @@ TArray<FIntPoint> UPathFinder::GetAllCellAroundShip(AAShip* Ship)
 
 	Cost.Add(StartCell, 0);
 
+	TArray<FIntPoint> DirectionsToUse;
+	if (Ship->GetIfIsMovingInDiagonal())
+	{
+		DirectionsToUse = DiagonalDirections;
+	}
+	else
+	{
+		DirectionsToUse = Directions;
+	}
+
 	while (!OpenList.IsEmpty())
 	{
 		FIntPoint CurrentCell;
@@ -157,7 +184,7 @@ TArray<FIntPoint> UPathFinder::GetAllCellAroundShip(AAShip* Ship)
 
 		const int32 CurrentCost = Cost[CurrentCell];
 
-		for (const FIntPoint& Direction : Directions)
+		for (const FIntPoint& Direction : DirectionsToUse)
 		{
 			const FIntPoint NewCell = CurrentCell + Direction;
 
