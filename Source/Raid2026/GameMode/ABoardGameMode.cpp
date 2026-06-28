@@ -266,8 +266,8 @@ void AABoardGameMode::HandlePlaySabotage(ABoardPlayerController* PC, UUCardData*
 
     if (Result.bNeedsTarget)
     {
-        PC->PendingSabotageCard = Card;
-        PC->PendingSabotageContext = ctx;
+        PendingSabotageCards.Add(PC->PlayerID, Card);
+        PendingSabotageContexts.Add(PC->PlayerID, context);
         PC->ClientPromptSabotageTarget(Result.AffectedCards);
         return;
     }
@@ -356,17 +356,24 @@ void AABoardGameMode::FinalizeActivation(ABoardPlayerController* PC, AAShip* Shi
 
 void AABoardGameMode::ResolveSabotageTarget(ABoardPlayerController* PC, int32 ChosenIndex)
 {
-    UUCardData* Card = PC->PendingSabotageCard;
-    if (!IsValid(Card) || !IsValid(Card->Sabotage)) { RejectAction(PC, TEXT("Aucun sabotage en attente")); return; }
+    TObjectPtr<UUCardData>* CardPtr = PendingSabotageCards.Find(PC->PlayerID);
+    if (!CardPtr || !IsValid(*CardPtr) || !IsValid((*CardPtr)->Sabotage))
+    {
+        RejectAction(PC, TEXT("Aucun sabotage en attente"));
+        return;
+    }
+    UUCardData* Card = *CardPtr;
 
-    FEffectContext ctx = PC->PendingSabotageContext;
+    FEffectContext* CtxPtr = PendingSabotageContexts.Find(PC->PlayerID);
+    if (!CtxPtr) { RejectAction(PC, TEXT("Contexte manquant")); return; }
+    FEffectContext ctx = *CtxPtr;
+
     const int32 cost = Card->Sabotage->EssenceCost;
 
     if (AAShip* Ship = Cast<AAShip>(ctx.TargetShip.Get()))
     {
         if (!Ship->upgrades.IsValidIndex(ChosenIndex)) { RejectAction(PC, TEXT("Index invalide")); return; }
         ctx.targetedUpgrade = Ship->upgrades[ChosenIndex];
-
         const FEffectResult Result = effectManager->ActivateEffect(Card->Sabotage, ctx);
         if (!Result.bSuccess) { RejectAction(PC, Result.FailReason); return; }
     }
@@ -374,20 +381,25 @@ void AABoardGameMode::ResolveSabotageTarget(ABoardPlayerController* PC, int32 Ch
     {
         if (!MS->RDCards.IsValidIndex(ChosenIndex)) { RejectAction(PC, TEXT("Index invalide")); return; }
         ctx.targetedExpert = MS->RDCards[ChosenIndex];
-
         const FEffectResult Result = effectManager->ActivateEffect(Card->Sabotage, ctx);
         if (!Result.bSuccess) { RejectAction(PC, Result.FailReason); return; }
-       /* MS->RemoveRDCard(ChosenIndex);
-        RebuildMothershipEffects(MS);*/
     }
     else { RejectAction(PC, TEXT("Cible disparue")); return; }
 
-    PC->PendingSabotageCard = nullptr;
+    PendingSabotageCards.Remove(PC->PlayerID);
+    PendingSabotageContexts.Remove(PC->PlayerID);
+
     FinalizeSabotage(PC, Card, cost);
 }
 
 void AABoardGameMode::FinalizeSabotage(ABoardPlayerController* PC, UUCardData* Card, int32 cost)
 {
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("Sabotage finalised"));
+
+        GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
+    }
     deckManager->DiscardCard(PC->PlayerID, Card);
     PC->ClientOnPlayCard();
     PC->ClearSelection();
