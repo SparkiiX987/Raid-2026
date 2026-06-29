@@ -410,3 +410,18 @@ public:
         Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau se déplace uniquement en diagonale")));
     }
 };
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_CanSpawnShipBesideHim : public UPassiveEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_CanSpawnShipBesideHim()
+    {
+        bCanSpawnShipBesideHim = true;
+        Trigger = EEffectTrigger::Passive;
+        DisplayName = FText::FromString(TEXT("CanSpawnShipBesideHim"));
+        Description = FText::FromString(FString::Printf(TEXT("Vous pouvez faire apparaitre les vaisseau de classe inférieur que vous jouer adjacent à lui ")));
+    }
+};

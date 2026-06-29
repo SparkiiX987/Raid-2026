@@ -212,7 +212,7 @@ void AABoardGameMode::HandleMoveShip(
         return;
     }
 
-    if (!turnManager->PayEssence(PlayerID, Distance))
+    if (!turnManager->PayEssence(PlayerID, Distance * Ship->GetMoveCost()))
     {
         RejectAction(playerInstigator, TEXT("Essence insuffisante"));
         return;
@@ -549,7 +549,7 @@ void AABoardGameMode::HandleSpawnShip(
         return;
     }
 
-    if (!boardManager->GetFreeSpawnCells(PlayerID).Contains(TargetCell))
+    if (!boardManager->GetFreeSpawnCells(PlayerID, CardData).Contains(TargetCell))
     {
         RejectAction(playerInstigator, "Invalid spawn cell");
         return;
@@ -614,6 +614,11 @@ void AABoardGameMode::HandleSpawnShip(
     if (effectManager->MoveInDiagonale(Ship))
     {
         Ship->ApplyMoveInDiagonal();
+    }
+
+    if (effectManager->CanSpawnShipBesideHim(Ship))
+    {
+        Ship->ApplyCanSpawnShipBesideHim();
     }
     
     Ship->OnShipSpawn(effectManager->HasHyperspacePilote(boardManager->Motherships[PlayerID]) || effectManager->HasHyperspace(Ship));
@@ -865,6 +870,17 @@ void AABoardGameMode::NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter)
     Context.DamageDealt = Shooter->GetFirePower();
 
     effectManager->NotifyEvent(EEffectTrigger::OnDamageTaken, Context);
+}
+
+void AABoardGameMode::ActivateActiveEffect(AAShip* ShipSelected)
+{
+    TArray<UEffect*> ActiveEffect = effectManager->GetActivatableEffects(ShipSelected, turnManager->GetCurrentPlayer());
+    FEffectContext Context;
+    Context.OwnerPlayerID = turnManager->GetCurrentPlayer();
+    for (int i = 0; i < ActiveEffect.Num(); i++)
+    {
+        effectManager->ActivateEffect(ActiveEffect[i], Context);
+    }
 }
 
 void AABoardGameMode::BroadcastFireResult(const FFireResult& Result)

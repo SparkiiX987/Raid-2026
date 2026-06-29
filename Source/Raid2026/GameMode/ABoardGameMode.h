@@ -164,6 +164,9 @@ public:
 	UFUNCTION()
 	void NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter);
 
+	UFUNCTION()
+	void ActivateActiveEffect(AAShip* ShipSelected);
+
 	void BroadcastFireResult(const FFireResult& Result);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

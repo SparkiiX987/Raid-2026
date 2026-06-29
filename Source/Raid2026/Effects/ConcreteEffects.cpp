@@ -267,6 +267,8 @@ FEffectResult UEffect_ActivatedDraw::Apply_Implementation(const FEffectContext& 
     if (!Context.Turn || !Context.Deck)
         return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
 
+    
+
     const bool bPaid = Context.Turn->PayEssence(Context.OwnerPlayerID, EssenceCost);
     if (!bPaid)
         return FEffectResult::Fail(TEXT("ActivatedDraw: Paiement échoué"));

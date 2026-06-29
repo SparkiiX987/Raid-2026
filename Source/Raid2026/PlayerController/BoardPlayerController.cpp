@@ -208,13 +208,29 @@ void ABoardPlayerController::HandleShipSelected(AAShip* Ship)
 {
     if (IsValid(SelectedShip))
     {
-        SelectedShip->OnShipUnselectedBP();
+        OnShipUnselectedBP(SelectedShip);
     }
     
     SelectedShip = Ship;
     PendingIntent = EActionIntent::MOVE;
     bWaitingForCellTarget = true;
-    OnShipSelectedBP(Ship);
+
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    TArray<UEffect*> Effects = GM->effectManager->GetActivatableEffects(Ship, PlayerID);
+    bool bHaveActiveEffect = false;
+    if (Effects.Num() >= 0)
+    {
+        for (int i = 0; i < Effects.Num(); i++)
+        {
+            if (Effects[i]->Trigger == EEffectTrigger::Activated)
+            {
+                bHaveActiveEffect = true;
+            }
+        }
+    }
+    OnShipSelectedBP(Ship, bHaveActiveEffect);
 
     ServerRequestActivatableEffects(Ship);
     ServerRequestReachableCells(Ship);
@@ -243,6 +259,19 @@ bool ABoardPlayerController::ServerConfirmEffectTargetCell_Validate(FIntPoint Ce
 bool ABoardPlayerController::ServerResolveSabotageTarget_Validate(int32 CardIndex)
 {
     return CardIndex > -1;
+}
+
+void ABoardPlayerController::ServerActivateActiveEffect_Implementation(AAShip* ShipSelected)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->ActivateActiveEffect(ShipSelected);
+}
+
+bool ABoardPlayerController::ServerActivateActiveEffect_Validate(AAShip* ShipSelected)
+{
+    return IsValid(ShipSelected);
 }
 
 void ABoardPlayerController::ServerResolveSabotageTarget_Implementation(int32 CardIndex)
@@ -310,7 +339,7 @@ void ABoardPlayerController::ClientClearSelection_Implementation()
 {
     if (IsValid(SelectedShip))
     {
-        SelectedShip->OnShipUnselectedBP();
+        OnShipUnselectedBP(SelectedShip);
         if (!SelectedShip->CanAct())
         {
             SelectedShip->StopShip();

@@ -339,6 +339,21 @@ bool UEffectManager::MoveInDiagonale(AAShip* Ship)
     return false;
 }
 
+bool UEffectManager::CanSpawnShipBesideHim(AAShip* Ship)
+{
+    const FShipEffectList* List = RegisteredEffects.Find(Ship);
+
+    if (!List) return false;
+
+    for (const TObjectPtr<UEffect>& effect : List->Effects)
+    {
+        if (IsValid(effect) && effect->bCanSpawnShipBesideHim)
+            return true;
+    }
+
+    return false;
+}
+
 bool UEffectManager::HasHyperspacePilote(AAMotherShip* Mothership)
 {
     const FShipEffectList* List = RegisteredEffects.Find(Mothership);

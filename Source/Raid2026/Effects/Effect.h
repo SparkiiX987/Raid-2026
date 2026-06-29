@@ -41,6 +41,9 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (EditCondition = "Trigger==EEffectTrigger::Passive"))
     bool bMoveInDiagonal = false;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (EditCondition = "Trigger==EEffectTrigger::Passive"))
+    bool bCanSpawnShipBesideHim = false;
+
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
     FEffectResult Apply(const FEffectContext& Context);
     virtual FEffectResult Apply_Implementation(const FEffectContext& Context);

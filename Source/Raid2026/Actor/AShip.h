@@ -61,6 +61,9 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION(BlueprintPure)
 	bool GetIfIsMovingInDiagonal() const;
 
+	UFUNCTION(BlueprintPure)
+	bool GetIfHeCanSpawnShipBesideHim() const;
+
 	UFUNCTION(BlueprintCallable)
 		void Reveal();
 
@@ -81,6 +84,9 @@ class RAID2026_API AAShip : public AABoardActor
 
 	UFUNCTION()
 	void ApplyMoveInDiagonal();
+
+	UFUNCTION()
+	void ApplyCanSpawnShipBesideHim();
 
 	UFUNCTION()
 		void ApplyUpgrade(UUpgrade* upgrade);
@@ -108,7 +114,7 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void OnShipSelectedBP();
 	
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	    void OnShipUnselectedBP();
 
 	UFUNCTION()
@@ -139,6 +145,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 	bool bPlayDiagonal;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	bool bCanSpawnShipBesideHim;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		int32 currentSpeed;

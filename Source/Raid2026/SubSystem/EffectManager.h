@@ -64,6 +64,10 @@ public:
 
     UFUNCTION(BlueprintCallable)
     bool MoveInDiagonale(AAShip* Ship);
+    
+    UFUNCTION(BlueprintCallable)
+    bool CanSpawnShipBesideHim(AAShip* Ship);
+    
 
     UFUNCTION(BlueprintCallable)
         bool HasHyperspacePilote(AAMotherShip* Mothership);

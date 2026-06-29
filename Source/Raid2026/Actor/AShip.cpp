@@ -100,6 +100,11 @@ bool AAShip::GetIfIsMovingInDiagonal() const
 	return bPlayDiagonal;
 }
 
+bool AAShip::GetIfHeCanSpawnShipBesideHim() const
+{
+	return bCanSpawnShipBesideHim;
+}
+
 void AAShip::Reveal()
 {
 	State = EShipState::Visible;
@@ -140,6 +145,11 @@ void AAShip::ApplyBigCanon()
 void AAShip::ApplyMoveInDiagonal()
 {
 	bPlayDiagonal = true;
+}
+
+void AAShip::ApplyCanSpawnShipBesideHim()
+{
+	bCanSpawnShipBesideHim = true;
 }
 
 void AAShip::TakeDamage(int32 amount)
