@@ -267,12 +267,16 @@ FEffectResult UEffect_ActivatedDraw::Apply_Implementation(const FEffectContext& 
     if (!Context.Turn || !Context.Deck)
         return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
 
-    
+    AAShip* Ship = Cast<AAShip>(Context.SourceShip.Get());
+
+    if (!Ship) return FEffectResult::Fail(TEXT("Pas de vaisseau"));
+
+    if (!Ship->CanAct()) return FEffectResult::Fail(TEXT("peut pas agir"));
 
     const bool bPaid = Context.Turn->PayEssence(Context.OwnerPlayerID, EssenceCost);
     if (!bPaid)
         return FEffectResult::Fail(TEXT("ActivatedDraw: Paiement échoué"));
-
+    
     TArray<FDrawResult> Results = Context.Deck->DrawCards(Context.OwnerPlayerID, DrawCount);
     
     FEffectResult Out = FEffectResult::Success();
@@ -288,6 +292,8 @@ FEffectResult UEffect_ActivatedDraw::Apply_Implementation(const FEffectContext& 
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
 
+    Ship->OnAct();
+    
     return Out;
 }
 

@@ -403,6 +403,7 @@ void AABoardGameMode::FinalizeSabotage(ABoardPlayerController* PC, UUCardData* C
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
     deckManager->DiscardCard(PC->PlayerID, Card);
+    BroadcastEssenceChanged(PC->PlayerID);
     PC->ClientOnPlayCard();
     PC->ClearSelection();
 }
@@ -876,6 +877,8 @@ void AABoardGameMode::ActivateActiveEffect(AAShip* ShipSelected)
 {
     TArray<UEffect*> ActiveEffect = effectManager->GetActivatableEffects(ShipSelected, turnManager->GetCurrentPlayer());
     FEffectContext Context;
+    
+    Context.SourceShip = ShipSelected;
     Context.OwnerPlayerID = turnManager->GetCurrentPlayer();
     for (int i = 0; i < ActiveEffect.Num(); i++)
     {

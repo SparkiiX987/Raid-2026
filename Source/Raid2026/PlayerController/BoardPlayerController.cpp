@@ -265,7 +265,7 @@ void ABoardPlayerController::ServerActivateActiveEffect_Implementation(AAShip* S
 {
     AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
     if (!GM) return;
-
+    
     GM->ActivateActiveEffect(ShipSelected);
 }
 
