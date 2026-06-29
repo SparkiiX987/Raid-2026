@@ -106,7 +106,7 @@ bool UUBoardManager::IsMothershipCell(FIntPoint Pos, int32 ShooterPlayerID) cons
 	return false;
 }
 
-TArray<FIntPoint> UUBoardManager::GetFreeSpawnCells(int32 PlayerID) const
+TArray<FIntPoint> UUBoardManager::GetFreeSpawnCells(int32 PlayerID, UUCardData* CardData) const
 {
 	TArray<FIntPoint> FreeSpawnCells;
 	ECellType CellTypeWhereSpawn;
@@ -121,6 +121,19 @@ TArray<FIntPoint> UUBoardManager::GetFreeSpawnCells(int32 PlayerID) const
 			if (Grid[X][Y].Type == CellTypeWhereSpawn && !IsCellOccupied(FIntPoint(X, Y)))
 			{
 				FreeSpawnCells.Add(FIntPoint(X, Y));
+				continue;
+			}
+			for (const FIntPoint& Direction : OrthoDirections)
+			{
+				const FIntPoint NewCell = Grid[X][Y].Pos + Direction;
+
+				if (AAShip* Ship = Cast<AAShip>(GetCell(NewCell).Occupant))
+				{
+					if (Ship->GetIfHeCanSpawnShipBesideHim() && Ship->GetOwnerID() == PlayerID && CardData->shipClass < Ship->CardData->shipClass)
+					{
+						FreeSpawnCells.Add(FIntPoint(X, Y));
+					}
+				}
 			}
 		}
 	}

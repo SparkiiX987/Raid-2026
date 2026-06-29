@@ -131,6 +131,8 @@ void AABoardGameMode::SpawnManagers()
     PathFinder->BoardManager = boardManager;
     PathFinder->TurnManager = turnManager;
 
+    deckManager->effectManager = effectManager;
+
     boardManager->OnVictoryConditionMet.AddDynamic(
         this, &AABoardGameMode::OnVictoryConditionMet);
 
@@ -210,7 +212,7 @@ void AABoardGameMode::HandleMoveShip(
         return;
     }
 
-    if (!turnManager->PayEssence(PlayerID, Distance))
+    if (!turnManager->PayEssence(PlayerID, Distance * Ship->GetMoveCost()))
     {
         RejectAction(playerInstigator, TEXT("Essence insuffisante"));
         return;
@@ -401,6 +403,7 @@ void AABoardGameMode::FinalizeSabotage(ABoardPlayerController* PC, UUCardData* C
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
     deckManager->DiscardCard(PC->PlayerID, Card);
+    BroadcastEssenceChanged(PC->PlayerID);
     PC->ClientOnPlayCard();
     PC->ClearSelection();
 }
@@ -489,11 +492,19 @@ void AABoardGameMode::HandleFireAt(
 
     int32 PlayerID = playerInstigator->PlayerID;
 
-    if (!turnManager->PayEssence(PlayerID, UUTurnManager::fireCost))
+    if (!boardManager->IsLineOfSight(Shooter->GetGridPosition(), TargetCell))
+    {
+        RejectAction(playerInstigator, "Pas dans la ligne de tir");
+        return;
+    }
+    
+    if (!turnManager->PayEssence(PlayerID, Shooter->GetFireCost()))
     {
         RejectAction(playerInstigator, "Not enough essence");
         return;
     }
+
+    NotifyOnTakeDamage(boardManager->GetShipAt(TargetCell), Shooter);
 
     FFireResult Result = combatResolver->ResolveFire(Shooter, TargetCell);
 
@@ -539,7 +550,7 @@ void AABoardGameMode::HandleSpawnShip(
         return;
     }
 
-    if (!boardManager->GetFreeSpawnCells(PlayerID).Contains(TargetCell))
+    if (!boardManager->GetFreeSpawnCells(PlayerID, CardData).Contains(TargetCell))
     {
         RejectAction(playerInstigator, "Invalid spawn cell");
         return;
@@ -596,8 +607,22 @@ void AABoardGameMode::HandleSpawnShip(
     effectManager->RegisterEffects(Ship, RuntimeEffects);
     playerInstigator->ClientOnPlayCard();
 
-    Ship->OnShipSpawn(effectManager->HasHyperspacePilote(boardManager->Motherships[PlayerID])
-        || effectManager->HasHyperspace(Ship));
+    if (effectManager->HaveBigCanon(Ship))
+    {
+        Ship->ApplyBigCanon();
+    }
+
+    if (effectManager->MoveInDiagonale(Ship))
+    {
+        Ship->ApplyMoveInDiagonal();
+    }
+
+    if (effectManager->CanSpawnShipBesideHim(Ship))
+    {
+        Ship->ApplyCanSpawnShipBesideHim();
+    }
+    
+    Ship->OnShipSpawn(effectManager->HasHyperspacePilote(boardManager->Motherships[PlayerID]) || effectManager->HasHyperspace(Ship));
 
     UpdateGridState();
     BroadcastEssenceChanged(PlayerID);
@@ -651,6 +676,7 @@ void AABoardGameMode::HandlePlaceExpert(ABoardPlayerController* playerInstigator
         UEffect* Inst = DuplicateObject<UEffect>(Template, motherShip);
         RuntimeEffects.Add(Inst);
     }
+    deckManager->PlayCard(PlayerID, CardData);
     effectManager->RegisterEffects(motherShip, RuntimeEffects);
 }
 
@@ -829,6 +855,34 @@ void AABoardGameMode::UpdateGridState()
 
             GS->UpdateCellState(FIntPoint(X, Y), RepCell);
         }
+    }
+}
+
+void AABoardGameMode::NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter)
+{
+    if (!effectManager || !IsValid(ShipDamaged))
+    {
+        return;
+    }
+
+    FEffectContext Context;
+    Context.OwnerPlayerID = turnManager->GetCurrentPlayer();
+    Context.TargetShip = ShipDamaged;
+    Context.DamageDealt = Shooter->GetFirePower();
+
+    effectManager->NotifyEvent(EEffectTrigger::OnDamageTaken, Context);
+}
+
+void AABoardGameMode::ActivateActiveEffect(AAShip* ShipSelected)
+{
+    TArray<UEffect*> ActiveEffect = effectManager->GetActivatableEffects(ShipSelected, turnManager->GetCurrentPlayer());
+    FEffectContext Context;
+    
+    Context.SourceShip = ShipSelected;
+    Context.OwnerPlayerID = turnManager->GetCurrentPlayer();
+    for (int i = 0; i < ActiveEffect.Num(); i++)
+    {
+        effectManager->ActivateEffect(ActiveEffect[i], Context);
     }
 }
 

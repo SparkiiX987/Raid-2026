@@ -77,7 +77,7 @@ public:
 	bool IsMothershipCell(FIntPoint Pos, int32 ShooterPlayerID) const;
 
 	UFUNCTION(BlueprintPure)
-	TArray<FIntPoint> GetFreeSpawnCells(int32 PlayerID) const;
+	TArray<FIntPoint> GetFreeSpawnCells(int32 PlayerID, UUCardData* CardData) const;
 
 	UFUNCTION(BlueprintCallable)
 	TArray<FReachableCell> GetReachableCells(AAShip* Ship, int32 AvailableEssence) const;
@@ -116,7 +116,12 @@ public:
 
 	void ClearOccupant(FIntPoint Pos);
 
-	static const TArray<FIntPoint> OrthoDirections;
+	TArray<FIntPoint> OrthoDirections {
+		FIntPoint(1, 0),
+	FIntPoint(-1, 0),
+	FIntPoint(0, 1),
+	FIntPoint(0, -1)
+	};
 };
 
 

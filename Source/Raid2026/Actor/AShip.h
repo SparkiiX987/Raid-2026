@@ -23,6 +23,9 @@ class RAID2026_API AAShip : public AABoardActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		EShipState State = EShipState::Hidden;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	int32 protection;
+
 	UFUNCTION(BlueprintCallable)
 		FCardStats GetEffectiveStats() const;
 
@@ -51,6 +54,15 @@ class RAID2026_API AAShip : public AABoardActor
 		void StopParalize();
 
 	void StopShip();
+	
+	UFUNCTION(BlueprintPure)
+	int32 GetFireCost() const;
+
+	UFUNCTION(BlueprintPure)
+	bool GetIfIsMovingInDiagonal() const;
+
+	UFUNCTION(BlueprintPure)
+	bool GetIfHeCanSpawnShipBesideHim() const;
 
 	UFUNCTION(BlueprintCallable)
 		void Reveal();
@@ -66,6 +78,15 @@ class RAID2026_API AAShip : public AABoardActor
 
 	UFUNCTION(BlueprintPure)
 		bool CanBePlayed() const;
+
+	UFUNCTION()
+	void ApplyBigCanon();
+
+	UFUNCTION()
+	void ApplyMoveInDiagonal();
+
+	UFUNCTION()
+	void ApplyCanSpawnShipBesideHim();
 
 	UFUNCTION()
 		void ApplyUpgrade(UUpgrade* upgrade);
@@ -93,7 +114,7 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void OnShipSelectedBP();
 	
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	    void OnShipUnselectedBP();
 
 	UFUNCTION()
@@ -123,6 +144,12 @@ protected:
 		bool bJustPlayed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	bool bPlayDiagonal;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	bool bCanSpawnShipBesideHim;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		int32 currentSpeed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
@@ -136,6 +163,8 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 		bool bIsParalized = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	int32 fireCost = 1;
 
 // UFUNCTION(BlueprintImplementableEvent)
 //  void SetHighlightState(EHighlightType Type);

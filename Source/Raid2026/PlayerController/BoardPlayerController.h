@@ -140,6 +140,10 @@ public:
             void ServerResolveSabotageTarget(int32 CardIndex);
             bool ServerResolveSabotageTarget_Validate(int32 CardIndex);
 
+    UFUNCTION(BlueprintCallable,Server, Reliable, WithValidation)
+    void ServerActivateActiveEffect(AAShip* ShipSelected);
+    bool ServerActivateActiveEffect_Validate(AAShip* ShipSelected);
+
 #pragma endregion
 
 #pragma region ClientMethodes
@@ -238,7 +242,10 @@ public:
         void OnCardPlayedBP();
 
     UFUNCTION(BlueprintImplementableEvent)
-        void OnShipSelectedBP(AAShip* Ship);
+        void OnShipSelectedBP(AAShip* Ship, bool bHaveActiveEffect);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void OnShipUnselectedBP(AAShip* Ship);
 
     UFUNCTION(BlueprintImplementableEvent)
         void OnSabotageTargetPromptBP(const TArray<UUCardData*>& Candidates);

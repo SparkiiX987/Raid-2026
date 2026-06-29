@@ -1,4 +1,5 @@
 ﻿#include "DeckManager.h"
+#include "EffectManager.h"
 
 void UDeckManager::InitializeDeck(int32 playerId, const TArray<UUCardData*>& CardList)
 {
@@ -98,8 +99,23 @@ bool UDeckManager::PlayCard(int32 playerId, UUCardData* card)
     State.Hand.RemoveAt(Index);
     OnCardPlayed.Broadcast(playerId, card);
 
+    NotifyOnPlayCardEffects(playerId, card);
     BroadcastHandUpdate(State);
     return true;
+}
+
+void UDeckManager::NotifyOnPlayCardEffects(int32 PlayerId, UUCardData* CardPlay)
+{
+    if (!effectManager || !IsValid(CardPlay))
+    {
+        return;
+    }
+
+    FEffectContext Context;
+    Context.OwnerPlayerID = PlayerId;
+    Context.CardPlay = CardPlay;
+
+    effectManager->NotifyEvent(EEffectTrigger::OnPlayCard, Context);
 }
 
 TArray<UUCardData*> UDeckManager::EnforceHandLimit(int32 playerId)

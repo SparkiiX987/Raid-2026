@@ -9,12 +9,14 @@ void AAShip::GetLifetimeReplicatedProps(
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AAShip, bJustPlayed);
+	DOREPLIFETIME(AAShip, bPlayDiagonal);
 	DOREPLIFETIME(AAShip, currentSpeed);
 	DOREPLIFETIME(AAShip, actions);
 	DOREPLIFETIME(AAShip, actionsPerTurn);
 	DOREPLIFETIME(AAShip, State);
 	DOREPLIFETIME(AAShip, bonusDamage);
 	DOREPLIFETIME(AAShip, RuntimeStats);
+	DOREPLIFETIME(AAShip, fireCost);
 }
 
 FCardStats AAShip::GetEffectiveStats() const
@@ -88,6 +90,21 @@ void AAShip::StopShip()
 	bJustPlayed = true;
 }
 
+int32 AAShip::GetFireCost() const
+{
+	return fireCost;
+}
+
+bool AAShip::GetIfIsMovingInDiagonal() const
+{
+	return bPlayDiagonal;
+}
+
+bool AAShip::GetIfHeCanSpawnShipBesideHim() const
+{
+	return bCanSpawnShipBesideHim;
+}
+
 void AAShip::Reveal()
 {
 	State = EShipState::Visible;
@@ -119,10 +136,32 @@ bool AAShip::CanBePlayed() const
 	return CanMove() || CanAct();
 }
 
+void AAShip::ApplyBigCanon()
+{
+	actionsPerTurn++;
+	fireCost++;
+}
+
+void AAShip::ApplyMoveInDiagonal()
+{
+	bPlayDiagonal = true;
+}
+
+void AAShip::ApplyCanSpawnShipBesideHim()
+{
+	bCanSpawnShipBesideHim = true;
+}
+
 void AAShip::TakeDamage(int32 amount)
 {
 	int32 remainingDamages = amount;
 
+	if (protection > 0)
+	{
+		remainingDamages -= protection;
+		protection -= amount;
+	}
+	
 	TArray<UUpgrade*> shieldsToDestroy;
 
 	for (UUpgrade* upgrade : upgrades)

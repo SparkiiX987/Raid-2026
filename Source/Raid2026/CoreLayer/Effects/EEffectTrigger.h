@@ -14,6 +14,7 @@ enum class EEffectTrigger : uint8
 	OnEnemyEntersPlay UMETA(DisplayName="On Enemy Enters Play"),
 	OnDamageTaken    UMETA(DisplayName="On Damage Taken"),
 	OnRefineryCapture UMETA(DisplayName="On Refinery Capture"),
+	OnPlayCard      UMETA(DisplayName="On Play Card"),
 	Activated        UMETA(DisplayName="Activated"),
 	Passive          UMETA(DisplayName="Passive")
 };
