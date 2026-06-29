@@ -25,6 +25,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 maxNumber;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TObjectPtr<UTexture2D> cardSplashArt;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "type==ECardType::SHIP"))
 		int32 shipClass;
 
