@@ -43,6 +43,11 @@ void ABoardPlayerController::ClientOnCardDiscarded_Implementation(UUCardData* Ca
     OnCardDiscardedBP(Card);
 }
 
+void ABoardPlayerController::ClientGetAllDiscardCards_Implementation(const TArray<UUCardData*>& CardDiscards)
+{
+    GetAllDiscardCardsBP(CardDiscards);
+}
+
 void ABoardPlayerController::ClearPendingActivation()
 {
     PendingActivationShip = nullptr;
@@ -214,24 +219,7 @@ void ABoardPlayerController::HandleShipSelected(AAShip* Ship)
     SelectedShip = Ship;
     PendingIntent = EActionIntent::MOVE;
     bWaitingForCellTarget = true;
-
-    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
-    if (!GM) return;
-
-    TArray<UEffect*> Effects = GM->effectManager->GetActivatableEffects(Ship, PlayerID);
-    bool bHaveActiveEffect = false;
-    if (Effects.Num() >= 0)
-    {
-        for (int i = 0; i < Effects.Num(); i++)
-        {
-            if (Effects[i]->Trigger == EEffectTrigger::Activated)
-            {
-                bHaveActiveEffect = true;
-            }
-        }
-    }
-    OnShipSelectedBP(Ship, bHaveActiveEffect);
-
+    
     ServerRequestActivatableEffects(Ship);
     ServerRequestReachableCells(Ship);
 }
@@ -265,6 +253,8 @@ void ABoardPlayerController::ServerActivateActiveEffect_Implementation(AAShip* S
 {
     AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
     if (!GM) return;
+
+    if (!ShipSelected->CanAct()) return;
     
     GM->ActivateActiveEffect(ShipSelected);
 }
@@ -309,12 +299,25 @@ void ABoardPlayerController::ServerRequestActivatableEffects_Implementation(AASh
 {
     AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
     if (!GM) return;
-
-    ClientReceiveActivatableEffects(GM->BuildActivatableInfos(this, Ship));
+    
+    TArray<UEffect*> Effects = GM->effectManager->GetActivatableEffects(Ship, PlayerID);
+    bool bHaveActiveEffect = false;
+    if (Effects.Num() >= 0)
+    {
+        for (int i = 0; i < Effects.Num(); i++)
+        {
+            if (Effects[i]->Trigger == EEffectTrigger::Activated)
+            {
+                bHaveActiveEffect = true;
+            }
+        }
+    }
+    ClientReceiveActivatableEffects(GM->BuildActivatableInfos(this, Ship), Ship, bHaveActiveEffect);
 }
 
-void ABoardPlayerController::ClientReceiveActivatableEffects_Implementation(const TArray<FActivatableEffectInfo>& Infos)
+void ABoardPlayerController::ClientReceiveActivatableEffects_Implementation(const TArray<FActivatableEffectInfo>& Infos, AAShip* Ship, bool bHaveActiveEffect)
 {
+    OnShipSelectedBP(Ship, bHaveActiveEffect);
     OnActivatableEffectsReceivedBP(Infos);
 }
 
@@ -453,6 +456,14 @@ bool ABoardPlayerController::ServerActivateEffect_Validate(AAShip* Ship, int32 E
     return IsValid(Ship) && EffectIndex >= 0;
 }
 
+void ABoardPlayerController::Server_GetAllDiscardsCards_Implementation(AAShip* Ship)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandleGetAllDiscardCards(this);
+}
+
 void ABoardPlayerController::ServerActivateEffect_Implementation(AAShip* Ship, int32 EffectIndex)
 {
     AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
@@ -541,6 +552,13 @@ void ABoardPlayerController::ServerRequestReachableCells_Implementation(
     if (!GM) return;
 
     TArray<FIntPoint> Reachable = GM->PathFinder->GetAllCellAroundShip(Ship);
+
+    if (GEngine)
+    {
+        FString text = FString::Printf(TEXT("message %d"), Reachable.Num());
+
+        GEngine->AddOnScreenDebugMessage(-1, 1500.0f, FColor::Blue, text);
+    }
 
     ClientOnReachableCells(Reachable);
 }
