@@ -124,12 +124,6 @@ FIntPoint AABoardVisualiser::WorldToGrid(FVector WorldPos) const
 
 void AABoardVisualiser::HighlightCells(TArray<FIntPoint> Cells)
 {
-	if (GEngine)
-	{
-		FString text = FString::Printf(TEXT("message %d"), Cells.Num());
-
-		GEngine->AddOnScreenDebugMessage(-1, 1500.0f, FColor::Blue, text);
-	}
 	for (int i = 0; i < Cells.Num(); i++)
 	{
 		AABoardCell* cell = GetCellActor(Cells[i]);

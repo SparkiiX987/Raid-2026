@@ -17,6 +17,7 @@ void AAShip::GetLifetimeReplicatedProps(
 	DOREPLIFETIME(AAShip, bonusDamage);
 	DOREPLIFETIME(AAShip, RuntimeStats);
 	DOREPLIFETIME(AAShip, fireCost);
+	DOREPLIFETIME(AAShip, bIsParalized);
 }
 
 FCardStats AAShip::GetEffectiveStats() const
@@ -81,7 +82,7 @@ void AAShip::StopParalize()
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
 	}
 	bIsParalized = false;
-	bJustPlayed = true;
+	//bJustPlayed = true;
 	OnParalizeStopBP();
 }
 
@@ -218,14 +219,6 @@ void AAShip::TakeDamage(int32 amount)
 
 void AAShip::ApplyUpgrade(UUpgrade* upgrade)
 {
-	if (GEngine)
-	{
-		FString text = FString::Printf(TEXT("Upgrade "));
-		text += upgrade->SourceCard->cardName += " added on ship ";
-		text += CardData->cardName;
-		
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, text);
-	}
 	upgrades.Add(upgrade);
 
 	int32 shield = maxHealthPoint * upgrade->ShieldHealthRatio;
@@ -238,14 +231,6 @@ void AAShip::ApplyUpgrade(UUpgrade* upgrade)
 
 void AAShip::RemoveUpgrade(UUpgrade* upgrade)
 {
-	if (GEngine)
-	{
-		FString text = FString::Printf(TEXT("Upgrade "));
-		text += upgrade->SourceCard->cardName += " removed on ship ";
-		text += CardData->cardName;
-
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
-	}
 	upgrades.Remove(upgrade);
 
 	bonusHealth -= upgrade->EffectiveShieldHealth;
@@ -257,15 +242,33 @@ void AAShip::RemoveUpgrade(UUpgrade* upgrade)
 
 void AAShip::ResetTurnFlags()
 {
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Is Paralized : %d"), IsParalized());
+
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Purple, text);
+	}
+
 	if (IsParalized())
 	{
 		StopParalize();
 		return;
 	}
 
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Set can move for ship : "));
+		text += GetName();
+		text += " of player ";
+		text += FString::FromInt(ownerPlayer);
+
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Purple, text);
+	}
+
 	actions = actionsPerTurn;
 	bJustPlayed = false;
 	currentSpeed = GetMaxSpeed();
+	CanBePlayed();
 }
 
 void AAShip::NotifyEffectTrigger(EEffectTrigger Trigger)
@@ -331,4 +334,14 @@ void AAShip::Die_Implementation()
 {
 	Super::Die_Implementation();
 	
+}
+
+void AAShip::OnRep_TurnFlags()
+{
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green,
+			FString::Printf(TEXT("OnRep_TurnFlags: %s | bJustPlayed=%d | speed=%d | actions=%d"),
+				*GetName(), bJustPlayed, currentSpeed, actions));
+	}
 }

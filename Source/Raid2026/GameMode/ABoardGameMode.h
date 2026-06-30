@@ -154,6 +154,8 @@ public:
 	bool ValidateShipOwnership(ABoardPlayerController* playerInstigator, AAShip* Ship) const;
 
 	void RejectAction(ABoardPlayerController* playerInstigator, const FString& Reason) const;
+	
+	bool CanShipPlay(AAShip* ship) const;
 
 	UFUNCTION(BlueprintCallable)
 		void BroadcastTurnStarted(int32 PlayerId);

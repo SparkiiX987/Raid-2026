@@ -89,7 +89,7 @@ void ABoardPlayerController::ClickOnShip(AAShip* Ship)
         {
             ServerUpgrade(Ship, PendingCardData);
         }
-        else if (Ship->CanBePlayed())
+        else
         {
             HandleShipSelected(Ship);
         }
@@ -299,6 +299,8 @@ void ABoardPlayerController::ServerRequestActivatableEffects_Implementation(AASh
 {
     AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
     if (!GM) return;
+
+    if (!GM->CanShipPlay(Ship)) return;
     
     TArray<UEffect*> Effects = GM->effectManager->GetActivatableEffects(Ship, PlayerID);
     bool bHaveActiveEffect = false;
@@ -552,13 +554,6 @@ void ABoardPlayerController::ServerRequestReachableCells_Implementation(
     if (!GM) return;
 
     TArray<FIntPoint> Reachable = GM->PathFinder->GetAllCellAroundShip(Ship);
-
-    if (GEngine)
-    {
-        FString text = FString::Printf(TEXT("message %d"), Reachable.Num());
-
-        GEngine->AddOnScreenDebugMessage(-1, 1500.0f, FColor::Blue, text);
-    }
 
     ClientOnReachableCells(Reachable);
 }

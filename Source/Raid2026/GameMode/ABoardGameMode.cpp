@@ -935,6 +935,11 @@ void AABoardGameMode::RejectAction(
         playerInstigator->ClientOnActionRejected(Reason);
 }
 
+bool AABoardGameMode::CanShipPlay(AAShip* ship) const
+{
+    return ship->CanBePlayed();
+}
+
 
 void AABoardGameMode::CheckVictoryConditions()
 {

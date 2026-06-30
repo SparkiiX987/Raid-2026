@@ -45,7 +45,7 @@ void UUTurnManager::StartTurn(int32 playerId)
             for (int32 Y = 0; Y < UUBoardManager::GridHeight + 2; ++Y)
             {
                 AAShip* Ship = boardManager->GetShipAt(FIntPoint(X, Y));
-                if (IsValid(Ship)/* && Ship->GetOwnerID() == playerId*/)
+                if (IsValid(Ship) && Ship->GetOwnerID() == playerId)
                 {
                     Ship->ResetTurnFlags();
                 }
