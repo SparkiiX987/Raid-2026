@@ -133,6 +133,12 @@ bool AAShip::CanAct() const
 
 bool AAShip::CanBePlayed() const
 {
+	if (GEngine)
+	{
+		FString text = FString::Printf(TEXT("Can Move : %d, Can Act : %d, Just Played : %d"), CanMove(), CanAct(), bJustPlayed);
+
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, text);
+	}
 	return CanMove() || CanAct();
 }
 

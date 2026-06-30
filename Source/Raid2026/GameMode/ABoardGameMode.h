@@ -64,6 +64,8 @@ public:
 
 	void HandleActivateEffect(ABoardPlayerController* PC, AAShip* Ship, int32 EffectIndex);
 
+	void HandleGetAllDiscardCards(ABoardPlayerController* PlayerInstigator);
+
 	UFUNCTION()
 		void HandleCardDiscarded(int32 PlayerId, UUCardData* Card);
 
