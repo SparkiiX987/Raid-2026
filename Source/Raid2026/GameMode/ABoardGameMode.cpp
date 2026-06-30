@@ -327,6 +327,13 @@ void AABoardGameMode::HandleActivateEffect(ABoardPlayerController* PC, AAShip* S
     FinalizeActivation(PC, Ship);
 }
 
+void AABoardGameMode::HandleGetAllDiscardCards(ABoardPlayerController* PlayerInstigator)
+{
+    const TArray<UUCardData*> DiscardCards = deckManager->GetDiscard(PlayerInstigator->PlayerID);
+
+    PlayerInstigator->ClientGetAllDiscardCards(DiscardCards);
+}
+
 void AABoardGameMode::ResolveActivationTarget(ABoardPlayerController* PC, AAShip* TargetShip)
 {
     AAShip* Ship = PC->PendingActivationShip;
@@ -884,6 +891,7 @@ void AABoardGameMode::ActivateActiveEffect(AAShip* ShipSelected)
     {
         effectManager->ActivateEffect(ActiveEffect[i], Context);
     }
+    BroadcastEssenceChanged(turnManager->GetCurrentPlayer());
 }
 
 void AABoardGameMode::BroadcastFireResult(const FFireResult& Result)
@@ -925,6 +933,11 @@ void AABoardGameMode::RejectAction(
 {
     if (playerInstigator)
         playerInstigator->ClientOnActionRejected(Reason);
+}
+
+bool AABoardGameMode::CanShipPlay(AAShip* ship) const
+{
+    return ship->CanBePlayed();
 }
 
 

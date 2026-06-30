@@ -103,6 +103,9 @@ public:
         UFUNCTION(BlueprintCallable, Server, Reliable)
             void Server_RevealShip(AAShip* Ship);
 
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    void Server_GetAllDiscardsCards(AAShip* Ship);
+
         UFUNCTION(Server, Reliable, WithValidation)
             void ServerUpgrade(AAShip* Ship, UUCardData* Card);
             bool ServerUpgrade_Validate(AAShip* Ship, UUCardData* Card);
@@ -152,7 +155,7 @@ public:
         void ClientOnReachableCells(const TArray<FIntPoint>& Cells);
 
     UFUNCTION(Client, Reliable)
-        void ClientReceiveActivatableEffects(const TArray<FActivatableEffectInfo>& Infos);
+        void ClientReceiveActivatableEffects(const TArray<FActivatableEffectInfo>& Infos, AAShip* Ship, bool bHaveActiveEffect);
 
     UFUNCTION(Client, Reliable)
         void ClientPromptEffectTarget(EEffectTargetKind Kind);
@@ -195,6 +198,9 @@ public:
 
     UFUNCTION(Client, Reliable)
         void ClientOnCardDiscarded(UUCardData* Card);
+
+    UFUNCTION(Client, Reliable)
+    void ClientGetAllDiscardCards(const TArray<UUCardData*>& CardDiscards);
 
     UFUNCTION(BlueprintCallable, Client, Reliable)
         void ClientClearSelection();
@@ -255,6 +261,9 @@ public:
 
     UFUNCTION(BlueprintImplementableEvent)
         void OnClearSelectionBP();
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void GetAllDiscardCardsBP(const TArray<UUCardData*>& CardDiscards);
 
 #pragma endregion
 

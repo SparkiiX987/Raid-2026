@@ -139,8 +139,11 @@ class RAID2026_API AAShip : public AABoardActor
 	UFUNCTION(BlueprintImplementableEvent)
 		void PlayRevealAnimation();
 
+	UFUNCTION()
+		void OnRep_TurnFlags();
+
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_TurnFlags)
 		bool bJustPlayed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
@@ -149,19 +152,19 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 	bool bCanSpawnShipBesideHim;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_TurnFlags)
 		int32 currentSpeed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		int32 bonusDamage;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_TurnFlags)
 		int32 actions;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		int32 actionsPerTurn = 1;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Replicated)
 		bool bIsParalized = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 	int32 fireCost = 1;

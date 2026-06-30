@@ -64,6 +64,8 @@ public:
 
 	void HandleActivateEffect(ABoardPlayerController* PC, AAShip* Ship, int32 EffectIndex);
 
+	void HandleGetAllDiscardCards(ABoardPlayerController* PlayerInstigator);
+
 	UFUNCTION()
 		void HandleCardDiscarded(int32 PlayerId, UUCardData* Card);
 
@@ -152,6 +154,8 @@ public:
 	bool ValidateShipOwnership(ABoardPlayerController* playerInstigator, AAShip* Ship) const;
 
 	void RejectAction(ABoardPlayerController* playerInstigator, const FString& Reason) const;
+	
+	bool CanShipPlay(AAShip* ship) const;
 
 	UFUNCTION(BlueprintCallable)
 		void BroadcastTurnStarted(int32 PlayerId);
