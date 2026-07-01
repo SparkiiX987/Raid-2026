@@ -64,7 +64,9 @@ public:
 
 	void HandleActivateEffect(ABoardPlayerController* PC, AAShip* Ship, int32 EffectIndex);
 
-	void HandleGetAllDiscardCards(ABoardPlayerController* PlayerInstigator);
+	void HandleGetAllDiscardCards(ABoardPlayerController* PlayerInstigator, bool bIsPlayerDiscardDeck);
+	
+	void HandleReviveCard(ABoardPlayerController* PlayerInstigator, int32 CardIndexInDump);
 
 	UFUNCTION()
 		void HandleCardDiscarded(int32 PlayerId, UUCardData* Card);
@@ -164,6 +166,9 @@ public:
 	void SyncHandToPlayer(int32 PlayerId);
 
 	void UpdateGridState();
+
+	UFUNCTION()
+		void OnMothershipDamaged();
 
 	UFUNCTION()
 	void NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter);

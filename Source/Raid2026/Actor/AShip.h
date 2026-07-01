@@ -127,6 +127,9 @@ class RAID2026_API AAShip : public AABoardActor
 		void OnActBP();
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void OnGetADiscardCardBP(const TArray<ECardType>& Cards);
+
+	UFUNCTION(BlueprintImplementableEvent)
 		void OnParalizeStartBP();
 
 	UFUNCTION(BlueprintImplementableEvent)

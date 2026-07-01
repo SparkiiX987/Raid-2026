@@ -104,7 +104,7 @@ public:
             void Server_RevealShip(AAShip* Ship);
 
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void Server_GetAllDiscardsCards(AAShip* Ship);
+    void Server_GetAllDiscardsCards(bool bIsPlayerDiscardDeck);
 
         UFUNCTION(Server, Reliable, WithValidation)
             void ServerUpgrade(AAShip* Ship, UUCardData* Card);
@@ -146,6 +146,10 @@ public:
     UFUNCTION(BlueprintCallable,Server, Reliable, WithValidation)
     void ServerActivateActiveEffect(AAShip* ShipSelected);
     bool ServerActivateActiveEffect_Validate(AAShip* ShipSelected);
+
+    UFUNCTION(BlueprintCallable,Server, Reliable, WithValidation)
+    void ServerReviveCard(int32 cardIndexInDump);
+    bool ServerReviveCard_Validate(int32 cardIndexInDump);
 
 #pragma endregion
 
@@ -207,6 +211,9 @@ public:
 
     void ClearPendingActivation();
 
+    UFUNCTION(Client, Reliable)
+        void ClientMothershipHealthChanged(int32 ownMothership, int32 enemyMothership);
+
 #pragma endregion
 
 #pragma region BlueprintImplementableEvents
@@ -263,7 +270,10 @@ public:
         void OnClearSelectionBP();
 
     UFUNCTION(BlueprintImplementableEvent)
-    void GetAllDiscardCardsBP(const TArray<UUCardData*>& CardDiscards);
+        void GetAllDiscardCardsBP(const TArray<UUCardData*>& CardDiscards);
+
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnMothershipHealthChangedBP(int32 ownMothership, int32 enemyMothership);
 
 #pragma endregion
 
@@ -302,6 +312,12 @@ public:
         int32 PendingActivationEffectIndex = -1;
 
         bool bWaitingForCellTarget = false;
+
+    UPROPERTY(BlueprintReadWrite, Replicated)
+    bool bIsRevivingACard = false;
+
+    UPROPERTY(BlueprintReadWrite, Replicated)
+    TArray<ECardType> TypeOfCardsThatCanBeRevive;
 
 #pragma endregion
 
