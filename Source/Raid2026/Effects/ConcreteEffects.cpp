@@ -297,6 +297,44 @@ FEffectResult UEffect_ActivatedDraw::Apply_Implementation(const FEffectContext& 
     return Out;
 }
 
+FEffectResult UEffect_ActivatedResuscitationOfCard::Apply_Implementation(const FEffectContext& Context)
+{
+    if (!Context.Turn || !Context.Deck)
+        return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
+
+    AAShip* Ship = Cast<AAShip>(Context.SourceShip.Get());
+
+    if (!Ship) return FEffectResult::Fail(TEXT("Pas de vaisseau"));
+
+    if (!Ship->CanAct()) return FEffectResult::Fail(TEXT("peut pas agir"));
+
+    TArray<UUCardData*> AllDiscardCardOfThePlayer = Context.Deck->GetDeckState(Context.OwnerPlayerID).Discard;
+
+    bool bHaveACardThatCanBeRevive = false;
+
+    for (UUCardData* Card : AllDiscardCardOfThePlayer)
+    {
+        if (TypeOfCardRecoverable.Contains(Card->type))
+        {
+            bHaveACardThatCanBeRevive = true;
+            break;
+        }
+    }
+
+    if (!bHaveACardThatCanBeRevive) return FEffectResult::Fail(TEXT("Pas de carte reanimable"));
+    
+    const bool bPaid = Context.Turn->PayEssence(Context.OwnerPlayerID, EssenceCost);
+    if (!bPaid)
+        return FEffectResult::Fail(TEXT("ActivatedDraw: Paiement échoué"));
+    
+    FEffectResult Out = FEffectResult::Success();
+
+    Ship->OnGetADiscardCardBP(TypeOfCardRecoverable);
+    Ship->OnAct();
+    
+    return Out;
+}
+
 bool UEffect_ActivatedPush::CanApply_Implementation(const FEffectContext& Context) const
 {
     return Super::CanApply_Implementation(Context);

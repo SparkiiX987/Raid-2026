@@ -104,7 +104,7 @@ public:
             void Server_RevealShip(AAShip* Ship);
 
     UFUNCTION(BlueprintCallable, Server, Reliable)
-    void Server_GetAllDiscardsCards(AAShip* Ship);
+    void Server_GetAllDiscardsCards(bool bIsPlayerDiscardDeck);
 
         UFUNCTION(Server, Reliable, WithValidation)
             void ServerUpgrade(AAShip* Ship, UUCardData* Card);
@@ -146,6 +146,10 @@ public:
     UFUNCTION(BlueprintCallable,Server, Reliable, WithValidation)
     void ServerActivateActiveEffect(AAShip* ShipSelected);
     bool ServerActivateActiveEffect_Validate(AAShip* ShipSelected);
+
+    UFUNCTION(BlueprintCallable,Server, Reliable, WithValidation)
+    void ServerReviveCard(int32 cardIndexInDump);
+    bool ServerReviveCard_Validate(int32 cardIndexInDump);
 
 #pragma endregion
 
@@ -302,6 +306,12 @@ public:
         int32 PendingActivationEffectIndex = -1;
 
         bool bWaitingForCellTarget = false;
+
+    UPROPERTY(BlueprintReadWrite, Replicated)
+    bool bIsRevivingACard = false;
+
+    UPROPERTY(BlueprintReadWrite, Replicated)
+    TArray<ECardType> TypeOfCardsThatCanBeRevive;
 
 #pragma endregion
 

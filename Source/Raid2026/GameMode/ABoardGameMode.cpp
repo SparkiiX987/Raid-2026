@@ -327,11 +327,32 @@ void AABoardGameMode::HandleActivateEffect(ABoardPlayerController* PC, AAShip* S
     FinalizeActivation(PC, Ship);
 }
 
-void AABoardGameMode::HandleGetAllDiscardCards(ABoardPlayerController* PlayerInstigator)
+void AABoardGameMode::HandleGetAllDiscardCards(ABoardPlayerController* PlayerInstigator, bool bIsPlayerDiscardDeck)
 {
-    const TArray<UUCardData*> DiscardCards = deckManager->GetDiscard(PlayerInstigator->PlayerID);
+    TArray<UUCardData*> DiscardCards;
+    if (bIsPlayerDiscardDeck)
+    {
+        DiscardCards = deckManager->GetDiscard(PlayerInstigator->PlayerID);
+    }
+    else
+    {
+        if (PlayerInstigator->PlayerID == 0)
+        {
+            DiscardCards = deckManager->GetDiscard(1);
+        }
+        else
+        {
+            DiscardCards = deckManager->GetDiscard(0);
+        }
+    }
 
     PlayerInstigator->ClientGetAllDiscardCards(DiscardCards);
+}
+
+void AABoardGameMode::HandleReviveCard(ABoardPlayerController* PlayerInstigator, int32 CardIndexInDump)
+{
+    PlayerInstigator->bIsRevivingACard = false;
+    deckManager->ReviveCard(PlayerInstigator->PlayerID, CardIndexInDump);
 }
 
 void AABoardGameMode::ResolveActivationTarget(ABoardPlayerController* PC, AAShip* TargetShip)
@@ -528,6 +549,12 @@ void AABoardGameMode::HandleFireAt(
         return;
     }
 
+    if (Result.bShipDestroyed)
+    {
+        if (PlayerID == 0) deckManager->SendPlayedCardToDiscard(1, Result.HitShip.Get()->CardData);
+        else deckManager->SendPlayedCardToDiscard(0, Result.HitShip.Get()->CardData);
+    }
+
     Shooter->OnAct();
     BroadcastFireResult(Result);
     BroadcastEssenceChanged(PlayerID);
@@ -675,7 +702,9 @@ void AABoardGameMode::HandlePlaceExpert(ABoardPlayerController* playerInstigator
         GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, text);
     }
     playerInstigator->ClientOnPlayCard();
-
+    
+    deckManager->DiscardCard(PlayerID, CardData);
+    
     TArray<UEffect*> RuntimeEffects;
     for (const TObjectPtr<UEffect>& Template : CardData->Effects)
     {
@@ -721,6 +750,8 @@ void AABoardGameMode::HandlePlaceUpgrade(ABoardPlayerController* playerInstigato
     CardData->Upgrade->SourceCard = CardData;
     upgradesManager.Get()->AddUpgrade(ship, CardData->Upgrade);
     playerInstigator->ClientOnPlayCard();
+
+    deckManager->DiscardCard(PlayerID, CardData);
 }
 
 void AABoardGameMode::HandleRemoveUpgrade(UUpgrade* upgrade, AAShip* ship)
