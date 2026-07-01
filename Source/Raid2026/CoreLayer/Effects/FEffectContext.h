@@ -29,6 +29,9 @@ struct FEffectContext
 	FIntPoint TargetCell;
 
 	UPROPERTY(BlueprintReadWrite)
+	FIntPoint OldPos;
+
+	UPROPERTY(BlueprintReadWrite)
 	TArray<FIntPoint> Directions {
 		FIntPoint(1, 0),
 	FIntPoint(-1, 0),

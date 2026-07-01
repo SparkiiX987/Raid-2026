@@ -223,10 +223,12 @@ void AABoardGameMode::HandleMoveShip(
         return;
     }
 
+    FIntPoint OldPos = Ship->gridPosition;
+
     Ship->OnMove(Distance);
     boardManager->MoveShipTo(Ship, PathToTake);
 
-    NotifyOnMoveShip(Ship);
+    NotifyOnMoveShip(Ship, OldPos);
     
     if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery
         && effectManager->CanCaptureRefinery(Ship))
@@ -928,7 +930,7 @@ void AABoardGameMode::NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter)
     effectManager->NotifyEvent(EEffectTrigger::OnDamageTaken, Context);
 }
 
-void AABoardGameMode::NotifyOnMoveShip(AAShip* ShipMove)
+void AABoardGameMode::NotifyOnMoveShip(AAShip* ShipMove, FIntPoint OldPos)
 {
     if (!effectManager || !IsValid(ShipMove))
     {
@@ -938,6 +940,7 @@ void AABoardGameMode::NotifyOnMoveShip(AAShip* ShipMove)
     FEffectContext Context;
     Context.OwnerPlayerID = turnManager->GetCurrentPlayer();
     Context.TargetShip = ShipMove;
+    Context.OldPos = OldPos;
 
     effectManager->NotifyEvent(EEffectTrigger::OnMoveShip, Context);
 }

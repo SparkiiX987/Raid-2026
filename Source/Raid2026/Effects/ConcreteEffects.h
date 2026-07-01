@@ -138,7 +138,8 @@ class RAID2026_API UEffect_GetResistanceFromInferiorShipClass : public UTriggere
 public:
     UEffect_GetResistanceFromInferiorShipClass()
     {
-        Trigger = EEffectTrigger::OnStartOfTurn;
+        Trigger = EEffectTrigger::OnMoveShip;
+        EffectMaxHealth = ResistanceToWin;
         DisplayName = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inferieur à %d est adjacent, Tornade-V model L gagne +%d de resistance"), InferiorClassShip,ResistanceToWin));
         Description = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inferieur à %d est adjacent, Tornade-V model L gagne +%d de resistance"), InferiorClassShip,ResistanceToWin));
     }
@@ -162,7 +163,7 @@ class RAID2026_API UEffect_GiveResistanceToInferiorShipClass : public UTriggered
 public:
     UEffect_GiveResistanceToInferiorShipClass()
     {
-        Trigger = EEffectTrigger::OnStartOfTurn;
+        Trigger = EEffectTrigger::OnMoveShip;
         DisplayName = FText::FromString(FString::Printf(TEXT("Chaque vaisseau de classe inférieur a %d adjacent gagne +%d de resistance "), InferiorClassShip,ResistanceToGive));
         Description = FText::FromString(FString::Printf(TEXT("Chaque vaisseau de classe inférieur a %d adjacent gagne +%d de resistance "), InferiorClassShip,ResistanceToGive));
     }

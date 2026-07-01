@@ -150,12 +150,12 @@ FEffectResult UEffect_GetResistanceFromInferiorShipClass::Apply_Implementation(c
         {
             if (Ship->GetOwnerID() == Context.OwnerPlayerID && Ship->CardData->shipClass < InferiorClassShip)
             {
-                Context.SourceShip->Heal(ResistanceToWin);
+                Context.SourceShip->bHaveEffectHealthActive = true;
                 return FEffectResult::Success();
             }
         }
     }
-    
+    Context.SourceShip->bHaveEffectHealthActive = false;
     return FEffectResult::Fail(TEXT("Pas de vaisseau de classe inferieur a 3 a proximité"));
 }
 
@@ -166,6 +166,21 @@ FEffectResult UEffect_GiveResistanceToInferiorShipClass::Apply_Implementation(co
 
     TArray<AAShip*> InferiorClassShipClose;
 
+    TArray<AAShip*> InferiorClassShipCloseBefore;
+
+    for (const FIntPoint& Direction : Context.Directions)
+    {
+        const FIntPoint NewCell = Context.OldPos + Direction;
+
+        if (AAShip* Ship = Cast<AAShip>(Context.Board->GetCell(NewCell).Occupant))
+        {
+            if (Ship->GetOwnerID() == Context.OwnerPlayerID && Ship->CardData->shipClass < InferiorClassShip)
+            {
+                InferiorClassShipCloseBefore.Add(Ship);
+            }
+        }
+    }
+    
     for (const FIntPoint& Direction : Context.Directions)
     {
         const FIntPoint NewCell = Context.SourceShip->gridPosition + Direction;
@@ -179,6 +194,14 @@ FEffectResult UEffect_GiveResistanceToInferiorShipClass::Apply_Implementation(co
         }
     }
 
+    if (InferiorClassShipCloseBefore.Num() > 0)
+    {
+        for (int i = 0; i < InferiorClassShipCloseBefore.Num(); i++)
+        {
+            InferiorClassShipCloseBefore[i]->bHaveEffectHealthActive = false;
+        }
+    }
+
     if (InferiorClassShipClose.Num() <= 0)
     {
         return FEffectResult::Fail(TEXT("Pas de vaisseau de classe inferieur a 3 a proximité"));
@@ -186,7 +209,12 @@ FEffectResult UEffect_GiveResistanceToInferiorShipClass::Apply_Implementation(co
 
     for (int i = 0; i < InferiorClassShipClose.Num(); i++)
     {
-        InferiorClassShipClose[i]->Heal(ResistanceToGive);
+        InferiorClassShipClose[i]->bHaveEffectHealthActive = true;
+        if (InferiorClassShipClose[i]->EffectMaxHealth == 0)
+        {
+            InferiorClassShipClose[i]->EffectMaxHealth = ResistanceToGive;
+            InferiorClassShipClose[i]->EffectCurrentHealth = ResistanceToGive;
+        }
     }
     
     return FEffectResult::Success();
