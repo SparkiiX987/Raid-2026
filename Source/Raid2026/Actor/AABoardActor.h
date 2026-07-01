@@ -29,6 +29,16 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
 		int32 bonusHealth;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	int32 EffectMaxHealth;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	int32 EffectCurrentHealth;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	bool bHaveEffectHealthActive;
+	
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
 		int32 ownerPlayer;

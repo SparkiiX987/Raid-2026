@@ -119,12 +119,17 @@ FEffectResult UEffect_WinResistanceWhenControl::Apply_Implementation(const FEffe
     if (!Context.Turn || !Context.Deck)
         return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
 
+    if (Context.SourceShip != Context.TargetShip)
+    {
+        return FEffectResult::Fail(TEXT("Pas le bon vaisseau"));
+    }
+    
     if (Context.Board->Grid[Context.SourceShip->gridPosition.X][Context.SourceShip->gridPosition.Y].refinery == nullptr)
     {
+        Context.SourceShip->bHaveEffectHealthActive = false;
         return FEffectResult::Fail(TEXT("Pas sur une raffinerie"));
     }
-    Context.SourceShip->Heal(2);
-    
+    Context.SourceShip->bHaveEffectHealthActive = true;
     
     FEffectResult Out = FEffectResult::Success();
     Out.IntValue = ResistanceToWin;

@@ -35,6 +35,12 @@ void UEffectManager::RegisterEffects(AABoardActor* Ship,
         if (Effect && !Existing.Effects.Contains(Effect))
         {
             Existing.Effects.Add(Effect);
+            if (Effect->EffectMaxHealth > 0)
+            {
+                AAShip* Ships = Cast<AAShip>(Ship);
+                Ships->EffectMaxHealth = Effect->EffectMaxHealth;
+                Ships->EffectCurrentHealth = Ships->EffectMaxHealth;
+            }
         }
     }
 

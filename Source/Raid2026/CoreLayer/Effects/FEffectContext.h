@@ -46,6 +46,12 @@ struct FEffectContext
 	int32 DamageDealt;
 
 	UPROPERTY(BlueprintReadWrite)
+	int32 EffectMaxHealth;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 EffectCurrentHealth;
+
+	UPROPERTY(BlueprintReadWrite)
 	TWeakObjectPtr<UUCardData> discardedCard;
 
 	UPROPERTY(BlueprintReadWrite)
