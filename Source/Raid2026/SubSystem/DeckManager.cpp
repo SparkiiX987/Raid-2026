@@ -190,6 +190,18 @@ FPlayerDeckState UDeckManager::GetDeckState(int32 playerId) const
     return State ? *State : FPlayerDeckState{};
 }
 
+void UDeckManager::ReviveCard(int32 playerId, int32 cardIndex)
+{
+    FPlayerDeckState& State = GetOrCreateState(playerId);
+
+    UUCardData* CardToRevive = State.Discard[cardIndex];
+    State.Discard.RemoveAt(cardIndex);
+    State.Hand.Add(CardToRevive);
+    
+
+    OnCardDrawn.Broadcast(State.playerId, CardToRevive);
+}
+
 void UDeckManager::ShuffleDeck(TArray<UUCardData*>& deck)
 {
     const int32 N = deck.Num();

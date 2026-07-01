@@ -272,6 +272,30 @@ public:
 };
 
 UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
+class RAID2026_API UEffect_ActivatedResuscitationOfCard : public UActivatedEffect
+{
+    GENERATED_BODY()
+
+public:
+    UEffect_ActivatedResuscitationOfCard()
+    {
+        Trigger = EEffectTrigger::Activated;
+        EssenceCost = 5;
+        DisplayName = FText::FromString(FString::Printf(TEXT("Payer %d essence : recupérer une carte vaisseau ou amelioration depuis la décharge"), EssenceCost));
+        Description = FText::FromString(FString::Printf(TEXT("Payer %d essence : recupérer une carte vaisseau ou amelioration depuis la décharge"), EssenceCost));
+    }
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Draw",
+        meta = (ClampMin = 1, ClampMax = 3))
+    int32 DrawCount = 1;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|TypeOfCard")
+    TArray<ECardType> TypeOfCardRecoverable = {ECardType::SHIP,ECardType::UPGRADE};
+
+    virtual FEffectResult Apply_Implementation(const FEffectContext& Context) override;
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew, DefaultToInstanced)
 class RAID2026_API UEffect_ActivatedPush : public UActivatedEffect
 {
     GENERATED_BODY()

@@ -76,6 +76,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 		FPlayerDeckState GetDeckState(int32 playerId) const;
+	
+	UFUNCTION()
+	void ReviveCard(int32 playerId, int32 cardIndex);
 
 	UFUNCTION()
 	void NotifyOnPlayCardEffects(int32 playerId, UUCardData* card);

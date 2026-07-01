@@ -264,6 +264,19 @@ bool ABoardPlayerController::ServerActivateActiveEffect_Validate(AAShip* ShipSel
     return IsValid(ShipSelected);
 }
 
+void ABoardPlayerController::ServerReviveCard_Implementation(int32 cardIndexInDump)
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    GM->HandleReviveCard(this,cardIndexInDump);
+}
+
+bool ABoardPlayerController::ServerReviveCard_Validate(int32 cardIndexInDump)
+{
+    return cardIndexInDump >= 0;
+}
+
 void ABoardPlayerController::ServerResolveSabotageTarget_Implementation(int32 CardIndex)
 {
     AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
@@ -458,12 +471,12 @@ bool ABoardPlayerController::ServerActivateEffect_Validate(AAShip* Ship, int32 E
     return IsValid(Ship) && EffectIndex >= 0;
 }
 
-void ABoardPlayerController::Server_GetAllDiscardsCards_Implementation(AAShip* Ship)
+void ABoardPlayerController::Server_GetAllDiscardsCards_Implementation(bool bIsPlayerDiscardDeck)
 {
     AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
     if (!GM) return;
 
-    GM->HandleGetAllDiscardCards(this);
+    GM->HandleGetAllDiscardCards(this,bIsPlayerDiscardDeck);
 }
 
 void ABoardPlayerController::ServerActivateEffect_Implementation(AAShip* Ship, int32 EffectIndex)
