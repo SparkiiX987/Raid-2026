@@ -99,6 +99,11 @@ void AABoardGameMode::StartGame()
         }
     }
 
+    for (auto& [ID, PC] : connectedPlayers)
+    {
+        PC->ClientMothershipHealthChanged(boardManager->Motherships[ID]->currentHealthPoint, boardManager->Motherships[turnManager->GetOpponent(ID)]->currentHealthPoint);
+    }
+
     turnManager->StartTurn(0);
     OnInitialisationFinishedBP();
 }
@@ -509,6 +514,8 @@ void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInsti
         OnVictoryConditionMet(playerInstigator->PlayerID);
         return;
     }
+
+    OnMothershipDamaged();
 }
 
 void AABoardGameMode::HandleFireAt(
@@ -893,6 +900,14 @@ void AABoardGameMode::UpdateGridState()
 
             GS->UpdateCellState(FIntPoint(X, Y), RepCell);
         }
+    }
+}
+
+void AABoardGameMode::OnMothershipDamaged()
+{
+    for (auto& [ID, PC] : connectedPlayers)
+    {
+        PC->ClientMothershipHealthChanged(boardManager->Motherships[ID]->currentHealthPoint, boardManager->Motherships[turnManager->GetOpponent(ID)]->currentHealthPoint);
     }
 }
 

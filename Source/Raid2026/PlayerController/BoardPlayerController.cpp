@@ -55,6 +55,11 @@ void ABoardPlayerController::ClearPendingActivation()
     PendingActivationTargetKind = EEffectTargetKind::None;
 }
 
+void ABoardPlayerController::ClientMothershipHealthChanged_Implementation(int32 ownMothership, int32 enemyMothership)
+{
+    OnMothershipHealthChangedBP(ownMothership, enemyMothership);
+}
+
 void ABoardPlayerController::SetupPlayer(int32 ID)
 {
     PlayerID = ID;

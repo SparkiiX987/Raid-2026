@@ -211,6 +211,9 @@ public:
 
     void ClearPendingActivation();
 
+    UFUNCTION(Client, Reliable)
+        void ClientMothershipHealthChanged(int32 ownMothership, int32 enemyMothership);
+
 #pragma endregion
 
 #pragma region BlueprintImplementableEvents
@@ -267,7 +270,10 @@ public:
         void OnClearSelectionBP();
 
     UFUNCTION(BlueprintImplementableEvent)
-    void GetAllDiscardCardsBP(const TArray<UUCardData*>& CardDiscards);
+        void GetAllDiscardCardsBP(const TArray<UUCardData*>& CardDiscards);
+
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnMothershipHealthChangedBP(int32 ownMothership, int32 enemyMothership);
 
 #pragma endregion
 

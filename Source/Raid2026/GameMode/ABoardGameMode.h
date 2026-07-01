@@ -168,6 +168,9 @@ public:
 	void UpdateGridState();
 
 	UFUNCTION()
+		void OnMothershipDamaged();
+
+	UFUNCTION()
 	void NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter);
 
 	UFUNCTION()
