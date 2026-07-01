@@ -119,12 +119,17 @@ FEffectResult UEffect_WinResistanceWhenControl::Apply_Implementation(const FEffe
     if (!Context.Turn || !Context.Deck)
         return FEffectResult::Fail(TEXT("ActivatedDraw: Subsystems manquants"));
 
+    if (Context.SourceShip != Context.TargetShip)
+    {
+        return FEffectResult::Fail(TEXT("Pas le bon vaisseau"));
+    }
+    
     if (Context.Board->Grid[Context.SourceShip->gridPosition.X][Context.SourceShip->gridPosition.Y].refinery == nullptr)
     {
+        Context.SourceShip->bHaveEffectHealthActive = false;
         return FEffectResult::Fail(TEXT("Pas sur une raffinerie"));
     }
-    Context.SourceShip->Heal(2);
-    
+    Context.SourceShip->bHaveEffectHealthActive = true;
     
     FEffectResult Out = FEffectResult::Success();
     Out.IntValue = ResistanceToWin;
@@ -145,12 +150,12 @@ FEffectResult UEffect_GetResistanceFromInferiorShipClass::Apply_Implementation(c
         {
             if (Ship->GetOwnerID() == Context.OwnerPlayerID && Ship->CardData->shipClass < InferiorClassShip)
             {
-                Context.SourceShip->Heal(ResistanceToWin);
+                Context.SourceShip->bHaveEffectHealthActive = true;
                 return FEffectResult::Success();
             }
         }
     }
-    
+    Context.SourceShip->bHaveEffectHealthActive = false;
     return FEffectResult::Fail(TEXT("Pas de vaisseau de classe inferieur a 3 a proximité"));
 }
 
@@ -161,6 +166,21 @@ FEffectResult UEffect_GiveResistanceToInferiorShipClass::Apply_Implementation(co
 
     TArray<AAShip*> InferiorClassShipClose;
 
+    TArray<AAShip*> InferiorClassShipCloseBefore;
+
+    for (const FIntPoint& Direction : Context.Directions)
+    {
+        const FIntPoint NewCell = Context.OldPos + Direction;
+
+        if (AAShip* Ship = Cast<AAShip>(Context.Board->GetCell(NewCell).Occupant))
+        {
+            if (Ship->GetOwnerID() == Context.OwnerPlayerID && Ship->CardData->shipClass < InferiorClassShip)
+            {
+                InferiorClassShipCloseBefore.Add(Ship);
+            }
+        }
+    }
+    
     for (const FIntPoint& Direction : Context.Directions)
     {
         const FIntPoint NewCell = Context.SourceShip->gridPosition + Direction;
@@ -174,6 +194,14 @@ FEffectResult UEffect_GiveResistanceToInferiorShipClass::Apply_Implementation(co
         }
     }
 
+    if (InferiorClassShipCloseBefore.Num() > 0)
+    {
+        for (int i = 0; i < InferiorClassShipCloseBefore.Num(); i++)
+        {
+            InferiorClassShipCloseBefore[i]->bHaveEffectHealthActive = false;
+        }
+    }
+
     if (InferiorClassShipClose.Num() <= 0)
     {
         return FEffectResult::Fail(TEXT("Pas de vaisseau de classe inferieur a 3 a proximité"));
@@ -181,7 +209,12 @@ FEffectResult UEffect_GiveResistanceToInferiorShipClass::Apply_Implementation(co
 
     for (int i = 0; i < InferiorClassShipClose.Num(); i++)
     {
-        InferiorClassShipClose[i]->Heal(ResistanceToGive);
+        InferiorClassShipClose[i]->bHaveEffectHealthActive = true;
+        if (InferiorClassShipClose[i]->EffectMaxHealth == 0)
+        {
+            InferiorClassShipClose[i]->EffectMaxHealth = ResistanceToGive;
+            InferiorClassShipClose[i]->EffectCurrentHealth = ResistanceToGive;
+        }
     }
     
     return FEffectResult::Success();

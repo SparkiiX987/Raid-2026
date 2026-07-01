@@ -29,6 +29,9 @@ struct FEffectContext
 	FIntPoint TargetCell;
 
 	UPROPERTY(BlueprintReadWrite)
+	FIntPoint OldPos;
+
+	UPROPERTY(BlueprintReadWrite)
 	TArray<FIntPoint> Directions {
 		FIntPoint(1, 0),
 	FIntPoint(-1, 0),
@@ -44,6 +47,12 @@ struct FEffectContext
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 DamageDealt;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 EffectMaxHealth;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 EffectCurrentHealth;
 
 	UPROPERTY(BlueprintReadWrite)
 	TWeakObjectPtr<UUCardData> discardedCard;

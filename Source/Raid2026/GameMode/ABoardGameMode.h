@@ -174,6 +174,9 @@ public:
 	void NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter);
 
 	UFUNCTION()
+	void NotifyOnMoveShip(AAShip* ShipMove, FIntPoint OldPos);
+
+	UFUNCTION()
 	void ActivateActiveEffect(AAShip* ShipSelected);
 
 	void BroadcastFireResult(const FFireResult& Result);

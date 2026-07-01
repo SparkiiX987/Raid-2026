@@ -223,9 +223,13 @@ void AABoardGameMode::HandleMoveShip(
         return;
     }
 
+    FIntPoint OldPos = Ship->gridPosition;
+
     Ship->OnMove(Distance);
     boardManager->MoveShipTo(Ship, PathToTake);
 
+    NotifyOnMoveShip(Ship, OldPos);
+    
     if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery
         && effectManager->CanCaptureRefinery(Ship))
     {
@@ -647,7 +651,7 @@ void AABoardGameMode::HandleSpawnShip(
     Ship->SetHealthPoint(Ship->RuntimeStats.resistance);
     effectManager->RegisterEffects(Ship, RuntimeEffects);
     playerInstigator->ClientOnPlayCard();
-
+    
     if (effectManager->HaveBigCanon(Ship))
     {
         Ship->ApplyBigCanon();
@@ -924,6 +928,21 @@ void AABoardGameMode::NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter)
     Context.DamageDealt = Shooter->GetFirePower();
 
     effectManager->NotifyEvent(EEffectTrigger::OnDamageTaken, Context);
+}
+
+void AABoardGameMode::NotifyOnMoveShip(AAShip* ShipMove, FIntPoint OldPos)
+{
+    if (!effectManager || !IsValid(ShipMove))
+    {
+        return;
+    }
+
+    FEffectContext Context;
+    Context.OwnerPlayerID = turnManager->GetCurrentPlayer();
+    Context.TargetShip = ShipMove;
+    Context.OldPos = OldPos;
+
+    effectManager->NotifyEvent(EEffectTrigger::OnMoveShip, Context);
 }
 
 void AABoardGameMode::ActivateActiveEffect(AAShip* ShipSelected)

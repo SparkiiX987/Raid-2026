@@ -117,7 +117,8 @@ class RAID2026_API UEffect_WinResistanceWhenControl : public UTriggeredEffect
 public:
     UEffect_WinResistanceWhenControl()
     {
-        Trigger = EEffectTrigger::OnStartOfTurn;
+        Trigger = EEffectTrigger::OnMoveShip;
+        EffectMaxHealth = ResistanceToWin;
         DisplayName = FText::FromString(FString::Printf(TEXT("Si ce vaisseau controle la rafinerie, il gagne +%d de resistance"), ResistanceToWin));
         Description = FText::FromString(FString::Printf(TEXT("Si ce vaisseau controle la rafinerie, il gagne +%d de resistance"), ResistanceToWin));
     }
@@ -137,7 +138,8 @@ class RAID2026_API UEffect_GetResistanceFromInferiorShipClass : public UTriggere
 public:
     UEffect_GetResistanceFromInferiorShipClass()
     {
-        Trigger = EEffectTrigger::OnStartOfTurn;
+        Trigger = EEffectTrigger::OnMoveShip;
+        EffectMaxHealth = ResistanceToWin;
         DisplayName = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inferieur à %d est adjacent, Tornade-V model L gagne +%d de resistance"), InferiorClassShip,ResistanceToWin));
         Description = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inferieur à %d est adjacent, Tornade-V model L gagne +%d de resistance"), InferiorClassShip,ResistanceToWin));
     }
@@ -161,7 +163,7 @@ class RAID2026_API UEffect_GiveResistanceToInferiorShipClass : public UTriggered
 public:
     UEffect_GiveResistanceToInferiorShipClass()
     {
-        Trigger = EEffectTrigger::OnStartOfTurn;
+        Trigger = EEffectTrigger::OnMoveShip;
         DisplayName = FText::FromString(FString::Printf(TEXT("Chaque vaisseau de classe inférieur a %d adjacent gagne +%d de resistance "), InferiorClassShip,ResistanceToGive));
         Description = FText::FromString(FString::Printf(TEXT("Chaque vaisseau de classe inférieur a %d adjacent gagne +%d de resistance "), InferiorClassShip,ResistanceToGive));
     }
@@ -186,8 +188,8 @@ public:
     UEffect_OnShipBesideTakingDamage()
     {
         Trigger = EEffectTrigger::OnDamageTaken;
-        DisplayName = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inférieur à sa droite et à sa gauche devais prendre des dégat, les %d premier dégat infligé à chaque tour ne sont pas apliquer"), DamageToReduce));
-        Description = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inférieur à sa droite et à sa gauche devais prendre des dégat, les %d premier dégat infligé à chaque tour ne sont pas apliquer"), DamageToReduce));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inférieur à sa droite et/ou à sa gauche devais prendre des dégat, les %d premier dégat infligé à chaque tour ne sont pas apliquer"), DamageToReduce));
+        Description = FText::FromString(FString::Printf(TEXT("Si un vaisseau de classe inférieur à sa droite et/ou à sa gauche devais prendre des dégat, les %d premier dégat infligé à chaque tour ne sont pas apliquer"), DamageToReduce));
     }
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect|Stats",

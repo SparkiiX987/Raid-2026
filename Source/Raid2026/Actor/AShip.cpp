@@ -168,6 +168,18 @@ void AAShip::TakeDamage(int32 amount)
 		remainingDamages -= protection;
 		protection -= amount;
 	}
+
+	if (bHaveEffectHealthActive && EffectCurrentHealth > 0)
+	{
+		int32 CurrentHealth = EffectCurrentHealth;
+		
+		EffectCurrentHealth -= remainingDamages;
+		remainingDamages -= CurrentHealth;
+		if (EffectCurrentHealth < 0)
+		{
+			EffectCurrentHealth = 0;
+		}
+	}
 	
 	TArray<UUpgrade*> shieldsToDestroy;
 

@@ -24,6 +24,9 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
     EEffectTrigger Trigger = EEffectTrigger::Activated;
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+    int32 EffectMaxHealth;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0, EditCondition = "Trigger==EEffectTrigger::Activated"))
     int32 EssenceCost = 0;
 

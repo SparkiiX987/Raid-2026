@@ -10,6 +10,9 @@ void AABoardActor::GetLifetimeReplicatedProps(
 	DOREPLIFETIME(AABoardActor, ownerPlayer);
 	DOREPLIFETIME(AABoardActor, currentHealthPoint);
 	DOREPLIFETIME(AABoardActor, bonusHealth);
+	DOREPLIFETIME(AABoardActor, EffectMaxHealth);
+	DOREPLIFETIME(AABoardActor, EffectCurrentHealth);
+	DOREPLIFETIME(AABoardActor, bHaveEffectHealthActive);
 }
 
 AABoardActor::AABoardActor()
@@ -26,7 +29,11 @@ void AABoardActor::TakeDamage(int32 amount)
 
 int32 AABoardActor::GetCurrentHP() const
 {
-	return currentHealthPoint;
+	if (bHaveEffectHealthActive)
+	{
+		return currentHealthPoint + bonusHealth + EffectCurrentHealth;
+	}
+	return currentHealthPoint + bonusHealth;
 }
 
 int32 AABoardActor::GetMaxHP() const
@@ -67,7 +74,18 @@ void AABoardActor::SetGridPosition(FIntPoint NewPos)
 
 void AABoardActor::Heal(int32 amount)
 {
-	if (currentHealthPoint == maxHealthPoint) return;
+	if ((currentHealthPoint == maxHealthPoint && !bHaveEffectHealthActive)
+		|| (currentHealthPoint == maxHealthPoint && bHaveEffectHealthActive && EffectCurrentHealth >= EffectMaxHealth))
+	{
+		return;
+	}
+	
+	if (currentHealthPoint == maxHealthPoint && bHaveEffectHealthActive && EffectCurrentHealth < EffectMaxHealth)
+	{
+		EffectCurrentHealth += amount;
+		EffectCurrentHealth = FMath::Min(EffectCurrentHealth, EffectMaxHealth);
+		return;
+	}
 
 	currentHealthPoint += amount;
 	currentHealthPoint = FMath::Min(currentHealthPoint, maxHealthPoint);
