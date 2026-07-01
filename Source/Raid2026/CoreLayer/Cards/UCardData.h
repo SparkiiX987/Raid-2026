@@ -43,6 +43,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "type==ECardType::SHIP"))
 		TObjectPtr<UStaticMesh> shipMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "type==ECardType::SHIP"))
+		TArray<TObjectPtr<UMaterial>> Materials;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, meta = (EditCondition = "type==ECardType::SHIP || type==ECardType::EXPERT"))
 		TArray<TObjectPtr<UEffect>> Effects;
 
