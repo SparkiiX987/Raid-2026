@@ -229,6 +229,11 @@ void AABoardGameMode::HandleMoveShip(
     boardManager->MoveShipTo(Ship, PathToTake);
 
     NotifyOnMoveShip(Ship, OldPos);
+
+    if (boardManager->GetCell(OldPos).Type == ECellType::Refinery)
+    {
+        boardManager->GetCell(OldPos).refinery->Neutralize();
+    }
     
     if (boardManager->GetCell(TargetCell).Type == ECellType::Refinery
         && effectManager->CanCaptureRefinery(Ship))

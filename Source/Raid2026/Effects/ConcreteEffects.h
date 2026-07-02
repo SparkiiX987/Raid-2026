@@ -18,7 +18,7 @@ public:
     UEffect_DrawOnReveal()
     {
         Trigger = EEffectTrigger::OnReveal;
-        DisplayName = FText::FromString(TEXT("Prise d'information"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Quand ce vaisseau est révélé, piochez %d carte(s)."), DrawCount));
         Description = FText::FromString(FString::Printf(TEXT("Quand ce vaisseau est révélé, piochez %d carte(s)."), DrawCount));
     }
 
@@ -38,7 +38,7 @@ public:
     UEffect_BonusEssenceOnTurn()
     {
         Trigger = EEffectTrigger::OnEndOfTurn;
-        DisplayName = FText::FromString(TEXT("Extraction"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("À la fin de votre tour, gagnez + %d carburant bonus."), BonusAmount));
         Description = FText::FromString(FString::Printf(TEXT("À la fin de votre tour, gagnez + %d carburant bonus."), BonusAmount));
     }
 
@@ -75,7 +75,7 @@ public:
     UEffect_DamageOnDestroyed()
     {
         Trigger = EEffectTrigger::OnDestroyed;
-        DisplayName = FText::FromString(TEXT("Explosion finale"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Quand ce vaisseau est détruit, inflige %d dégât(s) à tous les vaisseaux adjacents."), Damage));
         Description = FText::FromString(FString::Printf(TEXT("Quand ce vaisseau est détruit, inflige %d dégât(s) à tous les vaisseaux adjacents."), Damage));
     }
 
@@ -262,7 +262,7 @@ public:
     {
         Trigger = EEffectTrigger::Activated;
         EssenceCost = 2;
-        DisplayName = FText::FromString(TEXT("Analyse de données"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Payez %d → Piochez %d carte(s)."), EssenceCost, DrawCount));
         Description = FText::FromString(FString::Printf(TEXT("Payez %d → Piochez %d carte(s)."), EssenceCost, DrawCount));
     }
 
@@ -307,7 +307,7 @@ public:
     {
         Trigger = EEffectTrigger::Activated;
         EssenceCost = 1;
-        DisplayName = FText::FromString(TEXT("Impulsion gravitationnelle"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Payez %d → Poussez un vaisseau ciblé d'une case."), EssenceCost));
         Description = FText::FromString(FString::Printf(TEXT("Payez %d → Poussez un vaisseau ciblé d'une case."), EssenceCost));
     }
 
@@ -338,7 +338,7 @@ public:
     UEffect_StatBoost()
     {
         Trigger = EEffectTrigger::Passive;
-        DisplayName = FText::FromString(TEXT("Amélioration système"));
+        DisplayName = FText::FromString(TEXT("Modifie les statistiques du vaisseau porteur."));
         Description = FText::FromString(TEXT("Modifie les statistiques du vaisseau porteur."));
     }
 
@@ -360,7 +360,7 @@ public:
     UEffect_Stealth()
     {
         Trigger = EEffectTrigger::Passive;
-        DisplayName = FText::FromString(TEXT("Furtivité avancée"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Ce vaisseau n'est détecté qu'à portée %d de radar ennemi."), StealthRange));
         Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau n'est détecté qu'à portée %d de radar ennemi."), StealthRange));
     }
 
@@ -386,7 +386,7 @@ public:
     {
         bCanMoveOnFirstTurn = true;
         Trigger = EEffectTrigger::Passive;
-        DisplayName = FText::FromString(TEXT("Hyperespace"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Ce vaisseau peut se déplacer au premier tour.")));
         Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau peut se déplacer au premier tour.")));
     }
 
@@ -402,7 +402,7 @@ public:
     {
         bCanCaptureRefinery = true;
         Trigger = EEffectTrigger::Passive;
-        DisplayName = FText::FromString(TEXT("Controleur"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Ce vaisseau peut contrôler les rafineries.")));
         Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau peut contrôler les rafineries.")));
     }
 };
@@ -417,7 +417,7 @@ public:
     {
         bHaveBigCanon = true;
         Trigger = EEffectTrigger::Passive;
-        DisplayName = FText::FromString(TEXT("BigCanon"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Peut tirer 2 fois par tour et effectuer un tir avec lui coute une essence suplémentaire")));
         Description = FText::FromString(FString::Printf(TEXT("Peut tirer 2 fois par tour et effectuer un tir avec lui coute une essence suplémentaire")));
     }
 };
@@ -432,7 +432,7 @@ public:
     {
         bMoveInDiagonal = true;
         Trigger = EEffectTrigger::Passive;
-        DisplayName = FText::FromString(TEXT("DiagonalMovement"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Ce vaisseau se déplace uniquement en diagonale")));
         Description = FText::FromString(FString::Printf(TEXT("Ce vaisseau se déplace uniquement en diagonale")));
     }
 };
@@ -447,7 +447,7 @@ public:
     {
         bCanSpawnShipBesideHim = true;
         Trigger = EEffectTrigger::Passive;
-        DisplayName = FText::FromString(TEXT("CanSpawnShipBesideHim"));
+        DisplayName = FText::FromString(FString::Printf(TEXT("Vous pouvez faire apparaitre les vaisseau de classe inférieur que vous jouer adjacent à lui ")));
         Description = FText::FromString(FString::Printf(TEXT("Vous pouvez faire apparaitre les vaisseau de classe inférieur que vous jouer adjacent à lui ")));
     }
 };
