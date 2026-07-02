@@ -171,6 +171,9 @@ public:
 		void OnMothershipDamaged();
 
 	UFUNCTION()
+		const int32 HandleGetEnemyEssence(int32 PlayerId) const;
+
+	UFUNCTION()
 	void NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter);
 
 	UFUNCTION()

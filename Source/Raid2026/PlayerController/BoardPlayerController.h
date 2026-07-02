@@ -151,6 +151,9 @@ public:
     void ServerReviveCard(int32 cardIndexInDump);
     bool ServerReviveCard_Validate(int32 cardIndexInDump);
 
+    UFUNCTION(BlueprintCallable, Server, Reliable)
+    void ServerAskForEnemyEssence();
+
 #pragma endregion
 
 #pragma region ClientMethodes
@@ -214,6 +217,9 @@ public:
     UFUNCTION(Client, Reliable)
         void ClientMothershipHealthChanged(int32 ownMothership, int32 enemyMothership);
 
+    UFUNCTION(Client, Reliable)
+        void ClientOnEnemyEssenceReceived(int32 essence);
+
 #pragma endregion
 
 #pragma region BlueprintImplementableEvents
@@ -274,6 +280,9 @@ public:
 
     UFUNCTION(BlueprintImplementableEvent)
         void OnMothershipHealthChangedBP(int32 ownMothership, int32 enemyMothership);
+
+    UFUNCTION(BlueprintImplementableEvent)
+        void OnEnemyEssenceReceived(int32 enemyEssence);
 
 #pragma endregion
 

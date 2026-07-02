@@ -919,6 +919,12 @@ void AABoardGameMode::OnMothershipDamaged()
     }
 }
 
+const int32 AABoardGameMode::HandleGetEnemyEssence(int32 PlayerId) const
+{
+    ABoardPlayerState* PS = connectedPlayers[turnManager->GetOpponent(PlayerId)]->GetPlayerState<ABoardPlayerState>();
+    return PS->CurrentEssence;
+}
+
 void AABoardGameMode::NotifyOnTakeDamage(AAShip* ShipDamaged, AAShip* Shooter)
 {
     if (!effectManager || !IsValid(ShipDamaged))

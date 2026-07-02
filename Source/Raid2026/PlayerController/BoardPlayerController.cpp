@@ -55,6 +55,11 @@ void ABoardPlayerController::ClearPendingActivation()
     PendingActivationTargetKind = EEffectTargetKind::None;
 }
 
+void ABoardPlayerController::ClientOnEnemyEssenceReceived_Implementation(int32 essence)
+{
+    OnEnemyEssenceReceived(essence);
+}
+
 void ABoardPlayerController::ClientMothershipHealthChanged_Implementation(int32 ownMothership, int32 enemyMothership)
 {
     OnMothershipHealthChangedBP(ownMothership, enemyMothership);
@@ -280,6 +285,14 @@ void ABoardPlayerController::ServerReviveCard_Implementation(int32 cardIndexInDu
 bool ABoardPlayerController::ServerReviveCard_Validate(int32 cardIndexInDump)
 {
     return cardIndexInDump >= 0;
+}
+
+void ABoardPlayerController::ServerAskForEnemyEssence_Implementation()
+{
+    AABoardGameMode* GM = GetWorld()->GetAuthGameMode<AABoardGameMode>();
+    if (!GM) return;
+
+    ClientOnEnemyEssenceReceived(GM->HandleGetEnemyEssence(PlayerID));
 }
 
 void ABoardPlayerController::ServerResolveSabotageTarget_Implementation(int32 CardIndex)
@@ -582,6 +595,7 @@ void ABoardPlayerController::ClientOnTurnStarted_Implementation(
     bIsMyTurn = (ActivePlayerID == PlayerID);
 
     OnTurnStartedBP(ActivePlayerID, bIsMyTurn);
+    ServerAskForEnemyEssence();
 
     if (!bIsMyTurn)
         ClearSelection();
