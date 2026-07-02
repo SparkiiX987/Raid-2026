@@ -519,6 +519,8 @@ void AABoardGameMode::HandleFireAtMothership(ABoardPlayerController* playerInsti
         return;
     }
 
+    BroadcastEssenceChanged(playerInstigator->PlayerID);
+
     OnMothershipDamaged();
 }
 
@@ -724,6 +726,7 @@ void AABoardGameMode::HandlePlaceExpert(ABoardPlayerController* playerInstigator
         RuntimeEffects.Add(Inst);
     }
     deckManager->PlayCard(PlayerID, CardData);
+    BroadcastEssenceChanged(playerInstigator->PlayerID);
     effectManager->RegisterEffects(motherShip, RuntimeEffects);
 }
 
@@ -761,6 +764,7 @@ void AABoardGameMode::HandlePlaceUpgrade(ABoardPlayerController* playerInstigato
     CardData->Upgrade->SourceCard = CardData;
     upgradesManager.Get()->AddUpgrade(ship, CardData->Upgrade);
     playerInstigator->ClientOnPlayCard();
+    BroadcastEssenceChanged(playerInstigator->PlayerID);
 
     deckManager->DiscardCard(PlayerID, CardData);
 }
