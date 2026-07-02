@@ -294,7 +294,13 @@ void AAShip::NotifyEffectTrigger(EEffectTrigger Trigger)
 
 void AAShip::OnShipSpawn(bool canMoveOnSpawn)
 {
-	bJustPlayed = canMoveOnSpawn;
+	if (canMoveOnSpawn)
+	{
+		bJustPlayed = false;
+		currentSpeed = GetMaxSpeed();
+		actions = actionsPerTurn;
+	}
+
 
 	OnShipSpawnBP();
 }

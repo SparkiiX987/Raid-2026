@@ -299,7 +299,7 @@ void UUBoardManager::SetOccupant(FIntPoint Pos, AABoardActor* Actor)
 	if (Refinery)
 	{
 		GetCellRef(Pos).refinery = Refinery;
-		WorldPos = FVector(Pos.X * CellGap, Pos.Y * CellGap, 100.f);
+		WorldPos = FVector(Pos.X * CellGap - 100, Pos.Y * CellGap, 100.f);
 	}
 	else
 	{

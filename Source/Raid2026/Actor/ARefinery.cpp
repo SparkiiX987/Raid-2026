@@ -21,4 +21,6 @@ void AARefinery::Capture(int32 NewControllerID)
 void AARefinery::Neutralize()
 {
 	ControllerPlayerID = -1;
+	UpdateControlIndicator(-1);
+	OnCaptured.Broadcast(this, -1);
 }
